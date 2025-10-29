@@ -15,7 +15,7 @@
 }
 
 .moduleGrid {
-  @apply grid sm:grid-cols-2 md:grid-cols-3 gap-4;
+  @apply grid grid-cols-2 md:grid-cols-3 gap-4;
 }
 
 .masteryGrid {
@@ -24,11 +24,16 @@
 
 /* Card Styles */
 .explanationCard {
-  @apply mb-12 bg-white dark:bg-zinc-800 rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg border border-zinc-200 dark:border-zinc-700;
+  @apply bg-white dark:bg-zinc-800 rounded-xl md:rounded-2xl 
+         p-4 md:p-8 mb-12 
+         shadow-lg border border-zinc-200 dark:border-zinc-700;
 }
 
 .moduleCard {
-  @apply block bg-white dark:bg-zinc-800 rounded-2xl py-6 px-4 shadow-lg border border-zinc-200 dark:border-zinc-700 hover:shadow-xl hover:scale-105 transition-all;
+  @apply block bg-white dark:bg-zinc-800 rounded-2xl 
+         p-4 md:py-6
+         shadow-lg border border-zinc-200 dark:border-zinc-700 
+         hover:shadow-xl hover:scale-105 transition-all;
 }
 
 .cardHeader {
@@ -45,15 +50,15 @@
 }
 
 .sectionTitle {
-  @apply text-3xl font-bold text-zinc-900 dark:text-white mb-6;
+  @apply text-2xl md:text-3xl font-bold text-zinc-900 dark:text-white mb-6;
 }
 
 .cardTitle {
-  @apply text-center text-xl md:text-2xl font-bold text-zinc-900 dark:text-white mb-4;
+  @apply text-xl md:text-2xl font-bold text-zinc-900 dark:text-white mb-4 text-center;
 }
 
 .moduleTitle {
-   @apply text-2xl font-bold text-zinc-900 dark:text-white mb-2 transition-colors;
+   @apply text-lg md:text-2xl font-bold text-zinc-900 dark:text-white mb-2 transition-colors;
 }
 
 /* Add hover effect using CSS selector */
@@ -62,33 +67,29 @@
 }
 
 .moduleDescription {
-  @apply text-zinc-600 dark:text-zinc-400;
+  @apply text-xs md:text-sm text-zinc-600 dark:text-zinc-400;
 }
 
 .masteryDescription {
   @apply text-xs md:text-sm text-zinc-600 dark:text-zinc-400;
 }
 
+
+
 /* Mastery Level Styles (Shu Ha Ri) */
 .masteryEmoji {
   @apply text-4xl mb-2 text-center;
 }
 
-.masteryTitleShu {
-  @apply md:text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2 text-center;
-}
-
-.masteryTitleHa {
-  @apply md:text-lg font-semibold text-purple-600 dark:text-purple-400 mb-2 text-center;
-}
-
-.masteryTitleRi {
-  @apply md:text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-2 text-center;
+.masteryTitle {
+  @apply md:text-lg font-semibold mb-2 text-center;
 }
 
 .masteryDisabled {
   @apply opacity-50;
 }
+
+
 
 /* Component Styles */
 .backLink {
@@ -100,5 +101,10 @@
 }
 
 .moduleEmoji {
-  @apply text-5xl;
+  /* Fluid sizing: min 32px, preferred 8vw, max 64px */
+  font-size: clamp(2rem, 8vw, 4rem);
+  /* Alternative with pixels for absolute consistency:
+     font-size: clamp(32px, 8vw, 64px); */
+  min-height: 1.2em;
+  line-height: 1.2;
 }

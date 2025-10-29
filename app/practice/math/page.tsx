@@ -50,7 +50,7 @@ export default function MathPractice() {
           <div className={styles.masteryGrid}>
             <div>
               <div className={styles.masteryEmoji}>守</div>
-              <h3 className={styles.masteryTitleShu}>
+              <h3 className={`${styles.masteryTitle} text-blue-600 dark:text-blue-400`}>
                 Shu (Obey)
               </h3>
               <p className={styles.masteryDescription}>
@@ -59,7 +59,7 @@ export default function MathPractice() {
             </div>
             <div className={styles.masteryDisabled}>
               <div className={styles.masteryEmoji}>破</div>
-              <h3 className={styles.masteryTitleHa}>
+              <h3 className={`${styles.masteryTitle} text-purple-600 dark:text-purple-400`}>
                 Ha (Break)
               </h3>
               <p className={styles.masteryDescription}>
@@ -68,7 +68,7 @@ export default function MathPractice() {
             </div>
             <div className={styles.masteryDisabled}>
               <div className={styles.masteryEmoji}>離</div>
-              <h3 className={styles.masteryTitleRi}>
+              <h3 className={`${styles.masteryTitle} text-indigo-600 dark:text-indigo-400`}>
                 Ri (Leave)
               </h3>
               <p className={styles.masteryDescription}>
