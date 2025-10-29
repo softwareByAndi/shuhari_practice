@@ -20,14 +20,14 @@ export default function Home() {
         {/* Header Section */}
         <div className="mb-12">
           <h1 className="text-5xl font-bold tracking-tight text-zinc-900 dark:text-white mb-4">
-            Shu Ha Ri Learning
+            ShuHaRi Learning
           </h1>
           <p className="text-xl text-zinc-600 dark:text-zinc-400 max-w-3xl">
             Master any subject through the ancient martial arts principle of learning
           </p>
         </div>
 
-        {/* Shu Ha Ri Explanation */}
+        {/* ShuHaRi Explanation */}
         <div className="mb-16 grid gap-6 md:grid-cols-3">
           <div className="rounded-2xl bg-white dark:bg-zinc-800 p-6 shadow-lg border border-zinc-200 dark:border-zinc-700">
             <div className="text-3xl mb-3">守</div>
