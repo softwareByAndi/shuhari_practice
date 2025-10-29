@@ -18,7 +18,6 @@ import {
 import {
   generateAllProblems,
   shuffleArray,
-  getDigitRangeLabel,
   type Problem,
 } from '@/lib/problem-generator';
 
@@ -397,10 +396,10 @@ function EquationPracticeContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-zinc-900 dark:to-black">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-zinc-900 dark:to-black overflow-hidden">
       {/* Anonymous User Banner */}
       {!user && (
-        <div className="bg-blue-600 text-white px-4 py-3 text-center">
+        <div className="bg-blue-600 text-white px-4 py-2 text-center flex-shrink-0">
           <p className="text-sm">
             You're practicing anonymously. Progress won't be saved.{' '}
             <a href="/auth" className="underline font-semibold hover:text-blue-200">
@@ -441,21 +440,18 @@ function EquationPracticeContent() {
         </div>
       )}
 
-      <main className="mx-auto max-w-4xl px-4 py-12">
+      <main className="mx-auto max-w-4xl px-4 pt-4 pb-8 flex-1 overflow-y-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <Link
             href="/practice/math"
-            className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-4"
+            className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-3"
           >
             ← Back to Math Practice
           </Link>
-          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-2">
+          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white">
             {config.emoji} {config.title} Practice
           </h1>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400">
-            {getDigitRangeLabel(digits)} {config.operator} {getDigitRangeLabel(digits)} ({problemSet.length} unique problems)
-          </p>
         </div>
 
         {/* Stats Bar */}
@@ -524,7 +520,7 @@ function EquationPracticeContent() {
                   type="button"
                   onClick={() => handleNumberClick(num)}
                   disabled={feedback === 'correct'}
-                  className="text-3xl font-semibold py-6 rounded-xl bg-zinc-100 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="text-4xl font-semibold py-8 rounded-xl bg-zinc-100 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                 >
                   {num}
                 </button>
@@ -534,7 +530,7 @@ function EquationPracticeContent() {
                   type="button"
                   onClick={handleNegative}
                   disabled={feedback === 'correct'}
-                  className="text-xl font-semibold py-6 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="text-2xl font-semibold py-8 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                 >
                   +/−
                 </button>
@@ -543,7 +539,7 @@ function EquationPracticeContent() {
                   type="button"
                   onClick={handleClear}
                   disabled={feedback === 'correct'}
-                  className="text-xl font-semibold py-6 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="text-2xl font-semibold py-8 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                 >
                   Clear
                 </button>
@@ -553,7 +549,7 @@ function EquationPracticeContent() {
                 type="button"
                 onClick={() => handleNumberClick(0)}
                 disabled={feedback === 'correct'}
-                className="text-3xl font-semibold py-6 rounded-xl bg-zinc-100 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                className="text-4xl font-semibold py-8 rounded-xl bg-zinc-100 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
               >
                 0
               </button>
@@ -562,7 +558,7 @@ function EquationPracticeContent() {
                   type="button"
                   onClick={handleClear}
                   disabled={feedback === 'correct'}
-                  className="text-xl font-semibold py-6 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="text-2xl font-semibold py-8 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                 >
                   Clear
                 </button>
@@ -571,20 +567,12 @@ function EquationPracticeContent() {
                   type="button"
                   onClick={handleBackspace}
                   disabled={feedback === 'correct'}
-                  className="text-xl font-semibold py-6 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="text-2xl font-semibold py-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                 >
                   ←
                 </button>
               )}
             </div>
-
-            <button
-              type="submit"
-              disabled={!answer || feedback === 'correct'}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-300 dark:disabled:bg-zinc-700 text-white font-semibold py-5 rounded-xl transition-colors text-xl disabled:cursor-not-allowed active:scale-95"
-            >
-              Check Answer
-            </button>
           </form>
 
           {/* Feedback */}
