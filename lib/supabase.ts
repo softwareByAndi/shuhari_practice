@@ -120,32 +120,27 @@ export async function getLastSessionAvgResponseTime(
 
 // Removed recordProblemAttempt function - no longer tracking individual attempts
 
-// Get or create a user (simple version without auth)
-export async function getOrCreateUser(username: string): Promise<string | null> {
-  // Check if user exists
-  const { data: existing } = await supabase
-    .from('users')
-    .select('id')
-    .eq('username', username)
-    .single();
+// Get current authenticated user ID
+export async function getCurrentUserId(): Promise<string | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id ?? null;
+}
 
-  if (existing) {
-    return existing.id;
-  }
-
-  // Create new user
-  const { data: newUser, error } = await supabase
+// Create user profile when they sign up (call this after successful auth)
+export async function createUserProfile(userId: string, email: string): Promise<boolean> {
+  const { error } = await supabase
     .from('users')
-    .insert({ username })
-    .select('id')
-    .single();
+    .insert({
+      id: userId,
+      username: email.split('@')[0], // Use email prefix as default username
+    });
 
   if (error) {
-    console.error('Error creating user:', error);
-    return null;
+    console.error('Error creating user profile:', error);
+    return false;
   }
 
-  return newUser.id;
+  return true;
 }
 
 // Get recent practice sessions for display on home page

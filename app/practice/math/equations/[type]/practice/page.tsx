@@ -4,12 +4,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import {
-  getOrCreateUser,
   createPracticeSession,
   updatePracticeSession,
   getTotalRepsForModule,
   getLastSessionAvgResponseTime,
 } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import {
   getEquationConfig,
   isValidEquationType,
@@ -22,7 +23,8 @@ import {
   type Problem,
 } from '@/lib/problem-generator';
 
-export default function EquationPractice() {
+function EquationPracticeContent() {
+  const { user } = useAuth();
   const params = useParams();
   const searchParams = useSearchParams();
 
@@ -37,7 +39,6 @@ export default function EquationPractice() {
   const [answer, setAnswer] = useState('');
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [showCongrats, setShowCongrats] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'pending' | 'saving' | 'saved'>('idle');
@@ -100,7 +101,7 @@ export default function EquationPractice() {
       });
 
       // Refresh all-time reps
-      const updatedAllTimeReps = await getTotalRepsForModule(userId, 'math', `equations-${equationType}-${digits}d`);
+      const updatedAllTimeReps = await getTotalRepsForModule(userId!, 'math', `equations-${equationType}-${digits}d`);
       setAllTimeReps(updatedAllTimeReps);
 
       setSaveStatus('saved');
@@ -127,7 +128,7 @@ export default function EquationPractice() {
       index = 0;
 
       // Immediate save on set completion (bypass debounce)
-      if (sessionId && userId) {
+      if (sessionId && user?.id) {
         const totalReps = sessionReps;
         if (saveTimeoutRef.current) {
           clearTimeout(saveTimeoutRef.current);
@@ -145,7 +146,7 @@ export default function EquationPractice() {
         });
 
         // Refresh all-time reps
-        const updatedAllTimeReps = await getTotalRepsForModule(userId, 'math', `equations-${equationType}-${digits}d`);
+        const updatedAllTimeReps = await getTotalRepsForModule(userId!, 'math', `equations-${equationType}-${digits}d`);
         setAllTimeReps(updatedAllTimeReps);
 
         setSaveStatus('saved');
@@ -173,7 +174,7 @@ export default function EquationPractice() {
 
     // Reset timer for new problem
     problemStartTimeRef.current = Date.now();
-  }, [problemSet, currentIndex, initializeProblemSet, sessionId, userId, sessionReps, responseTimes, equationType, digits]);
+  }, [problemSet, currentIndex, initializeProblemSet, sessionId, user, sessionReps, responseTimes, equationType, digits]);
 
   // Initialize user and load progress from database
   useEffect(() => {
@@ -181,27 +182,18 @@ export default function EquationPractice() {
       if (!config) return;
 
       try {
-        // Get or create user
-        let storedUserId = localStorage.getItem('userId');
-        if (!storedUserId) {
-          const username = `user_${Date.now()}`;
-          const newUserId = await getOrCreateUser(username);
-          if (newUserId) {
-            localStorage.setItem('userId', newUserId);
-            storedUserId = newUserId;
-          }
+        if (!user?.id) {
+          setIsLoading(false);
+          return;
         }
-        setUserId(storedUserId);
 
-        if (storedUserId) {
-          // Load all-time reps and last session average
-          const moduleName = `equations-${equationType}-${digits}d`;
-          const totalReps = await getTotalRepsForModule(storedUserId, 'math', moduleName);
-          setAllTimeReps(totalReps);
+        // Load all-time reps and last session average
+        const moduleName = `equations-${equationType}-${digits}d`;
+        const totalReps = await getTotalRepsForModule(user.id, 'math', moduleName);
+        setAllTimeReps(totalReps);
 
-          const lastAvg = await getLastSessionAvgResponseTime(storedUserId, 'math', moduleName);
-          setLastSessionAvg(lastAvg);
-        }
+        const lastAvg = await getLastSessionAvgResponseTime(user.id, 'math', moduleName);
+        setLastSessionAvg(lastAvg);
 
         // Initialize problem set
         const problems = initializeProblemSet();
@@ -219,7 +211,7 @@ export default function EquationPractice() {
     }
 
     initializeSession();
-  }, [config, equationType, digits, initializeProblemSet]);
+  }, [config, equationType, digits, user, initializeProblemSet]);
 
   // Cleanup: save on unmount
   useEffect(() => {
@@ -273,15 +265,15 @@ export default function EquationPractice() {
 
         // Create session on first correct answer if not already created
         const handleSave = async () => {
-          if (!sessionId && userId) {
+          if (!sessionId && user?.id) {
             const moduleName = `equations-${equationType}-${digits}d`;
-            const session = await createPracticeSession(userId, 'math', moduleName);
+            const session = await createPracticeSession(user.id, 'math', moduleName);
             if (session) {
               setSessionId(session.id);
-              debouncedSave(session.id, userId, newSessionReps, newResponseTimes);
+              debouncedSave(session.id, user.id, newSessionReps, newResponseTimes);
             }
-          } else if (sessionId && userId) {
-            debouncedSave(sessionId, userId, newSessionReps, newResponseTimes);
+          } else if (sessionId && user?.id) {
+            debouncedSave(sessionId, user.id, newSessionReps, newResponseTimes);
           }
         };
 
@@ -298,7 +290,7 @@ export default function EquationPractice() {
         }, 200);
       }
     }
-  }, [feedback, config, answer, num1, num2, responseTimes, lastSessionAvg, sessionReps, sessionId, userId, equationType, digits, debouncedSave, loadNextProblem]);
+  }, [feedback, config, answer, num1, num2, responseTimes, lastSessionAvg, sessionReps, sessionId, user, equationType, digits, debouncedSave, loadNextProblem]);
 
   const handleClear = () => {
     setAnswer('');
@@ -349,15 +341,15 @@ export default function EquationPractice() {
       setSessionReps(newSessionReps);
 
       const handleSave = async () => {
-        if (!sessionId && userId) {
+        if (!sessionId && user?.id) {
           const moduleName = `equations-${equationType}-${digits}d`;
-          const session = await createPracticeSession(userId, 'math', moduleName);
+          const session = await createPracticeSession(user.id, 'math', moduleName);
           if (session) {
             setSessionId(session.id);
-            debouncedSave(session.id, userId, newSessionReps, newResponseTimes);
+            debouncedSave(session.id, user.id, newSessionReps, newResponseTimes);
           }
-        } else if (sessionId && userId) {
-          debouncedSave(sessionId, userId, newSessionReps, newResponseTimes);
+        } else if (sessionId && user?.id) {
+          debouncedSave(sessionId, user.id, newSessionReps, newResponseTimes);
         }
       };
 
@@ -618,5 +610,13 @@ export default function EquationPractice() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function EquationPractice() {
+  return (
+    <ProtectedRoute>
+      <EquationPracticeContent />
+    </ProtectedRoute>
   );
 }

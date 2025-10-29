@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getRecentModulesWithHistory, type ModuleSummary } from '@/lib/supabase';
 import { EQUATION_CONFIGS } from '@/lib/equation-types';
+import Header from '@/components/Header';
 
 // Simple sparkline component for response time trend
 function ResponseTimeTrend({ history, latest }: { history: number[]; latest: number }) {
@@ -90,6 +91,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-black">
+      <Header />
       <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header Section */}
         <div className="mb-12">

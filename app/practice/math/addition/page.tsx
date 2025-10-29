@@ -3,17 +3,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import {
-  getOrCreateUser,
   createPracticeSession,
   updatePracticeSession,
   getTotalRepsForModule,
   getLastSessionAvgResponseTime,
   type PracticeSession,
 } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 type Problem = { num1: number; num2: number };
 
-export default function AdditionPractice() {
+function AdditionPracticeContent() {
+  const { user } = useAuth();
   const [problemSet, setProblemSet] = useState<Problem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [num1, setNum1] = useState(0);
@@ -21,7 +23,6 @@ export default function AdditionPractice() {
   const [answer, setAnswer] = useState('');
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [showCongrats, setShowCongrats] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'pending' | 'saving' | 'saved'>('idle');
@@ -173,26 +174,17 @@ export default function AdditionPractice() {
   useEffect(() => {
     async function initializeSession() {
       try {
-        // Get or create user (using localStorage for now, can be replaced with proper auth)
-        let storedUserId = localStorage.getItem('userId');
-        if (!storedUserId) {
-          const username = `user_${Date.now()}`;
-          const newUserId = await getOrCreateUser(username);
-          if (newUserId) {
-            localStorage.setItem('userId', newUserId);
-            storedUserId = newUserId;
-          }
+        if (!user?.id) {
+          setIsLoading(false);
+          return;
         }
-        setUserId(storedUserId);
 
-        if (storedUserId) {
-          // Load all-time reps and last session average
-          const totalReps = await getTotalRepsForModule(storedUserId, 'math', 'addition');
-          setAllTimeReps(totalReps);
+        // Load all-time reps and last session average
+        const totalReps = await getTotalRepsForModule(user.id, 'math', 'addition');
+        setAllTimeReps(totalReps);
 
-          const lastAvg = await getLastSessionAvgResponseTime(storedUserId, 'math', 'addition');
-          setLastSessionAvg(lastAvg);
-        }
+        const lastAvg = await getLastSessionAvgResponseTime(user.id, 'math', 'addition');
+        setLastSessionAvg(lastAvg);
 
         // Initialize problem set
         const problems = initializeProblemSet();
@@ -210,7 +202,7 @@ export default function AdditionPractice() {
     }
 
     initializeSession();
-  }, []);
+  }, [user]);
 
   // Cleanup: save on unmount
   useEffect(() => {
@@ -268,15 +260,15 @@ export default function AdditionPractice() {
 
         // Create session on first correct answer if not already created
         const handleSave = async () => {
-          if (!sessionId && userId) {
-            const session = await createPracticeSession(userId, 'math', 'addition');
+          if (!sessionId && user?.id) {
+            const session = await createPracticeSession(user.id, 'math', 'addition');
             if (session) {
               setSessionId(session.id);
               // Now save with the new session ID
-              debouncedSave(session.id, userId, newSessionReps, newResponseTimes);
+              debouncedSave(session.id, user.id, newSessionReps, newResponseTimes);
             }
-          } else if (sessionId && userId) {
-            debouncedSave(sessionId, userId, newSessionReps, newResponseTimes);
+          } else if (sessionId && user?.id) {
+            debouncedSave(sessionId, user.id, newSessionReps, newResponseTimes);
           }
         };
 
@@ -343,15 +335,15 @@ export default function AdditionPractice() {
 
       // Create session on first correct answer if not already created
       const handleSave = async () => {
-        if (!sessionId && userId) {
-          const session = await createPracticeSession(userId, 'math', 'addition');
+        if (!sessionId && user?.id) {
+          const session = await createPracticeSession(user.id, 'math', 'addition');
           if (session) {
             setSessionId(session.id);
             // Now save with the new session ID
-            debouncedSave(session.id, userId, newSessionReps, newResponseTimes);
+            debouncedSave(session.id, user.id, newSessionReps, newResponseTimes);
           }
-        } else if (sessionId && userId) {
-          debouncedSave(sessionId, userId, newSessionReps, newResponseTimes);
+        } else if (sessionId && user?.id) {
+          debouncedSave(sessionId, user.id, newSessionReps, newResponseTimes);
         }
       };
 
@@ -562,5 +554,13 @@ export default function AdditionPractice() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function AdditionPractice() {
+  return (
+    <ProtectedRoute>
+      <AdditionPracticeContent />
+    </ProtectedRoute>
   );
 }
