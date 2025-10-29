@@ -1,4 +1,13 @@
-export type EquationType = 'addition' | 'subtraction' | 'multiplication' | 'division' | 'modulus';
+export type EquationType =
+  | 'addition'
+  | 'subtraction'
+  | 'multiplication'
+  | 'division'
+  | 'modulus'
+  | 'exponents'
+  | 'square-roots'
+  | 'negatives-addition'
+  | 'negatives-subtraction';
 
 export interface EquationConfig {
   id: EquationType;
@@ -70,6 +79,53 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     solve: (num1, num2) => num1 % num2,
     // Num2 cannot be 0
     isValidProblem: (num1, num2) => num2 !== 0,
+  },
+  exponents: {
+    id: 'exponents',
+    title: 'Exponents',
+    description: 'Practice powers and exponentiation',
+    emoji: '🔢',
+    operator: '^',
+    solve: (base, exponent) => Math.pow(base, exponent),
+    // Keep exponents reasonable (2-5) and bases small for mental math
+    filterProblem: (base, exponent) => {
+      // For 1-digit: bases 2-10, exponents 2-5
+      // For 2-digit: bases 2-12, exponents 2-4
+      // For 3-digit: bases 2-15, exponents 2-3
+      return exponent >= 2 && exponent <= 5 && base >= 2;
+    },
+  },
+  'square-roots': {
+    id: 'square-roots',
+    title: 'Square Roots',
+    description: 'Practice finding square roots of perfect squares',
+    emoji: '√',
+    operator: '√',
+    // For square roots, num2 is ignored, num1 is the perfect square
+    solve: (num1, _num2) => Math.sqrt(num1),
+    // Only perfect squares
+    filterProblem: (num1, _num2) => {
+      const sqrt = Math.sqrt(num1);
+      return Number.isInteger(sqrt);
+    },
+  },
+  'negatives-addition': {
+    id: 'negatives-addition',
+    title: 'Addition with Negatives',
+    description: 'Practice adding positive and negative numbers',
+    emoji: '➕➖',
+    operator: '+',
+    solve: (num1, num2) => num1 + num2,
+    // Allow negative numbers
+  },
+  'negatives-subtraction': {
+    id: 'negatives-subtraction',
+    title: 'Subtraction with Negatives',
+    description: 'Practice subtracting positive and negative numbers',
+    emoji: '➖➕',
+    operator: '-',
+    solve: (num1, num2) => num1 - num2,
+    // Allow negative numbers and results
   },
 };
 

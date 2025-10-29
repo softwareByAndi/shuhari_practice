@@ -308,6 +308,14 @@ export default function EquationPractice() {
     setAnswer(answer.slice(0, -1));
   };
 
+  const handleNegative = () => {
+    if (answer.startsWith('-')) {
+      setAnswer(answer.slice(1));
+    } else {
+      setAnswer('-' + answer);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!answer || !config) return;
@@ -490,7 +498,15 @@ export default function EquationPractice() {
         }`}>
           <div className="text-center mb-8">
             <div className="text-7xl font-bold text-zinc-900 dark:text-white mb-6">
-              {num1} {config.operator} {num2} = ?
+              {config.id === 'square-roots' ? (
+                <>
+                  {config.operator}{num1} = ?
+                </>
+              ) : (
+                <>
+                  {num1} {config.operator} {num2} = ?
+                </>
+              )}
             </div>
           </div>
 
@@ -512,14 +528,25 @@ export default function EquationPractice() {
                   {num}
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={handleClear}
-                disabled={feedback === 'correct'}
-                className="text-xl font-semibold py-6 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
-              >
-                Clear
-              </button>
+              {config.id === 'negatives-addition' || config.id === 'negatives-subtraction' ? (
+                <button
+                  type="button"
+                  onClick={handleNegative}
+                  disabled={feedback === 'correct'}
+                  className="text-xl font-semibold py-6 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                >
+                  +/−
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  disabled={feedback === 'correct'}
+                  className="text-xl font-semibold py-6 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                >
+                  Clear
+                </button>
+              )}
               <button
                 key={0}
                 type="button"
@@ -529,14 +556,25 @@ export default function EquationPractice() {
               >
                 0
               </button>
-              <button
-                type="button"
-                onClick={handleBackspace}
-                disabled={feedback === 'correct'}
-                className="text-xl font-semibold py-6 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
-              >
-                ←
-              </button>
+              {config.id === 'negatives-addition' || config.id === 'negatives-subtraction' ? (
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  disabled={feedback === 'correct'}
+                  className="text-xl font-semibold py-6 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                >
+                  Clear
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleBackspace}
+                  disabled={feedback === 'correct'}
+                  className="text-xl font-semibold py-6 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                >
+                  ←
+                </button>
+              )}
             </div>
 
             <button
