@@ -148,7 +148,7 @@ function EquationPracticeContent() {
         });
 
         // Refresh all-time reps
-        const updatedAllTimeReps = await getTotalRepsForModule(userId!, 'math', `equations-${equationType}-${digits}d`);
+        const updatedAllTimeReps = await getTotalRepsForModule(user?.id!, 'math', `equations-${equationType}-${digits}d`);
         setAllTimeReps(updatedAllTimeReps);
 
         setSaveStatus('saved');
