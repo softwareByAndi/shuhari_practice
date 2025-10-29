@@ -163,3 +163,113 @@ export async function getRecentPracticeSessions(limit: number = 5): Promise<Prac
 
   return data as PracticeSession[];
 }
+
+// Get recent practice sessions with total reps aggregated by module
+export async function getRecentPracticeSessionsWithTotals(limit: number = 5): Promise<(PracticeSession & { module_total_reps: number })[]> {
+  const { data, error } = await supabase
+    .from('practice_sessions')
+    .select('*')
+    .order('last_practiced_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching recent practice sessions:', error);
+    return [];
+  }
+
+  const sessions = data as PracticeSession[];
+
+  // For each session, get the total reps across all sessions for that module
+  const sessionsWithTotals = await Promise.all(
+    sessions.map(async (session) => {
+      const { data: moduleSessions, error: moduleError } = await supabase
+        .from('practice_sessions')
+        .select('total_reps')
+        .eq('user_id', session.user_id)
+        .eq('subject', session.subject)
+        .eq('module', session.module);
+
+      if (moduleError || !moduleSessions) {
+        return { ...session, module_total_reps: session.total_reps };
+      }
+
+      const totalReps = moduleSessions.reduce((sum, s) => sum + (s.total_reps || 0), 0);
+      return { ...session, module_total_reps: totalReps };
+    })
+  );
+
+  return sessionsWithTotals;
+}
+
+// Get unique recent modules with aggregated data and response time history
+export type ModuleSummary = {
+  user_id: string;
+  subject: string;
+  module: string;
+  current_level: 'shu' | 'ha' | 'ri';
+  module_total_reps: number;
+  last_practiced_at: string;
+  response_time_history: number[]; // Last 10 session avg response times
+  latest_avg_response_time: number;
+};
+
+export async function getRecentModulesWithHistory(limit: number = 10): Promise<ModuleSummary[]> {
+  // Get all recent sessions
+  const { data, error } = await supabase
+    .from('practice_sessions')
+    .select('*')
+    .order('last_practiced_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching recent practice sessions:', error);
+    return [];
+  }
+
+  const sessions = data as PracticeSession[];
+
+  // Group by user_id + subject + module to get unique modules
+  const moduleMap = new Map<string, PracticeSession[]>();
+
+  sessions.forEach((session) => {
+    const key = `${session.user_id}-${session.subject}-${session.module}`;
+    if (!moduleMap.has(key)) {
+      moduleMap.set(key, []);
+    }
+    moduleMap.get(key)!.push(session);
+  });
+
+  // Convert to array and take the most recent modules
+  const uniqueModules = Array.from(moduleMap.entries())
+    .map(([_, moduleSessions]) => {
+      // Sort sessions by last_practiced_at descending
+      moduleSessions.sort((a, b) =>
+        new Date(b.last_practiced_at).getTime() - new Date(a.last_practiced_at).getTime()
+      );
+
+      const mostRecent = moduleSessions[0];
+      const totalReps = moduleSessions.reduce((sum, s) => sum + (s.total_reps || 0), 0);
+
+      // Get last 10 session avg response times (most recent first)
+      const responseTimeHistory = moduleSessions
+        .slice(0, 10)
+        .map(s => s.session_avg_response_time)
+        .reverse(); // Reverse to show oldest to newest for the graph
+
+      return {
+        user_id: mostRecent.user_id,
+        subject: mostRecent.subject,
+        module: mostRecent.module,
+        current_level: mostRecent.current_level,
+        module_total_reps: totalReps,
+        last_practiced_at: mostRecent.last_practiced_at,
+        response_time_history: responseTimeHistory,
+        latest_avg_response_time: mostRecent.session_avg_response_time,
+      };
+    })
+    .sort((a, b) =>
+      new Date(b.last_practiced_at).getTime() - new Date(a.last_practiced_at).getTime()
+    )
+    .slice(0, limit);
+
+  return uniqueModules;
+}
