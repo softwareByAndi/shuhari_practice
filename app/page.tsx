@@ -1,4 +1,36 @@
-export default function Home() {
+import { getRecentPracticeSessions } from '@/lib/supabase';
+
+// Helper function to format date relative to now
+function formatRelativeDate(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 60) {
+    return diffMins <= 1 ? '1 minute ago' : `${diffMins} minutes ago`;
+  } else if (diffHours < 24) {
+    return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
+  } else if (diffDays < 7) {
+    return diffDays === 1 ? '1 day ago' : `${diffDays} days ago`;
+  } else {
+    return date.toLocaleDateString();
+  }
+}
+
+// Helper function to format module name
+function formatModuleName(module: string): string {
+  return module.charAt(0).toUpperCase() + module.slice(1);
+}
+
+// Helper function to format subject name
+function formatSubjectName(subject: string): string {
+  return subject.charAt(0).toUpperCase() + subject.slice(1);
+}
+
+export default async function Home() {
   const subjects = [
     { name: 'Mathematics', icon: '🔢', href: '/practice/math', color: 'bg-blue-500', enabled: true },
     { name: 'Chemistry', icon: '⚗️', href: '/practice/chemistry', color: 'bg-green-500', enabled: false },
@@ -8,11 +40,8 @@ export default function Home() {
     { name: 'History', icon: '📜', href: '/practice/history', color: 'bg-amber-500', enabled: false },
   ];
 
-  const recentActivities = [
-    { subject: 'Mathematics', topic: 'Algebra - Linear Equations', date: '2 hours ago', progress: 75 },
-    { subject: 'Programming', topic: 'JavaScript - Array Methods', date: '1 day ago', progress: 60 },
-    { subject: 'Chemistry', topic: 'Organic Chemistry - Alkanes', date: '2 days ago', progress: 90 },
-  ];
+  // Fetch recent practice sessions from database
+  const recentSessions = await getRecentPracticeSessions(10);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-black">
@@ -97,37 +126,39 @@ export default function Home() {
         {/* Recent Activities */}
         <div>
           <h2 className="text-3xl font-bold mb-6 text-zinc-900 dark:text-white">Recent Practice</h2>
-          <div className="space-y-4">
-            {recentActivities.map((activity, index) => (
-              <div
-                key={index}
-                className="rounded-xl bg-white dark:bg-zinc-800 p-6 shadow-md border border-zinc-200 dark:border-zinc-700"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-zinc-900 dark:text-white">
-                      {activity.subject}
-                    </h3>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                      {activity.topic}
-                    </p>
+          {recentSessions.length === 0 ? (
+            <div className="rounded-xl bg-white dark:bg-zinc-800 p-8 shadow-md border border-zinc-200 dark:border-zinc-700 text-center">
+              <p className="text-zinc-600 dark:text-zinc-400">
+                No practice sessions yet. Start practicing to see your recent activity here!
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentSessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="rounded-xl bg-white dark:bg-zinc-800 p-6 shadow-md border border-zinc-200 dark:border-zinc-700"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h3 className="font-semibold text-zinc-900 dark:text-white">
+                        {formatSubjectName(session.subject)}
+                      </h3>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                        {formatModuleName(session.module)} • {session.total_reps} reps • Level: {session.current_level.toUpperCase()}
+                      </p>
+                    </div>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-500">
+                      {formatRelativeDate(session.last_practiced_at)}
+                    </span>
                   </div>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-500">
-                    {activity.date}
-                  </span>
+                  <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+                    <span>Avg response: {session.session_avg_response_time}ms</span>
+                  </div>
                 </div>
-                <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full transition-all"
-                    style={{ width: `${activity.progress}%` }}
-                  ></div>
-                </div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
-                  {activity.progress}% complete
-                </p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>

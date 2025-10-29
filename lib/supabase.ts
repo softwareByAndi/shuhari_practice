@@ -147,3 +147,19 @@ export async function getOrCreateUser(username: string): Promise<string | null> 
 
   return newUser.id;
 }
+
+// Get recent practice sessions for display on home page
+export async function getRecentPracticeSessions(limit: number = 5): Promise<PracticeSession[]> {
+  const { data, error } = await supabase
+    .from('practice_sessions')
+    .select('*')
+    .order('last_practiced_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching recent practice sessions:', error);
+    return [];
+  }
+
+  return data as PracticeSession[];
+}
