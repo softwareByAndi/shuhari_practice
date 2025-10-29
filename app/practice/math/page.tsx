@@ -82,29 +82,28 @@ export default function MathPractice() {
           <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-6">
             Available Shu Modules
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
             {shuModules.map((module) => (
               <Link
                 key={module.id}
                 href={module.href}
-                className="block bg-white dark:bg-zinc-800 rounded-2xl p-8 shadow-lg border border-zinc-200 dark:border-zinc-700 hover:shadow-xl hover:scale-105 transition-all group"
+                className="block bg-white dark:bg-zinc-800 rounded-2xl py-6 px-4 shadow-lg border border-zinc-200 dark:border-zinc-700 
+                          hover:shadow-xl hover:scale-105 transition-all group"
               >
-                <div className="text-6xl mb-4">{module.emoji}</div>
-                <div className="mb-2">
-                  <span className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold rounded-full">
-                    守 {module.level.toUpperCase()}
-                  </span>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="text-5xl">{module.emoji}</div>
+                  <div className ="flex flex-col h-fit items-center px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 
+                                  text-3xl font-semibold rounded-full">
+                    <div>守</div>
+                    {/* <div>{module.level.toUpperCase()}</div> */}
+                  </div>
                 </div>
                 <h3 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   {module.title}
                 </h3>
-                <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                <p className="text-zinc-600 dark:text-zinc-400">
                   {module.description}
                 </p>
-                <div className="mt-4 text-blue-600 dark:text-blue-400 font-semibold flex items-center">
-                  Choose Difficulty
-                  <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
-                </div>
               </Link>
             ))}
           </div>
