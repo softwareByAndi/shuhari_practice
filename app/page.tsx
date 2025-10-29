@@ -1,5 +1,6 @@
 import Header from '@/components/Header';
 import RecentPractice from '@/components/RecentPractice';
+import styles from './page.module.css';
 
 export default function Home() {
   const subjects = [
@@ -12,62 +13,62 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-black">
+    <div className={styles.pageContainer}>
       <Header />
-      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <main className={styles.mainContent}>
         {/* Header Section */}
-        <div className="mb-12">
-          <h1 className="text-5xl font-bold tracking-tight text-zinc-900 dark:text-white mb-4">
+        <div className={styles.headerSection}>
+          <h1 className={styles.pageTitle}>
             ShuHaRi Learning
           </h1>
-          <p className="text-xl text-zinc-600 dark:text-zinc-400 max-w-3xl">
+          <p className={styles.pageSubtitle}>
             Master any subject through the ancient martial arts principle of learning
           </p>
         </div>
 
         {/* ShuHaRi Explanation */}
-        <div className="mb-16 grid gap-6 md:grid-cols-3">
-          <div className="rounded-2xl bg-white dark:bg-zinc-800 p-6 shadow-lg border border-zinc-200 dark:border-zinc-700">
-            <div className="text-3xl mb-3">守</div>
-            <h3 className="text-xl font-semibold mb-2 text-zinc-900 dark:text-white">Shu (守) - Obey</h3>
-            <p className="text-zinc-600 dark:text-zinc-400">
+        <div className={styles.shuHaRiSection}>
+          <div className={styles.shuHaRiCard}>
+            <div className={`${styles.shuHaRiSymbol} shu`}>守</div>
+            <h3 className={`${styles.shuHaRiTitle} shu`}>Shu - Obey</h3>
+            <p className={styles.shuHaRiDescription}>
               Learn the fundamentals and follow traditional wisdom. Build a strong foundation through repetition and adherence to proven methods.
             </p>
           </div>
-          <div className="rounded-2xl bg-white dark:bg-zinc-800 p-6 shadow-lg border border-zinc-200 dark:border-zinc-700">
-            <div className="text-3xl mb-3">破</div>
-            <h3 className="text-xl font-semibold mb-2 text-zinc-900 dark:text-white">Ha (破) - Break</h3>
-            <p className="text-zinc-600 dark:text-zinc-400">
+          <div className={styles.shuHaRiCard}>
+            <div className={`${styles.shuHaRiSymbol} ha`}>破</div>
+            <h3 className={`${styles.shuHaRiTitle} ha`}>Ha - Break</h3>
+            <p className={styles.shuHaRiDescription}>
               Question and expand upon the basics. Explore variations and adapt techniques to find what works best for you.
             </p>
           </div>
-          <div className="rounded-2xl bg-white dark:bg-zinc-800 p-6 shadow-lg border border-zinc-200 dark:border-zinc-700">
-            <div className="text-3xl mb-3">離</div>
-            <h3 className="text-xl font-semibold mb-2 text-zinc-900 dark:text-white">Ri (離) - Leave</h3>
-            <p className="text-zinc-600 dark:text-zinc-400">
+          <div className={styles.shuHaRiCard}>
+            <div className={`${styles.shuHaRiSymbol} ri`}>離</div>
+            <h3 className={`${styles.shuHaRiTitle} ri`}>Ri - Leave</h3>
+            <p className={styles.shuHaRiDescription}>
               Transcend the rules and make the knowledge your own. Create innovative solutions and teach others.
             </p>
           </div>
         </div>
 
         {/* Subjects Grid */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold mb-6 text-zinc-900 dark:text-white">Choose Your Subject</h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={styles.subjectsSection}>
+          <h2 className={styles.sectionTitle}>Choose Your Subject</h2>
+          <div className={styles.subjectsGrid}>
             {subjects.map((subject) => (
               subject.enabled ? (
                 <a
                   key={subject.name}
                   href={subject.href}
-                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-zinc-800 p-6 shadow-lg border border-zinc-200 dark:border-zinc-700 transition-all hover:scale-105 hover:shadow-xl"
+                  className={styles.subjectCard}
                 >
-                  <div className={`absolute top-0 right-0 w-24 h-24 ${subject.color} opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity`}></div>
-                  <div className="relative">
-                    <div className="text-5xl mb-4">{subject.icon}</div>
-                    <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">
+                  <div className={`${styles.subjectGlow} ${subject.color}`}></div>
+                  <div className={styles.subjectContent}>
+                    <div className={styles.subjectIcon}>{subject.icon}</div>
+                    <h3 className={styles.subjectName}>
                       {subject.name}
                     </h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
+                    <p className={styles.subjectAction}>
                       Start your journey →
                     </p>
                   </div>
@@ -75,14 +76,14 @@ export default function Home() {
               ) : (
                 <div
                   key={subject.name}
-                  className="relative overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800/50 p-6 shadow-lg border-2 border-dashed border-zinc-300 dark:border-zinc-700 opacity-60 cursor-not-allowed"
+                  className={styles.subjectCardDisabled}
                 >
-                  <div className="relative">
-                    <div className="text-5xl mb-4 grayscale">{subject.icon}</div>
-                    <h3 className="text-xl font-semibold text-zinc-600 dark:text-zinc-500">
+                  <div className={styles.subjectContent}>
+                    <div className={styles.subjectIconDisabled}>{subject.icon}</div>
+                    <h3 className={styles.subjectNameDisabled}>
                       {subject.name}
                     </h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-600 mt-2">
+                    <p className={styles.subjectActionDisabled}>
                       Coming soon...
                     </p>
                   </div>
@@ -93,8 +94,8 @@ export default function Home() {
         </div>
 
         {/* Recent Activities */}
-        <div>
-          <h2 className="text-3xl font-bold mb-6 text-zinc-900 dark:text-white">Recent Practice</h2>
+        <div className={styles.recentSection}>
+          <h2 className={styles.sectionTitle}>Recent Practice</h2>
           <RecentPractice />
         </div>
       </main>

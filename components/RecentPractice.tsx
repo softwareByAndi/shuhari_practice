@@ -140,7 +140,7 @@ export default function RecentPractice() {
 
         // Extract equation type and digits from module name
         // Module format: equations-{type}-{digits}d (e.g., "equations-subtraction-1d")
-        const moduleMatch = module.module.match(/^equations-([^-]+)-(\d+)d$/);
+        const moduleMatch = module.module.match(/^equations-(.+)-(\d+)d$/);
         const equationType = moduleMatch ? moduleMatch[1] : module.module;
         const digits = moduleMatch ? moduleMatch[2] : '1';
 
@@ -167,7 +167,7 @@ export default function RecentPractice() {
             href={practiceUrl}
             className="block rounded-xl bg-white dark:bg-zinc-800 p-6 shadow-md border border-zinc-200 dark:border-zinc-700 hover:shadow-lg hover:scale-[1.01] transition-all"
           >
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-start justify-between mb-1">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-semibold text-zinc-900 dark:text-white text-lg">
@@ -195,7 +195,7 @@ export default function RecentPractice() {
               </div>
             </div>
             {/* Progress bar */}
-            <div className="mt-4">
+            <div>
               <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-blue-500 dark:bg-blue-400 rounded-full transition-all duration-300"

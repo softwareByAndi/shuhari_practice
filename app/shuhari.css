@@ -1,0 +1,12 @@
+@import 'tailwindcss' reference;
+
+/* Layout & Container Styles */
+.shu {
+  @apply text-blue-600 dark:text-blue-400;
+}
+.ha {
+  @apply text-purple-600 dark:text-purple-400;
+}
+.ri {
+  @apply text-indigo-600 dark:text-indigo-400;
+}

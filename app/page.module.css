@@ -1,0 +1,122 @@
+/* Import Tailwind utilities for CSS Modules */
+@import 'tailwindcss' reference;
+
+/* Layout & Container Styles */
+.pageContainer {
+  @apply min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-black;
+}
+
+.mainContent {
+  @apply mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8;
+}
+
+/* Header Section */
+.headerSection {
+  @apply mb-12;
+}
+
+.pageTitle {
+  @apply text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white mb-4;
+}
+
+.pageSubtitle {
+  @apply text-base md:text-lg lg:text-xl text-zinc-600 dark:text-zinc-400 max-w-3xl;
+}
+
+/* ShuHaRi Explanation Section */
+.shuHaRiSection {
+  @apply mb-16 grid gap-2 md:gap-6 grid-cols-3;
+}
+
+.shuHaRiCard {
+  @apply rounded-xl md:rounded-2xl bg-white dark:bg-zinc-800
+         py-4 px-2 md:p-6
+         shadow-lg border border-zinc-200 dark:border-zinc-700;
+}
+
+.shuHaRiSymbol {
+  @apply text-2xl md:text-3xl mb-2 md:mb-3 text-center;
+}
+
+.shuHaRiTitle {
+  @apply md:text-lg lg:text-xl font-semibold mb-2 text-center;
+}
+
+.shuHaRiDescription {
+  @apply text-xs md:text-sm md:text-base text-zinc-600 dark:text-zinc-400;
+}
+
+/* Subjects Section */
+.subjectsSection {
+  @apply mb-16;
+}
+
+.sectionTitle {
+  @apply text-2xl md:text-3xl font-bold mb-6 text-zinc-900 dark:text-white;
+}
+
+.subjectsGrid {
+  @apply grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4;
+}
+
+/* Subject Cards */
+.subjectCard {
+  @apply relative overflow-hidden
+         rounded-xl md:rounded-2xl
+         bg-white dark:bg-zinc-800
+         p-4 md:p-6
+         shadow-lg border border-zinc-200 dark:border-zinc-700
+         transition-all hover:scale-105 hover:shadow-xl;
+}
+
+.subjectCardDisabled {
+  @apply relative overflow-hidden
+         rounded-xl md:rounded-2xl
+         bg-zinc-100 dark:bg-zinc-800/50
+         p-4 md:p-6
+         shadow-lg border-2 border-dashed border-zinc-300 dark:border-zinc-700
+         opacity-60 cursor-not-allowed;
+}
+
+.subjectGlow {
+  @apply absolute top-0 right-0 w-24 h-24
+         opacity-10 rounded-full blur-2xl
+         transition-opacity;
+}
+
+.subjectContent {
+  @apply relative;
+}
+
+.subjectIcon {
+  /* Responsive emoji size */
+  font-size: clamp(2.5rem, 10vw, 3.125rem); /* 40px min, 50px max */
+  @apply mb-3 md:mb-4;
+}
+
+.subjectIconDisabled {
+  font-size: clamp(2.5rem, 10vw, 3.125rem);
+  @apply mb-3 md:mb-4 grayscale;
+}
+
+.subjectName {
+  @apply text-lg md:text-xl font-semibold text-zinc-900 dark:text-white;
+}
+
+.subjectNameDisabled {
+  @apply text-lg md:text-xl font-semibold text-zinc-600 dark:text-zinc-500;
+}
+
+.subjectAction {
+  @apply text-xs md:text-sm text-zinc-500 dark:text-zinc-400 mt-2;
+}
+
+.subjectActionDisabled {
+  @apply text-xs md:text-sm text-zinc-500 dark:text-zinc-600 mt-2;
+}
+
+/* Recent Practice Section */
+.recentSection {
+  /* No specific styles needed, using sectionTitle */
+}
+
