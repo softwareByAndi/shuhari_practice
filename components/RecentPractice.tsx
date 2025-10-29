@@ -165,26 +165,27 @@ export default function RecentPractice() {
           <Link
             key={moduleKey}
             href={practiceUrl}
-            className="block rounded-xl bg-white dark:bg-zinc-800 p-6 shadow-md border border-zinc-200 dark:border-zinc-700 hover:shadow-lg hover:scale-[1.01] transition-all"
+            className="block rounded-xl bg-white dark:bg-zinc-800 p-4 md:p-6 shadow-md border border-zinc-200 dark:border-zinc-700 hover:shadow-lg hover:scale-[1.01] transition-all"
           >
-            <div className="flex items-start justify-between mb-1">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-zinc-900 dark:text-white text-lg">
-                    {displayName}
-                  </h3>
-                  <span className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold rounded">
-                    {difficulty}
-                  </span>
+            <div className="flex flex-col  mb-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-semibold text-zinc-900 dark:text-white md:text-lg">
+                  {displayName}
+                </h3>
+                <div className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold rounded">
+                  {difficulty}
                 </div>
-                <span className="text-xs text-zinc-500 dark:text-zinc-500">
-                  {formatRelativeDate(module.last_practiced_at)}
-                </span>
-              </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400 ml-4 flex flex-col items-end gap-2">
-                <div className="text-right">
+
+                <div className="flex-grow"/>
+
+                <div className="text-right text-xs">
                   <span className="font-medium">{module.latest_avg_response_time}ms</span>
                   <div className="text-zinc-400 dark:text-zinc-500">avg response</div>
+                </div>
+              </div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-start justify-between gap-2">
+                <div className="text-xs text-zinc-500 dark:text-zinc-500">
+                  {formatRelativeDate(module.last_practiced_at)}
                 </div>
                 {module.response_time_history.length > 1 && (
                   <ResponseTimeTrend
