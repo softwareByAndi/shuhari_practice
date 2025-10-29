@@ -1,0 +1,104 @@
+/* Import Tailwind utilities for CSS Modules */
+@import 'tailwindcss' reference;
+
+/* Layout & Container Styles */
+.pageContainer {
+  @apply min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-zinc-900 dark:to-black;
+}
+
+.contentWrapper {
+  @apply mx-auto max-w-6xl px-4 py-12;
+}
+
+.headerWrapper {
+  @apply mb-6;
+}
+
+.moduleGrid {
+  @apply grid sm:grid-cols-2 md:grid-cols-3 gap-4;
+}
+
+.masteryGrid {
+  @apply grid grid-cols-3 gap-6;
+}
+
+/* Card Styles */
+.explanationCard {
+  @apply mb-12 bg-white dark:bg-zinc-800 rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg border border-zinc-200 dark:border-zinc-700;
+}
+
+.moduleCard {
+  @apply block bg-white dark:bg-zinc-800 rounded-2xl py-6 px-4 shadow-lg border border-zinc-200 dark:border-zinc-700 hover:shadow-xl hover:scale-105 transition-all;
+}
+
+.cardHeader {
+  @apply flex justify-between items-center mb-4;
+}
+
+/* Typography Styles */
+.pageTitle {
+  @apply text-3xl md:text-4xl lg:text-5xl font-bold text-zinc-900 dark:text-white mb-4;
+}
+
+.pageSubtitle {
+  @apply text-sm md:text-xl text-zinc-600 dark:text-zinc-400;
+}
+
+.sectionTitle {
+  @apply text-3xl font-bold text-zinc-900 dark:text-white mb-6;
+}
+
+.cardTitle {
+  @apply text-center text-xl md:text-2xl font-bold text-zinc-900 dark:text-white mb-4;
+}
+
+.moduleTitle {
+   @apply text-2xl font-bold text-zinc-900 dark:text-white mb-2 transition-colors;
+}
+
+/* Add hover effect using CSS selector */
+.moduleCard:hover .moduleTitle {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+.moduleDescription {
+  @apply text-zinc-600 dark:text-zinc-400;
+}
+
+.masteryDescription {
+  @apply text-xs md:text-sm text-zinc-600 dark:text-zinc-400;
+}
+
+/* Mastery Level Styles (Shu Ha Ri) */
+.masteryEmoji {
+  @apply text-4xl mb-2 text-center;
+}
+
+.masteryTitleShu {
+  @apply md:text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2 text-center;
+}
+
+.masteryTitleHa {
+  @apply md:text-lg font-semibold text-purple-600 dark:text-purple-400 mb-2 text-center;
+}
+
+.masteryTitleRi {
+  @apply md:text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-2 text-center;
+}
+
+.masteryDisabled {
+  @apply opacity-50;
+}
+
+/* Component Styles */
+.backLink {
+  @apply inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-4;
+}
+
+.levelBadge {
+  @apply flex flex-col h-fit items-center px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-3xl font-semibold rounded-full;
+}
+
+.moduleEmoji {
+  @apply text-5xl;
+}
