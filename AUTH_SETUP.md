@@ -2,6 +2,16 @@
 
 This guide explains how to set up authentication for the Shu Ha Ri practice application.
 
+## Anonymous Mode
+
+**The app works without signing in!** Users can practice anonymously, but their progress won't be saved. This is great for trying out the app before creating an account.
+
+**Benefits:**
+- No signup friction - users can start practicing immediately
+- Anonymous users see a banner prompting them to sign in to save progress
+- All practice functionality works in anonymous mode
+- Progress tracking only available for authenticated users
+
 ## Prerequisites
 
 1. A Supabase project (create one at https://supabase.com)
@@ -65,25 +75,49 @@ By default, Supabase requires email confirmation. For development, you can disab
    ```
 
 2. Visit `http://localhost:3000`
-   - You should be redirected to `/auth` (login page)
+   - You can browse and practice immediately without signing in!
+   - Notice the "Sign In" button in the header
 
-3. Sign up with a new account:
+3. Try anonymous practice:
+   - Click on any practice module
+   - You'll see a blue banner: "You're practicing anonymously. Progress won't be saved."
+   - Practice works normally, but no progress is saved to the database
+
+4. Sign up for an account:
+   - Click "Sign In" in the header or banner
+   - Toggle to "Sign up" mode
    - Enter an email and password (min 6 characters)
    - If email confirmation is enabled, check your email
    - If disabled, you'll be signed in immediately
 
-4. After signing in:
-   - You should see the home page with a header showing your email
-   - You can navigate to practice pages
-   - Your progress is now tied to your authenticated user account
+5. After signing in:
+   - Header now shows your email and a "Sign Out" button
+   - The anonymous banner disappears
+   - Your progress is now being saved to the database
+   - You can see your practice history on the home page
 
-5. Test sign out:
+6. Test sign out:
    - Click "Sign Out" in the header
-   - You should be redirected back to `/auth`
+   - You revert to anonymous mode
+   - Can still practice, but progress won't be saved
 
-## Migrating Existing Data (Optional)
+## User Experience Flow
 
-If you have existing practice data from the old localStorage-based system, it cannot be automatically migrated since there's no way to map anonymous users to authenticated accounts. Users will need to start fresh with authenticated accounts.
+### Anonymous User Flow
+1. User visits the site
+2. Can immediately start practicing any module
+3. Sees blue banner: "You're practicing anonymously. Progress won't be saved."
+4. Practice functionality works fully
+5. No data saved to database
+6. Can click "Sign in" link at any time
+
+### Authenticated User Flow
+1. User signs up/signs in
+2. Blue banner disappears
+3. Practice progress is automatically saved
+4. Can see practice history on home page
+5. Stats persist across sessions and devices
+6. Can sign out and revert to anonymous mode
 
 ## Troubleshooting
 

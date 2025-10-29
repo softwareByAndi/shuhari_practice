@@ -10,7 +10,6 @@ import {
   type PracticeSession,
 } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import ProtectedRoute from '@/components/ProtectedRoute';
 
 type Problem = { num1: number; num2: number };
 
@@ -174,19 +173,16 @@ function AdditionPracticeContent() {
   useEffect(() => {
     async function initializeSession() {
       try {
-        if (!user?.id) {
-          setIsLoading(false);
-          return;
+        // Load stats if user is logged in
+        if (user?.id) {
+          const totalReps = await getTotalRepsForModule(user.id, 'math', 'addition');
+          setAllTimeReps(totalReps);
+
+          const lastAvg = await getLastSessionAvgResponseTime(user.id, 'math', 'addition');
+          setLastSessionAvg(lastAvg);
         }
 
-        // Load all-time reps and last session average
-        const totalReps = await getTotalRepsForModule(user.id, 'math', 'addition');
-        setAllTimeReps(totalReps);
-
-        const lastAvg = await getLastSessionAvgResponseTime(user.id, 'math', 'addition');
-        setLastSessionAvg(lastAvg);
-
-        // Initialize problem set
+        // Initialize problem set (works for both logged in and anonymous users)
         const problems = initializeProblemSet();
         if (problems.length > 0) {
           setNum1(problems[0].num1);
@@ -376,8 +372,21 @@ function AdditionPracticeContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-zinc-900 dark:to-black">
+      {/* Anonymous User Banner */}
+      {!user && (
+        <div className="bg-blue-600 text-white px-4 py-3 text-center">
+          <p className="text-sm">
+            You're practicing anonymously. Progress won't be saved.{' '}
+            <a href="/auth" className="underline font-semibold hover:text-blue-200">
+              Sign in
+            </a>{' '}
+            to track your progress!
+          </p>
+        </div>
+      )}
+
       {/* Save Status Indicator */}
-      {saveStatus !== 'idle' && (
+      {user && saveStatus !== 'idle' && (
         <div className="fixed top-4 right-4 z-50">
           <div className="bg-white dark:bg-zinc-800 rounded-full px-4 py-2 shadow-lg border border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
             {saveStatus === 'pending' && (
@@ -558,9 +567,5 @@ function AdditionPracticeContent() {
 }
 
 export default function AdditionPractice() {
-  return (
-    <ProtectedRoute>
-      <AdditionPracticeContent />
-    </ProtectedRoute>
-  );
+  return <AdditionPracticeContent />;
 }
