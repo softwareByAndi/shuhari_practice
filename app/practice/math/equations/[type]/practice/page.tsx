@@ -49,6 +49,10 @@ function EquationPracticeContent() {
   const saveStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const problemStartTimeRef = useRef<number>(Date.now());
 
+  // Container dimension constants - adjust these to change overall size
+  const MAX_CONTAINER_HEIGHT = 1600; // px - maximum height of the practice container
+  const CONTAINER_ASPECT_RATIO = 0.47; // width/height ratio (0.6 = 60% as wide as it is tall)
+
   // Validate equation type
   useEffect(() => {
     if (!isValidEquationType(equationType)) {
@@ -365,15 +369,15 @@ function EquationPracticeContent() {
   // Show error if invalid equation type
   if (!isValidEquationType(equationType)) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-zinc-900 dark:to-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-zinc-900 dark:to-black flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="text-4xl mb-4">❌</div>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-4">
+          <div className="text-modal-emoji mb-4">❌</div>
+          <p className="text-modal-text text-zinc-600 dark:text-zinc-400 mb-4">
             Invalid equation type: {equationType}
           </p>
           <Link
             href="/practice/math"
-            className="text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-back-link text-blue-600 dark:text-blue-400 hover:underline"
           >
             ← Back to Math Practice
           </Link>
@@ -386,10 +390,10 @@ function EquationPracticeContent() {
 
   if (isLoading || !config) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-zinc-900 dark:to-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-zinc-900 dark:to-black flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="text-4xl mb-4">📚</div>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400">Loading your practice session...</p>
+          <div className="text-modal-emoji mb-4">📚</div>
+          <p className="text-modal-text text-zinc-600 dark:text-zinc-400">Loading your practice session...</p>
         </div>
       </div>
     );
@@ -400,7 +404,7 @@ function EquationPracticeContent() {
       {/* Anonymous User Banner */}
       {!user && (
         <div className="bg-blue-600 text-white px-4 py-2 text-center flex-shrink-0">
-          <p className="text-sm">
+          <p className="text-banner">
             You're practicing anonymously. Progress won't be saved.{' '}
             <a href="/auth" className="underline font-semibold hover:text-blue-200">
               Sign in
@@ -413,17 +417,17 @@ function EquationPracticeContent() {
       {/* Save Status Indicator */}
       {user && saveStatus !== 'idle' && (
         <div className="fixed top-4 right-4 z-50">
-          <div className="bg-white dark:bg-zinc-800 rounded-full px-4 py-2 shadow-lg border border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
+          <div className="bg-white dark:bg-zinc-800 rounded-full spacing-save-indicator-padding shadow-lg border border-zinc-200 dark:border-zinc-700 flex items-center spacing-section-gap">
             {saveStatus === 'pending' && (
               <>
                 <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span className="text-xs text-zinc-600 dark:text-zinc-400">Unsaved changes</span>
+                <span className="text-save-status text-zinc-600 dark:text-zinc-400">Unsaved changes</span>
               </>
             )}
             {saveStatus === 'saving' && (
               <>
                 <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-xs text-zinc-600 dark:text-zinc-400">Saving...</span>
+                <span className="text-save-status text-zinc-600 dark:text-zinc-400">Saving...</span>
               </>
             )}
             {saveStatus === 'saved' && (
@@ -433,54 +437,71 @@ function EquationPracticeContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <span className="text-xs text-green-600 dark:text-green-400">Saved!</span>
+                <span className="text-save-status text-green-600 dark:text-green-400">Saved!</span>
               </>
             )}
           </div>
         </div>
       )}
 
-      <main className="mx-auto max-w-4xl px-4 pt-4 pb-8 flex-1 overflow-y-auto">
+      <main
+        className="mx-auto overflow-hidden"
+        style={{
+          height: `min(100vh, ${MAX_CONTAINER_HEIGHT}px)`,
+          width: `min(100vw, ${MAX_CONTAINER_HEIGHT * CONTAINER_ASPECT_RATIO}px)`,
+          maxHeight: `${MAX_CONTAINER_HEIGHT}px`,
+          maxWidth: `${MAX_CONTAINER_HEIGHT * CONTAINER_ASPECT_RATIO}px`,
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '2% 4%',
+        }}
+      >
         {/* Header */}
-        <div className="mb-6">
+        <div style={{ height: '8%', marginBottom: '1%' }}>
           <Link
             href="/practice/math"
-            className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-3"
+            className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline"
+            style={{ fontSize: 'calc(0.8vw + 0.8vh)', marginBottom: '0.5%' }}
           >
             ← Back to Math Practice
           </Link>
-          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white">
+          <h1 className="font-bold text-zinc-900 dark:text-white" style={{ fontSize: 'calc(1.5vw + 1.5vh)' }}>
             {config.emoji} {config.title} Practice
           </h1>
         </div>
 
         {/* Stats Bar */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-white dark:bg-zinc-800 rounded-xl p-4 shadow-md border border-zinc-200 dark:border-zinc-700">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">Session Reps</p>
-            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{sessionReps}</p>
+        <div className="grid grid-cols-2" style={{ height: '8%', gap: '4%', marginBottom: '4%' }}>
+          <div className="bg-white dark:bg-zinc-800 radius-card shadow-md border border-zinc-200 dark:border-zinc-700
+                          flex flex-col justify-center align-center text-center" 
+          >
+            <div className="text-zinc-500 dark:text-zinc-400" style={{ fontSize: 'calc(0.7vw + 0.7vh)', marginTop: '2%' }}>Session Reps</div>
+            <div className="font-bold text-blue-600 dark:text-blue-400" style={{ fontSize: 'calc(1.8vw + 1.8vh)' }}>{sessionReps}</div>
           </div>
-          <div className="bg-white dark:bg-zinc-800 rounded-xl p-4 shadow-md border border-zinc-200 dark:border-zinc-700">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">Total Reps</p>
-            <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{allTimeReps}</p>
+          <div className="bg-white dark:bg-zinc-800 radius-card shadow-md border border-zinc-200 dark:border-zinc-700
+                          flex flex-col justify-center align-center text-center"
+          >
+            <p className="text-zinc-500 dark:text-zinc-400" style={{ fontSize: 'calc(0.7vw + 0.7vh)', marginTop: '2%' }}>Total Reps</p>
+            <p className="font-bold text-indigo-600 dark:text-indigo-400" style={{ fontSize: 'calc(1.8vw + 1.8vh)' }}>{allTimeReps}</p>
           </div>
         </div>
 
         {/* Congratulations Modal */}
         {showCongrats && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-            <div className="bg-white dark:bg-zinc-800 rounded-2xl p-8 shadow-2xl border border-zinc-200 dark:border-zinc-700 max-w-md w-full text-center animate-bounce">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
+            <div className="bg-white dark:bg-zinc-800 radius-modal spacing-modal-padding shadow-2xl border border-zinc-200 dark:border-zinc-700 max-w-md w-full text-center animate-bounce">
+              <div className="text-modal-emoji mb-4">🎉</div>
+              <h2 className="text-modal-title font-bold text-zinc-900 dark:text-white mb-2">
                 Set Complete!
               </h2>
-              <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-4">
+              <p className="text-modal-text text-zinc-600 dark:text-zinc-400 mb-4">
                 You've completed all {problemSet.length} problems!
               </p>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-modal-small text-zinc-500 dark:text-zinc-400">
                 Session reps: <span className="font-bold text-blue-600 dark:text-blue-400">{sessionReps}</span>
               </p>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-modal-small text-zinc-500 dark:text-zinc-400">
                 Total reps: <span className="font-bold text-indigo-600 dark:text-indigo-400">{allTimeReps}</span> / 1000
               </p>
             </div>
@@ -488,13 +509,16 @@ function EquationPracticeContent() {
         )}
 
         {/* Problem Card */}
-        <div className={`rounded-2xl p-12 shadow-xl border transition-colors duration-200 ${
-          feedback === 'correct'
-            ? 'bg-green-300 dark:bg-green-600 border-green-400 dark:border-green-500'
-            : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'
-        }`}>
-          <div className="text-center mb-8">
-            <div className="text-7xl font-bold text-zinc-900 dark:text-white mb-6">
+        <div
+          className={`radius-card shadow-xl border transition-colors duration-200 flex flex-col ${
+            feedback === 'correct'
+              ? 'bg-green-300 dark:bg-green-600 border-green-400 dark:border-green-500'
+              : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'
+          }`}
+          style={{ height: '59%', padding: '2% 6% 6%' }}
+        >
+          <div className="text-center flex justify-center align-center" style={{ height: '15%', marginBottom: '2%' }}>
+            <div className="font-bold text-zinc-900 dark:text-white" style={{ margin: 'auto', fontSize: 'calc(2.5vw + 2.5vh)' }}>
               {config.id === 'square-roots' ? (
                 <>
                   {config.operator}{num1} = ?
@@ -507,20 +531,21 @@ function EquationPracticeContent() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="max-w-md mx-auto">
-            <div className="w-full text-5xl text-center p-6 border-2 border-zinc-300 dark:border-zinc-600 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white mb-6 min-h-[80px] flex items-center justify-center font-bold">
+          <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div className="w-full text-center border-2 border-zinc-300 dark:border-zinc-600 radius-button bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white flex items-center justify-center font-bold" style={{ height: '12%', marginBottom: '3%', fontSize: 'calc(2vw + 2vh)' }}>
               {answer || '?'}
             </div>
 
             {/* Custom Numpad */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="grid grid-cols-3" style={{ flex: 1, gap: '2%' }}>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                 <button
                   key={num}
                   type="button"
                   onClick={() => handleNumberClick(num)}
                   disabled={feedback === 'correct'}
-                  className="text-4xl font-semibold py-8 rounded-xl bg-zinc-100 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="font-semibold radius-button bg-zinc-100 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  style={{ fontSize: 'calc(1.8vw + 1.8vh)' }}
                 >
                   {num}
                 </button>
@@ -530,7 +555,8 @@ function EquationPracticeContent() {
                   type="button"
                   onClick={handleNegative}
                   disabled={feedback === 'correct'}
-                  className="text-2xl font-semibold py-8 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="font-semibold radius-button bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  style={{ fontSize: 'calc(1.3vw + 1.3vh)' }}
                 >
                   +/−
                 </button>
@@ -539,7 +565,8 @@ function EquationPracticeContent() {
                   type="button"
                   onClick={handleClear}
                   disabled={feedback === 'correct'}
-                  className="text-2xl font-semibold py-8 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="font-semibold radius-button bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  style={{ fontSize: 'calc(1.3vw + 1.3vh)' }}
                 >
                   Clear
                 </button>
@@ -549,7 +576,8 @@ function EquationPracticeContent() {
                 type="button"
                 onClick={() => handleNumberClick(0)}
                 disabled={feedback === 'correct'}
-                className="text-4xl font-semibold py-8 rounded-xl bg-zinc-100 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                className="font-semibold radius-button bg-zinc-100 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                style={{ fontSize: 'calc(1.8vw + 1.8vh)' }}
               >
                 0
               </button>
@@ -558,7 +586,8 @@ function EquationPracticeContent() {
                   type="button"
                   onClick={handleClear}
                   disabled={feedback === 'correct'}
-                  className="text-2xl font-semibold py-8 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="font-semibold radius-button bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  style={{ fontSize: 'calc(1.3vw + 1.3vh)' }}
                 >
                   Clear
                 </button>
@@ -567,7 +596,8 @@ function EquationPracticeContent() {
                   type="button"
                   onClick={handleBackspace}
                   disabled={feedback === 'correct'}
-                  className="text-2xl font-semibold py-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="font-semibold radius-button bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  style={{ fontSize: 'calc(1.3vw + 1.3vh)' }}
                 >
                   ←
                 </button>
@@ -577,33 +607,34 @@ function EquationPracticeContent() {
 
           {/* Feedback */}
           {feedback && (
-            <div className={`mt-6 text-center text-xl font-semibold ${
+            <div className={`text-center font-semibold ${
               feedback === 'correct'
                 ? 'text-green-600 dark:text-green-400'
                 : 'text-red-600 dark:text-red-400'
-            }`}>
+            }`} style={{ marginTop: '2%', fontSize: 'calc(1vw + 1vh)' }}>
               {feedback === 'correct' ? '✓ Correct! Great job!' : '✗ Not quite, try again!'}
             </div>
           )}
         </div>
 
-        {/* Shu Ha Ri Progress Indicator */}
-        <div className="mt-8 bg-white dark:bg-zinc-800 rounded-xl p-6 shadow-md border border-zinc-200 dark:border-zinc-700">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">
-            Your Progress: 守 Shu (Obey)
-          </h3>
-          <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-4">
-            Master the fundamentals through repetition. Complete 1000 reps to reach Ha (破) level!
-          </p>
-          <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-3">
+        {/* Shu Ha Ri Progress Indicator - Compact */}
+        <div className="bg-white dark:bg-zinc-800 radius-card shadow-md border border-zinc-200 dark:border-zinc-700 flex justify-center flex-col" 
+            style={{ height: '8%', padding: '1.5% 4%', marginTop: '4%' }}
+          >
+          <div className="flex items-center justify-between" style={{ marginBottom: '1%' }}>
+            <h3 className="font-semibold text-zinc-900 dark:text-white" style={{ fontSize: 'calc(0.9vw + 0.9vh)' }}>
+              守 Shu Progress
+            </h3>
+            <p className="text-zinc-500 dark:text-zinc-400" style={{ fontSize: 'calc(0.7vw + 0.7vh)' }}>
+              {allTimeReps} / 1000 ({progressToHa.toFixed(0)}%)
+            </p>
+          </div>
+          <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full" style={{ height: '25%' }}>
             <div
-              className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all"
-              style={{ width: `${progressToHa}%` }}
+              className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all"
+              style={{ width: `${progressToHa}%`, height: '100%' }}
             ></div>
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
-            {allTimeReps} / 1000 repetitions ({progressToHa.toFixed(1)}%)
-          </p>
         </div>
       </main>
     </div>

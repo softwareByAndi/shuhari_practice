@@ -24,3 +24,125 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Fluid Typography with clamp() for responsive scaling */
+/* These scale smoothly between min and max values based on viewport width */
+
+.text-page-title {
+  font-size: clamp(1.5rem, 6vw, 3rem);
+}
+
+.text-back-link {
+  font-size: clamp(0.875rem, 3.5vw, 1.25rem);
+}
+
+.text-stat-label {
+  font-size: clamp(0.75rem, 3vw, 1rem);
+}
+
+.text-stat-number {
+  font-size: clamp(1.5rem, 7vw, 3rem);
+}
+
+.text-math-problem {
+  font-size: clamp(3rem, 11vw, 7rem);
+}
+
+.text-answer-input {
+  font-size: clamp(2.25rem, 9vw, 4.5rem);
+}
+
+.text-numpad-button {
+  font-size: clamp(2.25rem, 8vw, 4rem);
+}
+
+.text-action-button {
+  font-size: clamp(1.25rem, 5vw, 2rem);
+}
+
+.text-modal-emoji {
+  font-size: clamp(4rem, 15vw, 10rem);
+}
+
+.text-modal-title {
+  font-size: clamp(1.5rem, 7vw, 3rem);
+}
+
+.text-modal-text {
+  font-size: clamp(1rem, 4vw, 1.5rem);
+}
+
+.text-modal-small {
+  font-size: clamp(0.875rem, 3.5vw, 1.25rem);
+}
+
+.text-feedback {
+  font-size: clamp(1rem, 4.5vw, 1.5rem);
+}
+
+.text-progress-title {
+  font-size: clamp(1rem, 4.5vw, 1.5rem);
+}
+
+.text-progress-desc {
+  font-size: clamp(0.875rem, 3.5vw, 1.25rem);
+}
+
+.text-progress-small {
+  font-size: clamp(0.75rem, 3vw, 1rem);
+}
+
+.text-banner {
+  font-size: clamp(0.875rem, 3.5vw, 1.25rem);
+}
+
+.text-save-status {
+  font-size: clamp(0.75rem, 3vw, 1rem);
+}
+
+/* Fluid spacing with clamp() - optimized for 100vh */
+.spacing-section-gap {
+  gap: clamp(0.25rem, 1.5vw, 0.75rem);
+}
+
+.spacing-card-padding {
+  /* padding: clamp(0.5rem, 1.5vh, 1rem) clamp(0.75rem, 3vw, 1.5rem); */
+}
+
+.spacing-button-padding {
+  padding: clamp(0.75rem, 2vh, 1.25rem) 0;
+}
+
+.spacing-modal-padding {
+  padding: clamp(1.5rem, 3vh, 2.5rem) clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.spacing-save-indicator-padding {
+  padding: clamp(0.375rem, 0.75vh, 0.75rem) clamp(0.75rem, 2vw, 1.25rem);
+}
+
+.spacing-main-padding {
+  padding: clamp(0.5rem, 1.5vh, 1rem) clamp(0.75rem, 3vw, 1.25rem);
+}
+
+.spacing-problem-card-padding {
+  padding: clamp(1rem, 2vh, 1.5rem) clamp(1rem, 3vw, 1.5rem);
+}
+
+/* Border radius with clamp() */
+.radius-card {
+  border-radius: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.radius-button {
+  border-radius: clamp(0.5rem, 2vw, 1rem);
+}
+
+.radius-modal {
+  border-radius: clamp(1rem, 4vw, 2rem);
+}
+
+/* Minimum heights with clamp() - optimized for 100vh */
+.min-height-answer-input {
+  min-height: clamp(3.5rem, 8vh, 5.5rem);
+}
