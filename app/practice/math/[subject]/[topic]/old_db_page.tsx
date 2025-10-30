@@ -4,15 +4,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import {
-  getUserProgress,
-  createSession,
-  updateSession,
-  checkAndAdvanceStage,
-  getTopicByCode,
-  getTotalRepsForTopic,
-  createOrUpdateUserProgress,
-  supabase
-} from '@/lib/supabase-v2';
+  createPracticeSession,
+  updatePracticeSession,
+  getTotalRepsForModule,
+  getLastSessionAvgResponseTime,
+} from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   getEquationConfig,
@@ -25,37 +21,12 @@ import {
   type Problem,
 } from '@/lib/problem-generator';
 
-// Mapping from URL equation types to topic codes
-const EQUATION_TO_TOPIC: Record<string, string> = {
-  'addition': 'add',
-  'subtraction': 'sub',
-  'multiplication': 'mul',
-  'division': 'div',
-  'modulus': 'mod',
-  'exponents': 'exp',
-  'square-roots': 'root',
-  'negatives-addition': 'add_w_negatives',
-  'negatives-subtraction': 'subtract_w_negatives'
-};
-
-// Calculate median of an array of numbers
-function calculateMedian(numbers: number[]): number {
-  if (numbers.length === 0) return 0;
-  const sorted = [...numbers].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 0
-    ? (sorted[mid - 1] + sorted[mid]) / 2
-    : sorted[mid];
-}
-
 function EquationPracticeContent() {
   const { user } = useAuth();
   const params = useParams();
   const searchParams = useSearchParams();
 
-  const topicCode = params.topic as string;
-  // Map topic code to equation type for compatibility with equation config
-  const equationType = Object.entries(EQUATION_TO_TOPIC).find(([_, code]) => code === topicCode)?.[0] || topicCode;
+  const equationType = params.type as string;
   const digits = parseInt(searchParams.get('digits') || '1');
 
   const [config, setConfig] = useState<EquationConfig | null>(null);
@@ -66,17 +37,13 @@ function EquationPracticeContent() {
   const [answer, setAnswer] = useState('');
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [showCongrats, setShowCongrats] = useState(false);
-  const [sessionId, setSessionId] = useState<number | null>(null);
-  const [sessionInitialized, setSessionInitialized] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'pending' | 'saving' | 'saved'>('idle');
   const [allTimeReps, setAllTimeReps] = useState(0);
   const [sessionReps, setSessionReps] = useState(0);
   const [responseTimes, setResponseTimes] = useState<number[]>([]);
   const [lastSessionAvg, setLastSessionAvg] = useState(0);
-  const [incorrectAnswers, setIncorrectAnswers] = useState(0);
-  const [topicId, setTopicId] = useState<number | null>(null);
-  const [currentStageId, setCurrentStageId] = useState(1);
   const inputRef = useRef<HTMLInputElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const saveStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -106,25 +73,12 @@ function EquationPracticeContent() {
     return shuffled;
   }, [config, digits]);
 
-  // Create session on first submission
-  const ensureSessionCreated = useCallback(async () => {
-    if (!sessionInitialized && user?.id && topicId && currentStageId) {
-      const session = await createSession(user.id, topicId, currentStageId);
-      if (session) {
-        setSessionId(session.id);
-        setSessionInitialized(true);
-        return session.id;
-      }
-    }
-    return sessionId;
-  }, [sessionInitialized, user, topicId, currentStageId, sessionId]);
-
   // Debounced save function
   const debouncedSave = useCallback(async (
-    sessionId: number,
+    sessionId: string,
+    userId: string,
     totalReps: number,
-    responseTimes: number[],
-    incorrectCount: number
+    responseTimes: number[]
   ) => {
     // Clear any existing timeout
     if (saveTimeoutRef.current) {
@@ -138,25 +92,19 @@ function EquationPracticeContent() {
     saveTimeoutRef.current = setTimeout(async () => {
       setSaveStatus('saving');
 
-      // Calculate average and median response times
+      // Calculate average response time
       const avgResponseTime = responseTimes.length > 0
         ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
         : 0;
-      const medianResponseTime = calculateMedian(responseTimes);
-      const accuracy = totalReps / (totalReps + incorrectCount) || 0;
 
-      await updateSession(sessionId, {
+      await updatePracticeSession(sessionId, {
         total_reps: totalReps,
-        avg_response_time: avgResponseTime,
-        median_response_time: medianResponseTime,
-        accuracy
+        session_avg_response_time: avgResponseTime,
       });
 
       // Refresh all-time reps
-      if (topicId && user?.id) {
-        const updatedAllTimeReps = await getTotalRepsForTopic(user.id, topicId);
-        setAllTimeReps(updatedAllTimeReps);
-      }
+      const updatedAllTimeReps = await getTotalRepsForModule(userId!, 'math', `equations-${equationType}-${digits}d`);
+      setAllTimeReps(updatedAllTimeReps);
 
       setSaveStatus('saved');
 
@@ -168,7 +116,7 @@ function EquationPracticeContent() {
         setSaveStatus('idle');
       }, 2000);
     }, 3000);
-  }, [topicId, user]);
+  }, [equationType, digits]);
 
   // Load next problem
   const loadNextProblem = useCallback(async () => {
@@ -181,45 +129,27 @@ function EquationPracticeContent() {
       problems = initializeProblemSet();
       index = 0;
 
-      // Immediate save on set completion (bypass debounce) - only if session exists
-      if (sessionInitialized && sessionId) {
+      // Immediate save on set completion (bypass debounce)
+      if (sessionId && user?.id) {
         const totalReps = sessionReps;
         if (saveTimeoutRef.current) {
           clearTimeout(saveTimeoutRef.current);
         }
         setSaveStatus('saving');
 
-        // Calculate stats
+        // Calculate average response time
         const avgResponseTime = responseTimes.length > 0
           ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
           : 0;
-        const medianResponseTime = calculateMedian(responseTimes);
-        const accuracy = totalReps / (totalReps + incorrectAnswers) || 0;
 
-        await updateSession(sessionId, {
+        await updatePracticeSession(sessionId, {
           total_reps: totalReps,
-          avg_response_time: avgResponseTime,
-          median_response_time: medianResponseTime,
-          accuracy
+          session_avg_response_time: avgResponseTime,
         });
 
-        // Refresh all-time reps and check for stage advancement
-        if (topicId && user?.id) {
-          const updatedAllTimeReps = await getTotalRepsForTopic(user.id, topicId);
-          setAllTimeReps(updatedAllTimeReps);
-
-          // Check for stage advancement
-          const newStageId = await checkAndAdvanceStage(
-            user.id,
-            topicId,
-            currentStageId,
-            updatedAllTimeReps
-          );
-
-          if (newStageId > currentStageId) {
-            setCurrentStageId(newStageId);
-          }
-        }
+        // Refresh all-time reps
+        const updatedAllTimeReps = await getTotalRepsForModule(user?.id!, 'math', `equations-${equationType}-${digits}d`);
+        setAllTimeReps(updatedAllTimeReps);
 
         setSaveStatus('saved');
 
@@ -246,7 +176,7 @@ function EquationPracticeContent() {
 
     // Reset timer for new problem
     problemStartTimeRef.current = Date.now();
-  }, [problemSet, currentIndex, initializeProblemSet, sessionId, sessionInitialized, sessionReps, responseTimes, incorrectAnswers, topicId, user, currentStageId]);
+  }, [problemSet, currentIndex, initializeProblemSet, sessionId, user, sessionReps, responseTimes, equationType, digits]);
 
   // Initialize user and load progress from database
   useEffect(() => {
@@ -254,52 +184,14 @@ function EquationPracticeContent() {
       if (!config) return;
 
       try {
-        // Topic code comes directly from URL params
-        if (!topicCode) {
-          console.error('No topic code provided');
-          setIsLoading(false);
-          return;
-        }
-
         // Load stats if user is logged in
         if (user?.id) {
-          // Get topic info
-          const topic = await getTopicByCode(topicCode);
-          if (!topic) {
-            console.error('Topic not found:', topicCode);
-            setIsLoading(false);
-            return;
-          }
-          setTopicId(topic.topic_id);
-
-          // Get or create user progress
-          let progress = await getUserProgress(user.id, topic.topic_id);
-          if (!progress) {
-            // Create initial progress
-            await createOrUpdateUserProgress(user.id, topic.topic_id, 1);
-            progress = { user_id: user.id, topic_id: topic.topic_id, stage_id: 1 };
-          }
-          setCurrentStageId(progress.stage_id);
-
-          // Get total reps for this topic
-          const totalReps = await getTotalRepsForTopic(user.id, topic.topic_id);
+          const moduleName = `equations-${equationType}-${digits}d`;
+          const totalReps = await getTotalRepsForModule(user.id, 'math', moduleName);
           setAllTimeReps(totalReps);
 
-          // Get last session average response time
-          const { data: lastSession } = await supabase
-            .from('session')
-            .select('avg_response_time')
-            .eq('user_id', user.id)
-            .eq('topic_id', topic.topic_id)
-            .order('created_at', { ascending: false })
-            .limit(1); // Get just the last session
-
-          // Use the last session if it exists
-          if (lastSession && lastSession.length > 0) {
-            setLastSessionAvg(lastSession[0].avg_response_time || 0);
-          }
-
-          // Don't create session here - will create on first answer submission
+          const lastAvg = await getLastSessionAvgResponseTime(user.id, 'math', moduleName);
+          setLastSessionAvg(lastAvg);
         }
 
         // Initialize problem set (works for both logged in and anonymous users)
@@ -318,7 +210,7 @@ function EquationPracticeContent() {
     }
 
     initializeSession();
-  }, [config, equationType, topicCode, user, initializeProblemSet]);
+  }, [config, equationType, digits, user, initializeProblemSet]);
 
   // Cleanup: save on unmount
   useEffect(() => {
@@ -370,30 +262,21 @@ function EquationPracticeContent() {
         const newSessionReps = sessionReps + 1;
         setSessionReps(newSessionReps);
 
-        // Save to database if logged in
-        if (user?.id) {
-          const currentSessionId = await ensureSessionCreated();
-          if (currentSessionId) {
-            debouncedSave(currentSessionId, newSessionReps, newResponseTimes, incorrectAnswers);
+        // Create session on first correct answer if not already created
+        const handleSave = async () => {
+          if (!sessionId && user?.id) {
+            const moduleName = `equations-${equationType}-${digits}d`;
+            const session = await createPracticeSession(user.id, 'math', moduleName);
+            if (session) {
+              setSessionId(session.id);
+              debouncedSave(session.id, user.id, newSessionReps, newResponseTimes);
+            }
+          } else if (sessionId && user?.id) {
+            debouncedSave(sessionId, user.id, newSessionReps, newResponseTimes);
           }
-        }
+        };
 
-        // Check for stage advancement
-        if (topicId && user?.id) {
-          const newTotalReps = allTimeReps + 1;
-          setAllTimeReps(newTotalReps);
-
-          const newStageId = await checkAndAdvanceStage(
-            user.id,
-            topicId,
-            currentStageId,
-            newTotalReps
-          );
-
-          if (newStageId > currentStageId) {
-            setCurrentStageId(newStageId);
-          }
-        }
+        handleSave();
 
         // Remove focus from button to prevent highlight
         if (document.activeElement instanceof HTMLElement) {
@@ -406,7 +289,7 @@ function EquationPracticeContent() {
         }, 200);
       }
     }
-  }, [feedback, config, answer, num1, num2, responseTimes, lastSessionAvg, sessionReps, incorrectAnswers, topicId, user, allTimeReps, currentStageId, ensureSessionCreated, debouncedSave, loadNextProblem]);
+  }, [feedback, config, answer, num1, num2, responseTimes, lastSessionAvg, sessionReps, sessionId, user, equationType, digits, debouncedSave, loadNextProblem]);
 
   const handleClear = () => {
     setAnswer('');
@@ -456,37 +339,26 @@ function EquationPracticeContent() {
       const newSessionReps = sessionReps + 1;
       setSessionReps(newSessionReps);
 
-      // Save to database if logged in
-      if (user?.id) {
-        const currentSessionId = await ensureSessionCreated();
-        if (currentSessionId) {
-          debouncedSave(currentSessionId, newSessionReps, newResponseTimes, incorrectAnswers);
+      const handleSave = async () => {
+        if (!sessionId && user?.id) {
+          const moduleName = `equations-${equationType}-${digits}d`;
+          const session = await createPracticeSession(user.id, 'math', moduleName);
+          if (session) {
+            setSessionId(session.id);
+            debouncedSave(session.id, user.id, newSessionReps, newResponseTimes);
+          }
+        } else if (sessionId && user?.id) {
+          debouncedSave(sessionId, user.id, newSessionReps, newResponseTimes);
         }
-      }
+      };
 
-      // Check for stage advancement
-      if (topicId && user?.id) {
-        const newTotalReps = allTimeReps + 1;
-        setAllTimeReps(newTotalReps);
-
-        const newStageId = await checkAndAdvanceStage(
-          user.id,
-          topicId,
-          currentStageId,
-          newTotalReps
-        );
-
-        if (newStageId > currentStageId) {
-          setCurrentStageId(newStageId);
-        }
-      }
+      handleSave();
 
       setTimeout(() => {
         loadNextProblem();
       }, 200);
     } else {
       setFeedback('incorrect');
-      setIncorrectAnswers(prev => prev + 1);
 
       setTimeout(() => {
         setFeedback(null);
@@ -494,14 +366,14 @@ function EquationPracticeContent() {
     }
   };
 
-  // Show error if invalid topic/equation type
+  // Show error if invalid equation type
   if (!isValidEquationType(equationType)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-zinc-900 dark:to-black flex items-center justify-center px-4">
         <div className="text-center">
           <div className="text-modal-emoji mb-4">❌</div>
           <p className="text-modal-text text-zinc-600 dark:text-zinc-400 mb-4">
-            Invalid topic: {topicCode}
+            Invalid equation type: {equationType}
           </p>
           <Link
             href="/practice/math"
@@ -602,7 +474,7 @@ function EquationPracticeContent() {
         {/* Stats Bar */}
         <div className="grid grid-cols-2" style={{ height: '8%', gap: '4%', marginBottom: '4%' }}>
           <div className="bg-white dark:bg-zinc-800 radius-card shadow-md border border-zinc-200 dark:border-zinc-700
-                          flex flex-col justify-center align-center text-center"
+                          flex flex-col justify-center align-center text-center" 
           >
             <div className="text-zinc-500 dark:text-zinc-400" style={{ fontSize: 'calc(0.7vw + 0.7vh)', marginTop: '2%' }}>Session Reps</div>
             <div className="font-bold text-blue-600 dark:text-blue-400" style={{ fontSize: 'calc(1.8vw + 1.8vh)' }}>{sessionReps}</div>
@@ -686,7 +558,7 @@ function EquationPracticeContent() {
                   className="font-semibold radius-button bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                   style={{ fontSize: 'calc(1.3vw + 1.3vh)' }}
                 >
-                  +/
+                  +/−
                 </button>
               ) : (
                 <button
@@ -727,7 +599,7 @@ function EquationPracticeContent() {
                   className="font-semibold radius-button bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                   style={{ fontSize: 'calc(1.3vw + 1.3vh)' }}
                 >
-                  �
+                  ←
                 </button>
               )}
             </div>
@@ -746,7 +618,7 @@ function EquationPracticeContent() {
         </div>
 
         {/* Shu Ha Ri Progress Indicator - Compact */}
-        <div className="bg-white dark:bg-zinc-800 radius-card shadow-md border border-zinc-200 dark:border-zinc-700 flex justify-center flex-col"
+        <div className="bg-white dark:bg-zinc-800 radius-card shadow-md border border-zinc-200 dark:border-zinc-700 flex justify-center flex-col" 
             style={{ height: '8%', padding: '1.5% 4%', marginTop: '4%' }}
           >
           <div className="flex items-center justify-between" style={{ marginBottom: '1%' }}>
