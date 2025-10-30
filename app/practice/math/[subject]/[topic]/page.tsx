@@ -1,0 +1,422 @@
+'use client';
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  getUserProgress,
+  createSession,
+  updateSession,
+  checkAndAdvanceStage,
+  getTopicByCode,
+  getStageById,
+  getTotalRepsForTopic,
+  getStageRequirements,
+  createOrUpdateUserProgress
+} from '@/lib/supabase-v2';
+import { generateProblems, Problem, getComplexityLabel } from '@/lib/problem-generator-v2';
+import { getEquationConfig, EquationConfig } from '@/lib/equation-types';
+import { STAGE_DISPLAY_NAMES, StageCode } from '@/lib/types/database';
+import styles from './page.module.css';
+
+// Mapping from topic codes to equation types
+const TOPIC_TO_EQUATION: Record<string, string> = {
+  'add': 'addition',
+  'sub': 'subtraction',
+  'mul': 'multiplication',
+  'div': 'division',
+  'mod': 'modulus',
+  'exp': 'exponents',
+  'root': 'square-roots',
+  'add_w_negatives': 'negatives-addition',
+  'subtract_w_negatives': 'negatives-subtraction'
+};
+
+// Calculate median of an array of numbers
+function calculateMedian(numbers: number[]): number {
+  if (numbers.length === 0) return 0;
+  const sorted = [...numbers].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
+}
+
+export default function PracticePage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user } = useAuth();
+
+  const topicCode = params.topic as string;
+  const subjectCode = params.subject as string;
+
+  // Parse URL parameters
+  const stageId = parseInt(searchParams.get('stage') || '1');
+  const difficultyLevelId = parseInt(searchParams.get('difficulty') || '101');
+
+  // Practice state
+  const [problems, setProblems] = useState<Problem[]>([]);
+  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
+  const [userAnswer, setUserAnswer] = useState('');
+  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [showingCompletion, setShowingCompletion] = useState(false);
+
+  // Session tracking
+  const [sessionId, setSessionId] = useState<number | null>(null);
+  const [sessionStartTime] = useState(Date.now());
+  const [problemStartTime, setProblemStartTime] = useState(Date.now());
+  const [responseTimes, setResponseTimes] = useState<number[]>([]);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [incorrectAnswers, setIncorrectAnswers] = useState(0);
+
+  // Progress tracking
+  const [currentStage, setCurrentStage] = useState(stageId);
+  const [topicId, setTopicId] = useState<number | null>(null);
+  const [totalTopicReps, setTotalTopicReps] = useState(0);
+  const [stageRequirement, setStageRequirement] = useState(1000);
+  const [equationConfig, setEquationConfig] = useState<EquationConfig | null>(null);
+
+  // Refs for input focus
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize session and load problems
+  useEffect(() => {
+    if (!user?.id) {
+      router.push('/auth');
+      return;
+    }
+
+    async function initializeSession() {
+      try {
+        // Get topic info
+        const topic = await getTopicByCode(topicCode);
+        if (!topic) {
+          console.error('Topic not found:', topicCode);
+          router.push(`/practice/math/${subjectCode}`);
+          return;
+        }
+        setTopicId(topic.topic_id);
+
+        // Get equation config
+        const equationType = TOPIC_TO_EQUATION[topicCode];
+        const config = getEquationConfig(equationType);
+        if (!config) {
+          console.error('Equation config not found for topic:', topicCode);
+          return;
+        }
+        setEquationConfig(config);
+
+        // Get or create user progress
+        let progress = await getUserProgress(user!.id, topic.topic_id);
+        if (!progress) {
+          // Create initial progress
+          await createOrUpdateUserProgress(user!.id, topic.topic_id, 1);
+          progress = { user_id: user!.id, topic_id: topic.topic_id, stage_id: 1 };
+        }
+        setCurrentStage(progress.stage_id);
+
+        // Get total reps for this topic
+        const totalReps = await getTotalRepsForTopic(user!.id, topic.topic_id);
+        setTotalTopicReps(totalReps);
+
+        // Get stage requirements
+        const stage = await getStageById(progress.stage_id);
+        if (stage) {
+          const requirement = await getStageRequirements(topic.topic_id, stage.code as StageCode);
+          setStageRequirement(requirement);
+        }
+
+        // Generate problems
+        const generatedProblems = generateProblems({
+          topicCode,
+          stageId: progress.stage_id,
+          difficultyLevelId,
+          equationConfig: config
+        });
+        setProblems(generatedProblems);
+
+        // Create session record
+        const session = await createSession(user!.id, topic.topic_id, progress.stage_id);
+        if (session) {
+          setSessionId(session.id);
+        }
+      } catch (error) {
+        console.error('Error initializing session:', error);
+      }
+    }
+
+    initializeSession();
+  }, [user, topicCode, subjectCode, difficultyLevelId, router]);
+
+  // Focus input when problem changes
+  useEffect(() => {
+    if (inputRef.current && !showingCompletion) {
+      inputRef.current.focus();
+    }
+  }, [currentProblemIndex, showingCompletion]);
+
+  // Format problem for display
+  const formatProblem = useCallback((problem: Problem): string => {
+    if (!equationConfig) return '';
+
+    const { num1, num2 } = problem;
+
+    // Special handling for square roots
+    if (equationConfig.id === 'square-roots') {
+      return `√${num1}`;
+    }
+
+    // Special handling for exponents
+    if (equationConfig.id === 'exponents') {
+      return `${num1}^${num2}`;
+    }
+
+    // Standard format
+    return `${num1} ${equationConfig.operator} ${num2}`;
+  }, [equationConfig]);
+
+  // Handle answer submission
+  const handleSubmit = useCallback(async () => {
+    if (!userAnswer.trim() || !equationConfig || !problems[currentProblemIndex]) return;
+
+    const currentProblem = problems[currentProblemIndex];
+    const correctAnswer = equationConfig.solve(currentProblem.num1, currentProblem.num2);
+    const isCorrect = parseFloat(userAnswer) === correctAnswer;
+
+    // Calculate response time
+    const responseTime = Date.now() - problemStartTime;
+
+    // Update feedback
+    setFeedback(isCorrect ? 'correct' : 'incorrect');
+
+    if (isCorrect) {
+      setCorrectAnswers(prev => prev + 1);
+      setResponseTimes(prev => [...prev, responseTime]);
+
+      // Update session stats
+      if (sessionId) {
+        const newTotalReps = correctAnswers + 1;
+        const allResponseTimes = [...responseTimes, responseTime];
+        const avgResponseTime = allResponseTimes.reduce((a, b) => a + b, 0) / allResponseTimes.length;
+        const medianResponseTime = calculateMedian(allResponseTimes);
+        const accuracy = newTotalReps / (newTotalReps + incorrectAnswers);
+
+        await updateSession(sessionId, {
+          total_reps: newTotalReps,
+          avg_response_time: avgResponseTime,
+          median_response_time: medianResponseTime,
+          accuracy
+        });
+
+        // Check for stage advancement
+        if (topicId && user?.id) {
+          const newTotalReps = totalTopicReps + 1;
+          setTotalTopicReps(newTotalReps);
+
+          const newStageId = await checkAndAdvanceStage(
+            user!.id,
+            topicId,
+            currentStage,
+            newTotalReps
+          );
+
+          if (newStageId > currentStage) {
+            setCurrentStage(newStageId);
+            // Could show a celebration modal here
+            console.log(`Advanced to stage ${newStageId}!`);
+          }
+        }
+      }
+
+      // Move to next problem after delay
+      setTimeout(() => {
+        if (currentProblemIndex < problems.length - 1) {
+          setCurrentProblemIndex(prev => prev + 1);
+          setUserAnswer('');
+          setFeedback(null);
+          setProblemStartTime(Date.now());
+        } else {
+          // Set complete
+          handleSetComplete();
+        }
+      }, 1000);
+    } else {
+      setIncorrectAnswers(prev => prev + 1);
+
+      // Clear incorrect answer after delay
+      setTimeout(() => {
+        setFeedback(null);
+      }, 2000);
+    }
+  }, [userAnswer, equationConfig, problems, currentProblemIndex, problemStartTime, correctAnswers, incorrectAnswers, responseTimes, sessionId, topicId, user, currentStage, totalTopicReps]);
+
+  // Handle set completion
+  const handleSetComplete = useCallback(async () => {
+    setShowingCompletion(true);
+
+    // Force final session update
+    if (sessionId) {
+      await updateSession(sessionId, {
+        total_reps: correctAnswers,
+        avg_response_time: responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length || 0,
+        median_response_time: calculateMedian(responseTimes),
+        accuracy: correctAnswers / (correctAnswers + incorrectAnswers) || 0
+      }, true); // immediate update
+    }
+  }, [sessionId, correctAnswers, incorrectAnswers, responseTimes]);
+
+  // Handle continuing practice
+  const handleContinue = () => {
+    router.push(`/practice/math/${subjectCode}`);
+  };
+
+  // Calculate progress percentage
+  const progressPercentage = (totalTopicReps / stageRequirement) * 100;
+
+  if (!problems.length || !equationConfig) {
+    return (
+      <div className={styles.pageContainer}>
+        <div className={styles.loading}>Loading practice session...</div>
+      </div>
+    );
+  }
+
+  if (showingCompletion) {
+    const avgResponseTime = responseTimes.length > 0
+      ? (responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length / 1000).toFixed(2)
+      : '0';
+    const medianTime = (calculateMedian(responseTimes) / 1000).toFixed(2);
+    const accuracy = ((correctAnswers / (correctAnswers + incorrectAnswers)) * 100).toFixed(0);
+
+    return (
+      <div className={styles.pageContainer}>
+        <div className={styles.completionCard}>
+          <h2 className={styles.completionTitle}>🎉 Set Complete!</h2>
+
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>{correctAnswers}</div>
+              <div className={styles.statLabel}>Problems Solved</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>{accuracy}%</div>
+              <div className={styles.statLabel}>Accuracy</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>{avgResponseTime}s</div>
+              <div className={styles.statLabel}>Avg Response Time</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>{medianTime}s</div>
+              <div className={styles.statLabel}>Median Time</div>
+            </div>
+          </div>
+
+          <div className={styles.progressInfo}>
+            <p className={styles.progressText}>
+              Stage Progress: {totalTopicReps} / {stageRequirement} reps
+            </p>
+            <div className={styles.progressBar}>
+              <div
+                className={styles.progressFill}
+                style={{ width: `${Math.min(100, progressPercentage)}%` }}
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={handleContinue}
+            className={styles.continueButton}
+          >
+            Continue Practice
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentProblem = problems[currentProblemIndex];
+  const stageName = STAGE_DISPLAY_NAMES[currentStage];
+
+  return (
+    <div className={styles.pageContainer}>
+      <div className={styles.practiceContainer}>
+        {/* Header */}
+        <div className={styles.header}>
+          <div className={styles.stageInfo}>
+            <span className={styles.stageKanji}>{stageName.split(' ')[0]}</span>
+            <span className={styles.stageName}>{stageName.split(' - ')[1]}</span>
+          </div>
+          <div className={styles.progressCounter}>
+            {currentProblemIndex + 1} / {problems.length}
+          </div>
+        </div>
+
+        {/* Stage Progress Bar */}
+        <div className={styles.stageProgress}>
+          <div className={styles.stageProgressBar}>
+            <div
+              className={styles.stageProgressFill}
+              style={{ width: `${Math.min(100, progressPercentage)}%` }}
+            />
+          </div>
+          <div className={styles.stageProgressText}>
+            {totalTopicReps} / {stageRequirement} reps to next stage
+          </div>
+        </div>
+
+        {/* Problem */}
+        <div className={styles.problemCard}>
+          <div className={styles.problem}>
+            {formatProblem(currentProblem)}
+          </div>
+
+          <input
+            ref={inputRef}
+            type="number"
+            value={userAnswer}
+            onChange={(e) => setUserAnswer(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+            className={`${styles.answerInput} ${
+              feedback === 'correct' ? styles.correct :
+              feedback === 'incorrect' ? styles.incorrect : ''
+            }`}
+            placeholder="Your answer"
+            disabled={feedback !== null}
+          />
+
+          {feedback && (
+            <div className={`${styles.feedback} ${styles[feedback]}`}>
+              {feedback === 'correct' ? '✓ Correct!' : `✗ Try again. The answer is ${equationConfig.solve(currentProblem.num1, currentProblem.num2)}`}
+            </div>
+          )}
+        </div>
+
+        {/* Session Stats */}
+        <div className={styles.sessionStats}>
+          <div className={styles.sessionStat}>
+            <span className={styles.sessionStatLabel}>Correct:</span>
+            <span className={styles.sessionStatValue}>{correctAnswers}</span>
+          </div>
+          <div className={styles.sessionStat}>
+            <span className={styles.sessionStatLabel}>Accuracy:</span>
+            <span className={styles.sessionStatValue}>
+              {correctAnswers + incorrectAnswers > 0
+                ? `${((correctAnswers / (correctAnswers + incorrectAnswers)) * 100).toFixed(0)}%`
+                : '-%'}
+            </span>
+          </div>
+          <div className={styles.sessionStat}>
+            <span className={styles.sessionStatLabel}>Avg Time:</span>
+            <span className={styles.sessionStatValue}>
+              {responseTimes.length > 0
+                ? `${(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length / 1000).toFixed(1)}s`
+                : '-'}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

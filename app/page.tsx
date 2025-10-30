@@ -1,16 +1,40 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import RecentPractice from '@/components/RecentPractice';
+import { getActiveFields } from '@/lib/supabase-v2';
+import { Field } from '@/lib/types/database';
 import styles from './page.module.css';
 
+// Field icon and color mapping
+const FIELD_STYLES: Record<string, { icon: string; color: string }> = {
+  'math': { icon: '🔢', color: 'bg-blue-500' },
+  'chemistry': { icon: '⚗️', color: 'bg-green-500' },
+  'biology': { icon: '🧬', color: 'bg-emerald-500' },
+  'programming': { icon: '💻', color: 'bg-purple-500' },
+  'physics': { icon: '⚛️', color: 'bg-indigo-500' },
+  'history': { icon: '📜', color: 'bg-amber-500' },
+  'engineering': { icon: '⚙️', color: 'bg-gray-500' },
+  'language': { icon: '📝', color: 'bg-pink-500' },
+  'philosophy': { icon: '🤔', color: 'bg-violet-500' },
+  'law': { icon: '⚖️', color: 'bg-red-500' },
+  'psychology': { icon: '🧠', color: 'bg-orange-500' },
+  'economics': { icon: '📈', color: 'bg-teal-500' },
+};
+
 export default function Home() {
-  const subjects = [
-    { name: 'Mathematics', icon: '🔢', href: '/practice/math', color: 'bg-blue-500', enabled: true },
-    { name: 'Chemistry', icon: '⚗️', href: '/practice/chemistry', color: 'bg-green-500', enabled: false },
-    { name: 'Biology', icon: '🧬', href: '/practice/biology', color: 'bg-emerald-500', enabled: false },
-    { name: 'Programming', icon: '💻', href: '/practice/programming', color: 'bg-purple-500', enabled: false },
-    { name: 'Physics', icon: '⚛️', href: '/practice/physics', color: 'bg-indigo-500', enabled: false },
-    { name: 'History', icon: '📜', href: '/practice/history', color: 'bg-amber-500', enabled: false },
-  ];
+  const [fields, setFields] = useState<Field[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadFields() {
+      const activeFields = await getActiveFields();
+      setFields(activeFields);
+      setLoading(false);
+    }
+    loadFields();
+  }, []);
 
   return (
     <div className={styles.pageContainer}>
@@ -26,71 +50,111 @@ export default function Home() {
           </p>
         </div>
 
-        {/* ShuHaRi Explanation */}
+        {/* 7-Stage Journey Explanation */}
         <div className={styles.shuHaRiSection}>
-          <div className={styles.shuHaRiCard}>
-            <div className={`${styles.shuHaRiSymbol} shu`}>守</div>
-            <h3 className={`${styles.shuHaRiTitle} shu`}>Shu - Obey</h3>
-            <p className={styles.shuHaRiDescription}>
-              Learn the fundamentals and follow traditional wisdom. Build a strong foundation through repetition and adherence to proven methods.
-            </p>
-          </div>
-          <div className={styles.shuHaRiCard}>
-            <div className={`${styles.shuHaRiSymbol} ha`}>破</div>
-            <h3 className={`${styles.shuHaRiTitle} ha`}>Ha - Break</h3>
-            <p className={styles.shuHaRiDescription}>
-              Question and expand upon the basics. Explore variations and adapt techniques to find what works best for you.
-            </p>
-          </div>
-          <div className={styles.shuHaRiCard}>
-            <div className={`${styles.shuHaRiSymbol} ri`}>離</div>
-            <h3 className={`${styles.shuHaRiTitle} ri`}>Ri - Leave</h3>
-            <p className={styles.shuHaRiDescription}>
-              Transcend the rules and make the knowledge your own. Create innovative solutions and teach others.
-            </p>
+          <h2 className={styles.sectionTitle}>Your 7-Stage Journey to Mastery</h2>
+          <div className={styles.stageCards}>
+            <div className={styles.stageRow}>
+              <div className={styles.shuHaRiCard}>
+                <div className={`${styles.shuHaRiSymbol} hatsu`}>初</div>
+                <h3 className={`${styles.shuHaRiTitle} hatsu`}>Hatsu - Begin</h3>
+                <p className={styles.shuHaRiDescription}>
+                  First exposure. Building familiarity with basic concepts.
+                </p>
+              </div>
+              <div className={styles.shuHaRiCard}>
+                <div className={`${styles.shuHaRiSymbol} shu`}>守</div>
+                <h3 className={`${styles.shuHaRiTitle} shu`}>Shu - Obey</h3>
+                <p className={styles.shuHaRiDescription}>
+                  Following patterns. Building automaticity through repetition.
+                </p>
+              </div>
+              <div className={styles.shuHaRiCard}>
+                <div className={`${styles.shuHaRiSymbol} kan`}>鑑</div>
+                <h3 className={`${styles.shuHaRiTitle} kan`}>Kan - Mirror</h3>
+                <p className={styles.shuHaRiDescription}>
+                  Reflecting patterns. Recognizing structures and relationships.
+                </p>
+              </div>
+            </div>
+            <div className={styles.stageRow}>
+              <div className={styles.shuHaRiCard}>
+                <div className={`${styles.shuHaRiSymbol} ha`}>破</div>
+                <h3 className={`${styles.shuHaRiTitle} ha`}>Ha - Break</h3>
+                <p className={styles.shuHaRiDescription}>
+                  Questioning patterns. Exploring variations and edge cases.
+                </p>
+              </div>
+              <div className={styles.shuHaRiCard}>
+                <div className={`${styles.shuHaRiSymbol} toi`}>問</div>
+                <h3 className={`${styles.shuHaRiTitle} toi`}>Toi - Question</h3>
+                <p className={styles.shuHaRiDescription}>
+                  Deep inquiry. Understanding the why behind the how.
+                </p>
+              </div>
+              <div className={styles.shuHaRiCard}>
+                <div className={`${styles.shuHaRiSymbol} ri`}>離</div>
+                <h3 className={`${styles.shuHaRiTitle} ri`}>Ri - Leave</h3>
+                <p className={styles.shuHaRiDescription}>
+                  Transcending rules. Creating innovative solutions.
+                </p>
+              </div>
+              <div className={styles.shuHaRiCard}>
+                <div className={`${styles.shuHaRiSymbol} ku`}>空</div>
+                <h3 className={`${styles.shuHaRiTitle} ku`}>Ku - Void</h3>
+                <p className={styles.shuHaRiDescription}>
+                  Effortless mastery. Teaching and inspiring others.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Subjects Grid */}
+        {/* Fields Grid */}
         <div className={styles.subjectsSection}>
-          <h2 className={styles.sectionTitle}>Choose Your Subject</h2>
-          <div className={styles.subjectsGrid}>
-            {subjects.map((subject) => (
-              subject.enabled ? (
-                <a
-                  key={subject.name}
-                  href={subject.href}
-                  className={styles.subjectCard}
-                >
-                  <div className={`${styles.subjectGlow} ${subject.color}`}></div>
-                  <div className={styles.subjectContent}>
-                    <div className={styles.subjectIcon}>{subject.icon}</div>
-                    <h3 className={styles.subjectName}>
-                      {subject.name}
-                    </h3>
-                    <p className={styles.subjectAction}>
-                      Start your journey →
-                    </p>
+          <h2 className={styles.sectionTitle}>Choose Your Field</h2>
+          {loading ? (
+            <div className={styles.loading}>Loading fields...</div>
+          ) : (
+            <div className={styles.subjectsGrid}>
+              {fields.map((field) => {
+                const fieldStyle = FIELD_STYLES[field.code] || { icon: '📚', color: 'bg-gray-500' };
+                return field.is_active ? (
+                  <a
+                    key={field.field_id}
+                    href={`/practice/${field.code}`}
+                    className={styles.subjectCard}
+                  >
+                    <div className={`${styles.subjectGlow} ${fieldStyle.color}`}></div>
+                    <div className={styles.subjectContent}>
+                      <div className={styles.subjectIcon}>{fieldStyle.icon}</div>
+                      <h3 className={styles.subjectName}>
+                        {field.display_name}
+                      </h3>
+                      <p className={styles.subjectAction}>
+                        Start your journey →
+                      </p>
+                    </div>
+                  </a>
+                ) : (
+                  <div
+                    key={field.field_id}
+                    className={styles.subjectCardDisabled}
+                  >
+                    <div className={styles.subjectContent}>
+                      <div className={styles.subjectIconDisabled}>{fieldStyle.icon}</div>
+                      <h3 className={styles.subjectNameDisabled}>
+                        {field.display_name}
+                      </h3>
+                      <p className={styles.subjectActionDisabled}>
+                        Coming soon...
+                      </p>
+                    </div>
                   </div>
-                </a>
-              ) : (
-                <div
-                  key={subject.name}
-                  className={styles.subjectCardDisabled}
-                >
-                  <div className={styles.subjectContent}>
-                    <div className={styles.subjectIconDisabled}>{subject.icon}</div>
-                    <h3 className={styles.subjectNameDisabled}>
-                      {subject.name}
-                    </h3>
-                    <p className={styles.subjectActionDisabled}>
-                      Coming soon...
-                    </p>
-                  </div>
-                </div>
-              )
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Recent Activities */}

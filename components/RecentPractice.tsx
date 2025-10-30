@@ -3,54 +3,24 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { getRecentModulesWithHistory, type ModuleSummary } from '@/lib/supabase';
-import { EQUATION_CONFIGS } from '@/lib/equation-types';
+import { getRecentTopicsWithProgress } from '@/lib/supabase-v2';
+import { TopicWithProgress, STAGE_DISPLAY_NAMES, calculateProgress } from '@/lib/types/database';
 
-// Simple sparkline component for response time trend
-function ResponseTimeTrend({ history, latest }: { history: number[]; latest: number }) {
-  if (history.length === 0) return null;
-
-  const max = Math.max(...history);
-  const min = Math.min(...history);
-  const range = max - min || 1; // Avoid division by zero
-
-  // Generate SVG path for the sparkline
-  const width = 100;
-  const height = 24;
-  const points = history.map((value, index) => {
-    const x = (index / (history.length - 1)) * width;
-    const y = height - ((value - min) / range) * height;
-    return `${x},${y}`;
-  });
-
-  const pathD = `M ${points.join(' L ')}`;
-
-  // Determine trend direction (comparing latest to first)
-  const isImproving = history.length > 1 && latest < history[0];
-  const trendColor = isImproving ? 'text-green-500' : 'text-zinc-400';
-  const lineColor = isImproving ? '#22c55e' : '#a1a1aa';
-
-  return (
-    <div className="flex items-center gap-2">
-      <svg width={width} height={height} className="opacity-70">
-        <path
-          d={pathD}
-          fill="none"
-          stroke={lineColor}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span className={`text-2xl ${trendColor}`}>
-        {isImproving ? '↓' : '→'}
-      </span>
-    </div>
-  );
-}
+// Topic icons mapping (same as in subject page)
+const TOPIC_ICONS: Record<string, string> = {
+  'add': '➕',
+  'sub': '➖',
+  'mul': '✖️',
+  'div': '➗',
+  'mod': '%',
+  'exp': '^',
+  'root': '√',
+  'add_w_negatives': '±',
+  'subtract_w_negatives': '∓',
+};
 
 // Helper function to format date relative to now
-function formatRelativeDate(dateString: string): string {
+function formatRelativeDate(dateString: string | Date): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -69,24 +39,23 @@ function formatRelativeDate(dateString: string): string {
   }
 }
 
-// Helper function to format module name
-function formatModuleName(module: string): string {
-  return module.charAt(0).toUpperCase() + module.slice(1);
-}
-
 export default function RecentPractice() {
   const { user, loading } = useAuth();
-  const [recentModules, setRecentModules] = useState<ModuleSummary[]>([]);
+  const [recentTopics, setRecentTopics] = useState<TopicWithProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadRecentPractice() {
-      // Only fetch if user is authenticated
       if (user?.id) {
-        const modules = await getRecentModulesWithHistory(10);
-        setRecentModules(modules);
+        try {
+          const topics = await getRecentTopicsWithProgress(user.id, 5);
+          setRecentTopics(topics);
+        } catch (error) {
+          console.error('Error loading recent practice:', error);
+          setRecentTopics([]);
+        }
       } else {
-        setRecentModules([]);
+        setRecentTopics([]);
       }
       setIsLoading(false);
     }
@@ -109,7 +78,7 @@ export default function RecentPractice() {
     return (
       <div className="rounded-xl bg-white dark:bg-zinc-800 p-8 shadow-md border border-zinc-200 dark:border-zinc-700 text-center">
         <p className="text-zinc-600 dark:text-zinc-400">
-          Sign in to track your practice history and see your progress over time!
+          Sign in to track your practice history and see your progress through 7 stages of mastery!
         </p>
         <a
           href="/auth"
@@ -121,7 +90,7 @@ export default function RecentPractice() {
     );
   }
 
-  if (recentModules.length === 0) {
+  if (recentTopics.length === 0) {
     return (
       <div className="rounded-xl bg-white dark:bg-zinc-800 p-8 shadow-md border border-zinc-200 dark:border-zinc-700 text-center">
         <p className="text-zinc-600 dark:text-zinc-400">
@@ -133,75 +102,74 @@ export default function RecentPractice() {
 
   return (
     <div className="space-y-4">
-      {recentModules.map((module) => {
-        // Calculate progress percentage toward completing Shu level (1000 reps)
-        const progressPercentage = Math.min((module.module_total_reps / 1000) * 100, 100);
-        const moduleKey = `${module.user_id}-${module.subject}-${module.module}`;
+      {recentTopics.map((topic) => {
+        const currentStageId = topic.user_progress?.stage_id || 1;
+        const stageName = STAGE_DISPLAY_NAMES[currentStageId];
+        const icon = TOPIC_ICONS[topic.code] || '📚';
 
-        // Extract equation type and digits from module name
-        // Module format: equations-{type}-{digits}d (e.g., "equations-subtraction-1d")
-        const moduleMatch = module.module.match(/^equations-(.+)-(\d+)d$/);
-        const equationType = moduleMatch ? moduleMatch[1] : module.module;
-        const digits = moduleMatch ? moduleMatch[2] : '1';
+        // Get progress for current stage
+        const progression = topic.difficulty_progression;
+        let stageProgress = 0;
+        let stageRequirement = 1000;
 
-        // Map digits to difficulty level
-        const difficultyMap: Record<string, string> = {
-          '1': 'Beginner',
-          '2': 'Intermediate',
-          '3': 'Advanced',
-        };
-        const difficulty = difficultyMap[digits] || 'Beginner';
+        if (progression && currentStageId <= 6) {
+          const stageFields = ['hatsu', 'shu', 'kan', 'ha', 'toi', 'ri'] as const;
+          const currentField = stageFields[currentStageId - 1];
+          stageRequirement = (progression as any)[currentField] || 1000;
+          stageProgress = calculateProgress(topic.total_reps || 0, stageRequirement);
+        }
 
-        // Get the equation config to extract the display name
-        const equationConfig = EQUATION_CONFIGS[equationType as keyof typeof EQUATION_CONFIGS];
-        const displayName = equationConfig
-          ? `${equationConfig.emoji} ${equationConfig.title}`
-          : formatModuleName(equationType);
-
-        // Build the practice page URL with digits parameter to go straight to practice
-        const practiceUrl = `/practice/${module.subject}/equations/${equationType}/practice?digits=${digits}`;
+        // Build practice URL - for now defaulting to arithmetic subject
+        // In a complete implementation, we'd store the subject info with the topic
+        const practiceUrl = `/practice/math/arithmetic/${topic.code}?stage=${currentStageId}&difficulty=101`;
 
         return (
           <Link
-            key={moduleKey}
+            key={topic.topic_id}
             href={practiceUrl}
             className="block rounded-xl bg-white dark:bg-zinc-800 p-4 md:p-6 shadow-md border border-zinc-200 dark:border-zinc-700 hover:shadow-lg hover:scale-[1.01] transition-all"
           >
-            <div className="flex flex-col  mb-1">
+            <div className="flex flex-col mb-1">
               <div className="flex items-center gap-2 mb-1">
+                <span className="text-2xl">{icon}</span>
                 <h3 className="font-semibold text-zinc-900 dark:text-white md:text-lg">
-                  {displayName}
+                  {topic.display_name}
                 </h3>
-                <div className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold rounded">
-                  {difficulty}
+
+                {/* Stage badge */}
+                <div className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-semibold rounded">
+                  <span>{stageName.split(' ')[0]}</span>
+                  <span className="hidden sm:inline">Stage {currentStageId}</span>
                 </div>
 
                 <div className="flex-grow"/>
 
                 <div className="text-right text-xs">
-                  <span className="font-medium">{module.latest_avg_response_time}ms</span>
-                  <div className="text-zinc-400 dark:text-zinc-500">avg response</div>
+                  <span className="font-medium">{topic.total_reps || 0}</span>
+                  <div className="text-zinc-400 dark:text-zinc-500">total reps</div>
                 </div>
               </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-start justify-between gap-2">
+
+              <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center justify-between gap-2">
                 <div className="text-xs text-zinc-500 dark:text-zinc-500">
-                  {formatRelativeDate(module.last_practiced_at)}
+                  {topic.last_practiced ? formatRelativeDate(topic.last_practiced) : 'Never practiced'}
                 </div>
-                {module.response_time_history.length > 1 && (
-                  <ResponseTimeTrend
-                    history={module.response_time_history}
-                    latest={module.latest_avg_response_time}
-                  />
-                )}
+                <div className="text-xs text-zinc-500 dark:text-zinc-500">
+                  {topic.sessions_count || 0} sessions
+                </div>
               </div>
             </div>
+
             {/* Progress bar */}
             <div>
               <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-500 dark:bg-blue-400 rounded-full transition-all duration-300"
-                  style={{ width: `${progressPercentage}%` }}
+                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300"
+                  style={{ width: `${stageProgress}%` }}
                 />
+              </div>
+              <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 text-right">
+                {topic.total_reps || 0} / {stageRequirement} to next stage
               </div>
             </div>
           </Link>

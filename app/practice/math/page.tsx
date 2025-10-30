@@ -1,28 +1,35 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { EQUATION_CONFIGS, type EquationType } from '@/lib/equation-types';
+import { getSubjectsForField } from '@/lib/supabase-v2';
+import { Subject } from '@/lib/types/database';
 import styles from './page.module.css';
 
-type ShuModule = {
-  id: string;
-  title: string;
-  description: string;
-  emoji: string;
-  level: 'shu' | 'ha' | 'ri';
-  href: string;
+// Subject icons mapping
+const SUBJECT_ICONS: Record<string, string> = {
+  'arithmetic': '➕',
+  'algebra': '𝒙',
+  'geometry': '📐',
+  'calculus': '∫',
+  'statistics': '📊',
 };
 
-const shuModules: ShuModule[] = Object.values(EQUATION_CONFIGS).map((config) => ({
-  id: config.id,
-  title: config.title,
-  description: config.description,
-  emoji: config.emoji,
-  level: 'shu' as const,
-  href: `/practice/math/equations/${config.id}`,
-}));
-
 export default function MathPractice() {
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadSubjects() {
+      // Math field has field_id = 101
+      const mathFieldId = 101;
+      const subjectList = await getSubjectsForField(mathFieldId);
+      setSubjects(subjectList);
+      setLoading(false);
+    }
+    loadSubjects();
+  }, []);
+
   return (
     <div className={styles.pageContainer}>
       <main className={styles.contentWrapper}>
@@ -38,74 +45,117 @@ export default function MathPractice() {
             Mathematics Practice
           </h1>
           <p className={styles.pageSubtitle}>
-            Choose a Shu (守) module to begin your practice journey
+            Choose a subject to explore topics and begin your 7-stage journey
           </p>
         </div>
 
-        {/* Shu Ha Ri Explanation */}
+        {/* 7-Stage Journey Explanation */}
         <div className={styles.explanationCard}>
           <h2 className={styles.cardTitle}>
-            The Path of Mastery: 守破離
+            Your 7-Stage Journey to Mastery
           </h2>
           <div className={styles.masteryGrid}>
-            <div>
-              <div className={`${styles.masteryEmoji} shu`}>守</div>
-              <h3 className={`${styles.masteryTitle} shu`}>
-                Shu (Obey)
-              </h3>
-              <p className={styles.masteryDescription}>
-                Learn the fundamentals through repetition and strict adherence to basic forms. Build muscle memory.
-              </p>
+            <div className={styles.stageRow}>
+              <div className={styles.stageItem}>
+                <div className={`${styles.masteryEmoji} hatsu`}>初</div>
+                <h3 className={`${styles.masteryTitle} hatsu`}>
+                  Hatsu
+                </h3>
+                <p className={styles.masteryDescription}>
+                  First exposure
+                </p>
+              </div>
+              <div className={styles.stageItem}>
+                <div className={`${styles.masteryEmoji} shu`}>守</div>
+                <h3 className={`${styles.masteryTitle} shu`}>
+                  Shu
+                </h3>
+                <p className={styles.masteryDescription}>
+                  Follow patterns
+                </p>
+              </div>
+              <div className={styles.stageItem}>
+                <div className={`${styles.masteryEmoji} kan`}>鑑</div>
+                <h3 className={`${styles.masteryTitle} kan`}>
+                  Kan
+                </h3>
+                <p className={styles.masteryDescription}>
+                  Mirror & reflect
+                </p>
+              </div>
+              <div className={styles.stageItem}>
+                <div className={`${styles.masteryEmoji} ha`}>破</div>
+                <h3 className={`${styles.masteryTitle} ha`}>
+                  Ha
+                </h3>
+                <p className={styles.masteryDescription}>
+                  Break patterns
+                </p>
+              </div>
             </div>
-            <div className={styles.masteryDisabled}>
-              <div className={`${styles.masteryEmoji} ha`}>破</div>
-              <h3 className={`${styles.masteryTitle} ha`}>
-                Ha (Break)
-              </h3>
-              <p className={styles.masteryDescription}>
-                Break from tradition. Experiment with variations and develop your own understanding.
-              </p>
-            </div>
-            <div className={styles.masteryDisabled}>
-              <div className={`${styles.masteryEmoji} ri`}>離</div>
-              <h3 className={`${styles.masteryTitle} ri`}>
-                Ri (Leave)
-              </h3>
-              <p className={styles.masteryDescription}>
-                Transcend all forms. Create your own path based on deep mastery and intuition.
-              </p>
+            <div className={styles.stageRow}>
+              <div className={styles.stageItem}>
+                <div className={`${styles.masteryEmoji} toi`}>問</div>
+                <h3 className={`${styles.masteryTitle} toi`}>
+                  Toi
+                </h3>
+                <p className={styles.masteryDescription}>
+                  Deep inquiry
+                </p>
+              </div>
+              <div className={styles.stageItem}>
+                <div className={`${styles.masteryEmoji} ri`}>離</div>
+                <h3 className={`${styles.masteryTitle} ri`}>
+                  Ri
+                </h3>
+                <p className={styles.masteryDescription}>
+                  Transcend rules
+                </p>
+              </div>
+              <div className={styles.stageItem}>
+                <div className={`${styles.masteryEmoji} ku`}>空</div>
+                <h3 className={`${styles.masteryTitle} ku`}>
+                  Ku
+                </h3>
+                <p className={styles.masteryDescription}>
+                  Effortless mastery
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Available Modules */}
+        {/* Available Subjects */}
         <div>
           <h2 className={styles.sectionTitle}>
-            Available Shu Modules
+            Choose a Subject
           </h2>
-          <div className={styles.moduleGrid}>
-            {shuModules.map((module) => (
-              <Link
-                key={module.id}
-                href={module.href}
-                className={styles.moduleCard}
-              >
-                <div className={styles.cardHeader}>
-                  <div className={styles.moduleEmoji}>{module.emoji}</div>
-                  <div className={styles.levelBadge}>
-                    <div>守</div>
-                    {/* <div>{module.level.toUpperCase()}</div> */}
-                  </div>
-                </div>
-                <h3 className={styles.moduleTitle}>
-                  {module.title}
-                </h3>
-                <p className={styles.moduleDescription}>
-                  {module.description}
-                </p>
-              </Link>
-            ))}
-          </div>
+          {loading ? (
+            <div className={styles.loading}>Loading subjects...</div>
+          ) : (
+            <div className={styles.moduleGrid}>
+              {subjects.map((subject) => {
+                const icon = SUBJECT_ICONS[subject.code] || '📚';
+                return (
+                  <Link
+                    key={subject.subject_id}
+                    href={`/practice/math/${subject.code}`}
+                    className={styles.moduleCard}
+                  >
+                    <div className={styles.cardHeader}>
+                      <div className={styles.moduleEmoji}>{icon}</div>
+                    </div>
+                    <h3 className={styles.moduleTitle}>
+                      {subject.display_name}
+                    </h3>
+                    <p className={styles.moduleDescription}>
+                      Explore topics in {subject.display_name.toLowerCase()}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </main>
     </div>
