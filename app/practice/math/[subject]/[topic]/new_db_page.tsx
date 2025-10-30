@@ -163,12 +163,12 @@ export default function PracticePage() {
     const { num1, num2 } = problem;
 
     // Special handling for square roots
-    if (equationConfig.id === 'square-roots') {
+    if (equationConfig.id === 'root') {
       return `√${num1}`;
     }
 
     // Special handling for exponents
-    if (equationConfig.id === 'exponents') {
+    if (equationConfig.id === 'exp') {
       return `${num1}^${num2}`;
     }
 

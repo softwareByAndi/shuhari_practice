@@ -40,17 +40,17 @@ export default function EquationDifficultySelection() {
 
   // Generate examples based on equation type
   const generateExample = (digits: number): string => {
-    if (config.id === 'square-roots') {
+    if (config.id === 'root') {
       if (digits === 1) return `${config.operator}25 = ?`;
       if (digits === 2) return `${config.operator}144 = ?`;
       return `${config.operator}1225 = ?`;
     }
-    if (config.id === 'exponents') {
+    if (config.id === 'exp') {
       if (digits === 1) return `5${config.operator}3 = ?`;
       if (digits === 2) return `7${config.operator}3 = ?`;
       return `12${config.operator}2 = ?`;
     }
-    if (config.id === 'negatives-addition' || config.id === 'negatives-subtraction') {
+    if (config.id === 'add_w_negatives' || config.id === 'subtract_w_negatives') {
       if (digits === 1) return `-5 ${config.operator} 7 = ?`;
       if (digits === 2) return `-47 ${config.operator} 83 = ?`;
       return `-347 ${config.operator} 583 = ?`;
@@ -62,17 +62,17 @@ export default function EquationDifficultySelection() {
   };
 
   const getRangeLabel = (digits: number): string => {
-    if (config.id === 'exponents') {
+    if (config.id === 'exp') {
       if (digits === 1) return 'Base: 2-9';
       if (digits === 2) return 'Base: 2-12';
       return 'Base: 2-15';
     }
-    if (config.id === 'square-roots') {
+    if (config.id === 'root') {
       if (digits === 1) return 'Result: 1-9';
       if (digits === 2) return 'Result: 10-31';
       return 'Result: 32-99';
     }
-    if (config.id === 'negatives-addition' || config.id === 'negatives-subtraction') {
+    if (config.id === 'add_w_negatives' || config.id === 'subtract_w_negatives') {
       if (digits === 1) return '-9 to 9';
       if (digits === 2) return '-99 to 99';
       return '-999 to 999';

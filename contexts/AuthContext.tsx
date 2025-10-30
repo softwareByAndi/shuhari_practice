@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-v2';
+import { AnonymousBanner } from '@/components/AnonymousBanner';
 
 type AuthContextType = {
   user: User | null;
@@ -72,7 +73,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>
+    {!user && <AnonymousBanner />}
+    {children}
+  </AuthContext.Provider>;
 }
 
 export function useAuth() {

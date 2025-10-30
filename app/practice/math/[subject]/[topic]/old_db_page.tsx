@@ -519,7 +519,7 @@ function EquationPracticeContent() {
         >
           <div className="text-center flex justify-center align-center" style={{ height: '15%', marginBottom: '2%' }}>
             <div className="font-bold text-zinc-900 dark:text-white" style={{ margin: 'auto', fontSize: 'calc(2.5vw + 2.5vh)' }}>
-              {config.id === 'square-roots' ? (
+              {config.id === 'root' ? (
                 <>
                   {config.operator}{num1} = ?
                 </>
@@ -550,7 +550,7 @@ function EquationPracticeContent() {
                   {num}
                 </button>
               ))}
-              {config.id === 'negatives-addition' || config.id === 'negatives-subtraction' ? (
+              {config.id === 'add_w_negatives' || config.id === 'subtract_w_negatives' ? (
                 <button
                   type="button"
                   onClick={handleNegative}
@@ -581,7 +581,7 @@ function EquationPracticeContent() {
               >
                 0
               </button>
-              {config.id === 'negatives-addition' || config.id === 'negatives-subtraction' ? (
+              {config.id === 'add_w_negatives' || config.id === 'subtract_w_negatives' ? (
                 <button
                   type="button"
                   onClick={handleClear}

@@ -10,13 +10,13 @@ export function generateAllProblems(
   config: EquationConfig
 ): Problem[] {
   // Special handling for different equation types
-  if (config.id === 'exponents') {
+  if (config.id === 'exp') {
     return generateExponentProblems(digits);
   }
-  if (config.id === 'square-roots') {
+  if (config.id === 'root') {
     return generateSquareRootProblems(digits);
   }
-  if (config.id === 'negatives-addition' || config.id === 'negatives-subtraction') {
+  if (config.id === 'add_w_negatives' || config.id === 'subtract_w_negatives') {
     return generateNegativeNumberProblems(digits, config);
   }
 
