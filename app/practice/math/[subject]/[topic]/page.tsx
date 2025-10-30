@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import {
@@ -48,6 +48,49 @@ function calculateMedian(numbers: number[]): number {
     : sorted[mid];
 }
 
+// Calculate session statistics
+function calculateSessionStats(
+  responseTimes: number[],
+  totalReps: number,
+  incorrectCount: number
+) {
+  const avgResponseTime = responseTimes.length > 0
+    ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
+    : 0;
+  const medianResponseTime = calculateMedian(responseTimes);
+  const accuracy = totalReps / (totalReps + incorrectCount) || 0;
+
+  return {
+    avgResponseTime,
+    medianResponseTime,
+    accuracy
+  };
+}
+
+// Add filtered response time to array
+function addFilteredResponseTime(
+  responseTimes: number[],
+  newTime: number,
+  lastSessionAvg: number
+): number[] {
+  const newResponseTimes = [...responseTimes];
+
+  if (responseTimes.length > 0) {
+    const currentAvg = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
+    if (newTime < currentAvg * 5) {
+      newResponseTimes.push(newTime);
+    }
+  } else if (lastSessionAvg > 0) {
+    if (newTime < lastSessionAvg * 5) {
+      newResponseTimes.push(newTime);
+    }
+  } else {
+    newResponseTimes.push(newTime);
+  }
+
+  return newResponseTimes;
+}
+
 function EquationPracticeContent() {
   const { user } = useAuth();
   const params = useParams();
@@ -71,10 +114,14 @@ function EquationPracticeContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'pending' | 'saving' | 'saved'>('idle');
   const [allTimeReps, setAllTimeReps] = useState(0);
-  const [sessionReps, setSessionReps] = useState(0);
-  const [responseTimes, setResponseTimes] = useState<number[]>([]);
-  const [lastSessionAvg, setLastSessionAvg] = useState(0);
-  const [incorrectAnswers, setIncorrectAnswers] = useState(0);
+
+  // Session statistics combined into single state
+  const [sessionStats, setSessionStats] = useState({
+    reps: 0,
+    responseTimes: [] as number[],
+    incorrectAnswers: 0,
+    lastSessionAvg: 0
+  });
   const [topicId, setTopicId] = useState<number | null>(null);
   const [currentStageId, setCurrentStageId] = useState(1);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -138,18 +185,14 @@ function EquationPracticeContent() {
     saveTimeoutRef.current = setTimeout(async () => {
       setSaveStatus('saving');
 
-      // Calculate average and median response times
-      const avgResponseTime = responseTimes.length > 0
-        ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
-        : 0;
-      const medianResponseTime = calculateMedian(responseTimes);
-      const accuracy = totalReps / (totalReps + incorrectCount) || 0;
+      // Calculate session stats
+      const stats = calculateSessionStats(responseTimes, totalReps, incorrectCount);
 
       await updateSession(sessionId, {
         total_reps: totalReps,
-        avg_response_time: avgResponseTime,
-        median_response_time: medianResponseTime,
-        accuracy
+        avg_response_time: stats.avgResponseTime,
+        median_response_time: stats.medianResponseTime,
+        accuracy: stats.accuracy
       });
 
       // Refresh all-time reps
@@ -183,24 +226,20 @@ function EquationPracticeContent() {
 
       // Immediate save on set completion (bypass debounce) - only if session exists
       if (sessionInitialized && sessionId) {
-        const totalReps = sessionReps;
+        const totalReps = sessionStats.reps;
         if (saveTimeoutRef.current) {
           clearTimeout(saveTimeoutRef.current);
         }
         setSaveStatus('saving');
 
         // Calculate stats
-        const avgResponseTime = responseTimes.length > 0
-          ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
-          : 0;
-        const medianResponseTime = calculateMedian(responseTimes);
-        const accuracy = totalReps / (totalReps + incorrectAnswers) || 0;
+        const stats = calculateSessionStats(sessionStats.responseTimes, totalReps, sessionStats.incorrectAnswers);
 
         await updateSession(sessionId, {
           total_reps: totalReps,
-          avg_response_time: avgResponseTime,
-          median_response_time: medianResponseTime,
-          accuracy
+          avg_response_time: stats.avgResponseTime,
+          median_response_time: stats.medianResponseTime,
+          accuracy: stats.accuracy
         });
 
         // Refresh all-time reps and check for stage advancement
@@ -246,7 +285,64 @@ function EquationPracticeContent() {
 
     // Reset timer for new problem
     problemStartTimeRef.current = Date.now();
-  }, [problemSet, currentIndex, initializeProblemSet, sessionId, sessionInitialized, sessionReps, responseTimes, incorrectAnswers, topicId, user, currentStageId]);
+  }, [problemSet, currentIndex, initializeProblemSet, sessionId, sessionInitialized, sessionStats, topicId, user, currentStageId]);
+
+  // Process correct answer - shared logic for both handleNumberClick and handleSubmit
+  const processCorrectAnswer = useCallback(async () => {
+    setFeedback('correct');
+
+    // Track response time
+    const responseTime = Date.now() - problemStartTimeRef.current;
+    const newResponseTimes = addFilteredResponseTime(
+      sessionStats.responseTimes,
+      responseTime,
+      sessionStats.lastSessionAvg
+    );
+
+    // Update session stats
+    const newSessionReps = sessionStats.reps + 1;
+    setSessionStats(prev => ({
+      ...prev,
+      reps: newSessionReps,
+      responseTimes: newResponseTimes
+    }));
+
+    // Save to database if logged in
+    if (user?.id) {
+      const currentSessionId = await ensureSessionCreated();
+      if (currentSessionId) {
+        debouncedSave(currentSessionId, newSessionReps, newResponseTimes, sessionStats.incorrectAnswers);
+      }
+    }
+
+    // Check for stage advancement
+    if (topicId && user?.id) {
+      const newTotalReps = allTimeReps + 1;
+      setAllTimeReps(newTotalReps);
+
+      const newStageId = await checkAndAdvanceStage(
+        user.id,
+        topicId,
+        currentStageId,
+        newTotalReps
+      );
+
+      if (newStageId > currentStageId) {
+        setCurrentStageId(newStageId);
+      }
+    }
+
+    // Remove focus from button to prevent highlight
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
+    // Load next problem after brief feedback
+    setTimeout(() => {
+      loadNextProblem();
+    }, 200);
+  }, [sessionStats, user, ensureSessionCreated, debouncedSave, topicId,
+      allTimeReps, currentStageId, loadNextProblem, setSessionStats]);
 
   // Initialize user and load progress from database
   useEffect(() => {
@@ -296,7 +392,10 @@ function EquationPracticeContent() {
 
           // Use the last session if it exists
           if (lastSession && lastSession.length > 0) {
-            setLastSessionAvg(lastSession[0].avg_response_time || 0);
+            setSessionStats(prev => ({
+              ...prev,
+              lastSessionAvg: lastSession[0].avg_response_time || 0
+            }));
           }
 
           // Don't create session here - will create on first answer submission
@@ -345,68 +444,10 @@ function EquationPracticeContent() {
 
     if (!isNaN(userAnswer) && newAnswer.length >= correctAnswer.toString().length) {
       if (userAnswer === correctAnswer) {
-        setFeedback('correct');
-
-        // Track response time
-        const responseTime = Date.now() - problemStartTimeRef.current;
-
-        // Calculate current average and check if this response time should be included
-        let newResponseTimes = [...responseTimes];
-        if (responseTimes.length > 0) {
-          const currentAvg = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
-          if (responseTime < currentAvg * 5) {
-            newResponseTimes.push(responseTime);
-          }
-        } else if (lastSessionAvg > 0) {
-          if (responseTime < lastSessionAvg * 5) {
-            newResponseTimes.push(responseTime);
-          }
-        } else {
-          newResponseTimes.push(responseTime);
-        }
-        setResponseTimes(newResponseTimes);
-
-        // Increment session reps
-        const newSessionReps = sessionReps + 1;
-        setSessionReps(newSessionReps);
-
-        // Save to database if logged in
-        if (user?.id) {
-          const currentSessionId = await ensureSessionCreated();
-          if (currentSessionId) {
-            debouncedSave(currentSessionId, newSessionReps, newResponseTimes, incorrectAnswers);
-          }
-        }
-
-        // Check for stage advancement
-        if (topicId && user?.id) {
-          const newTotalReps = allTimeReps + 1;
-          setAllTimeReps(newTotalReps);
-
-          const newStageId = await checkAndAdvanceStage(
-            user.id,
-            topicId,
-            currentStageId,
-            newTotalReps
-          );
-
-          if (newStageId > currentStageId) {
-            setCurrentStageId(newStageId);
-          }
-        }
-
-        // Remove focus from button to prevent highlight
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
-
-        // Load next problem immediately, feedback will flash briefly
-        setTimeout(() => {
-          loadNextProblem();
-        }, 200);
+        await processCorrectAnswer();
       }
     }
-  }, [feedback, config, answer, num1, num2, responseTimes, lastSessionAvg, sessionReps, incorrectAnswers, topicId, user, allTimeReps, currentStageId, ensureSessionCreated, debouncedSave, loadNextProblem]);
+  }, [feedback, config, answer, num1, num2, processCorrectAnswer]);
 
   const handleClear = () => {
     setAnswer('');
@@ -424,6 +465,21 @@ function EquationPracticeContent() {
     }
   };
 
+  // Numpad configuration based on equation type
+  const numpadConfig = useMemo(() => {
+    const hasNegatives = config?.id === 'negatives-addition' || config?.id === 'negatives-subtraction';
+    return {
+      bottomLeft: hasNegatives ? 'negative' : 'clear',
+      bottomRight: hasNegatives ? 'clear' : 'backspace'
+    };
+  }, [config?.id]);
+
+  // Calculate progress percentage
+  const progressToHa = useMemo(
+    () => Math.min((allTimeReps / 1000) * 100, 100),
+    [allTimeReps]
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!answer || !config) return;
@@ -433,60 +489,13 @@ function EquationPracticeContent() {
     const isCorrect = userAnswer === correctAnswer;
 
     if (isCorrect) {
-      setFeedback('correct');
-
-      // Track response time
-      const responseTime = Date.now() - problemStartTimeRef.current;
-
-      let newResponseTimes = [...responseTimes];
-      if (responseTimes.length > 0) {
-        const currentAvg = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
-        if (responseTime < currentAvg * 5) {
-          newResponseTimes.push(responseTime);
-        }
-      } else if (lastSessionAvg > 0) {
-        if (responseTime < lastSessionAvg * 5) {
-          newResponseTimes.push(responseTime);
-        }
-      } else {
-        newResponseTimes.push(responseTime);
-      }
-      setResponseTimes(newResponseTimes);
-
-      const newSessionReps = sessionReps + 1;
-      setSessionReps(newSessionReps);
-
-      // Save to database if logged in
-      if (user?.id) {
-        const currentSessionId = await ensureSessionCreated();
-        if (currentSessionId) {
-          debouncedSave(currentSessionId, newSessionReps, newResponseTimes, incorrectAnswers);
-        }
-      }
-
-      // Check for stage advancement
-      if (topicId && user?.id) {
-        const newTotalReps = allTimeReps + 1;
-        setAllTimeReps(newTotalReps);
-
-        const newStageId = await checkAndAdvanceStage(
-          user.id,
-          topicId,
-          currentStageId,
-          newTotalReps
-        );
-
-        if (newStageId > currentStageId) {
-          setCurrentStageId(newStageId);
-        }
-      }
-
-      setTimeout(() => {
-        loadNextProblem();
-      }, 200);
+      await processCorrectAnswer();
     } else {
       setFeedback('incorrect');
-      setIncorrectAnswers(prev => prev + 1);
+      setSessionStats(prev => ({
+        ...prev,
+        incorrectAnswers: prev.incorrectAnswers + 1
+      }));
 
       setTimeout(() => {
         setFeedback(null);
@@ -513,8 +522,6 @@ function EquationPracticeContent() {
       </div>
     );
   }
-
-  const progressToHa = Math.min((allTimeReps / 1000) * 100, 100);
 
   if (isLoading || !config) {
     return (
@@ -605,7 +612,7 @@ function EquationPracticeContent() {
                           flex flex-col justify-center align-center text-center"
           >
             <div className="text-zinc-500 dark:text-zinc-400" style={{ fontSize: 'calc(0.7vw + 0.7vh)', marginTop: '2%' }}>Session Reps</div>
-            <div className="font-bold text-blue-600 dark:text-blue-400" style={{ fontSize: 'calc(1.8vw + 1.8vh)' }}>{sessionReps}</div>
+            <div className="font-bold text-blue-600 dark:text-blue-400" style={{ fontSize: 'calc(1.8vw + 1.8vh)' }}>{sessionStats.reps}</div>
           </div>
           <div className="bg-white dark:bg-zinc-800 radius-card shadow-md border border-zinc-200 dark:border-zinc-700
                           flex flex-col justify-center align-center text-center"
@@ -627,7 +634,7 @@ function EquationPracticeContent() {
                 You've completed all {problemSet.length} problems!
               </p>
               <p className="text-modal-small text-zinc-500 dark:text-zinc-400">
-                Session reps: <span className="font-bold text-blue-600 dark:text-blue-400">{sessionReps}</span>
+                Session reps: <span className="font-bold text-blue-600 dark:text-blue-400">{sessionStats.reps}</span>
               </p>
               <p className="text-modal-small text-zinc-500 dark:text-zinc-400">
                 Total reps: <span className="font-bold text-indigo-600 dark:text-indigo-400">{allTimeReps}</span> / 1000
@@ -678,7 +685,8 @@ function EquationPracticeContent() {
                   {num}
                 </button>
               ))}
-              {config.id === 'negatives-addition' || config.id === 'negatives-subtraction' ? (
+              {/* Bottom left button */}
+              {numpadConfig.bottomLeft === 'negative' ? (
                 <button
                   type="button"
                   onClick={handleNegative}
@@ -686,7 +694,7 @@ function EquationPracticeContent() {
                   className="font-semibold radius-button bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                   style={{ fontSize: 'calc(1.3vw + 1.3vh)' }}
                 >
-                  +/
+                  +/−
                 </button>
               ) : (
                 <button
@@ -709,7 +717,8 @@ function EquationPracticeContent() {
               >
                 0
               </button>
-              {config.id === 'negatives-addition' || config.id === 'negatives-subtraction' ? (
+              {/* Bottom right button */}
+              {numpadConfig.bottomRight === 'clear' ? (
                 <button
                   type="button"
                   onClick={handleClear}
