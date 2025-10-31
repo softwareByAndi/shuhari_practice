@@ -14,31 +14,10 @@
   @apply mb-6;
 }
 
-.moduleGrid {
-  @apply grid grid-cols-2 md:grid-cols-3 gap-4;
+.contentSection {
+  @apply flex flex-col gap-20;
 }
 
-.masteryGrid {
-  @apply grid grid-cols-3 gap-6;
-}
-
-/* Card Styles */
-.explanationCard {
-  @apply bg-white dark:bg-zinc-800 rounded-xl md:rounded-2xl 
-         p-4 md:p-8 mb-12 
-         shadow-lg border border-zinc-200 dark:border-zinc-700;
-}
-
-.moduleCard {
-  @apply block bg-white dark:bg-zinc-800 rounded-2xl 
-         p-4 md:py-6
-         shadow-lg border border-zinc-200 dark:border-zinc-700 
-         hover:shadow-xl hover:scale-105 transition-all;
-}
-
-.cardHeader {
-  @apply flex justify-between items-center mb-4;
-}
 
 /* Typography Styles */
 .pageTitle {
@@ -47,64 +26,4 @@
 
 .pageSubtitle {
   @apply text-sm md:text-xl text-zinc-600 dark:text-zinc-400;
-}
-
-.sectionTitle {
-  @apply text-2xl md:text-3xl font-bold text-zinc-900 dark:text-white mb-6;
-}
-
-.cardTitle {
-  @apply text-xl md:text-2xl font-bold text-zinc-900 dark:text-white mb-4 text-center;
-}
-
-.moduleTitle {
-   @apply text-lg md:text-2xl font-bold text-zinc-900 dark:text-white mb-2 transition-colors;
-}
-
-/* Add hover effect using CSS selector */
-.moduleCard:hover .moduleTitle {
-  @apply text-blue-600 dark:text-blue-400;
-}
-
-.moduleDescription {
-  @apply text-xs md:text-sm text-zinc-600 dark:text-zinc-400;
-}
-
-.masteryDescription {
-  @apply text-xs md:text-sm text-zinc-600 dark:text-zinc-400;
-}
-
-
-
-/* Mastery Level Styles (Shu Ha Ri) */
-.masteryEmoji {
-  @apply text-4xl mb-2 text-center;
-}
-
-.masteryTitle {
-  @apply md:text-lg font-semibold mb-2 text-center;
-}
-
-.masteryDisabled {
-  @apply opacity-50;
-}
-
-
-
-/* Component Styles */
-.backLink {
-  @apply inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-4;
-}
-
-.levelBadge {
-  @apply flex flex-col h-fit items-center px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-3xl font-semibold rounded-full;
-}
-
-.moduleEmoji {
-  /* Fluid sizing: min 32px, preferred 8vw, max 64px */
-  font-size: clamp(2rem, 8vw, 4rem);
-  /* Alternative with pixels for absolute consistency:
-     font-size: clamp(32px, 8vw, 64px); */
-  min-height: 1.2em;
-  line-height: 1.2;
 }

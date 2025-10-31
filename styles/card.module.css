@@ -1,0 +1,55 @@
+@import 'tailwindcss' reference;
+
+
+.loading { 
+    @apply text-zinc-500 dark:text-zinc-400 text-2xl;
+}
+._section { /*placeholder*/ }
+
+.sectionTitle {
+    @apply text-2xl md:text-3xl font-bold mb-6 text-zinc-900 dark:text-white;
+}
+._grid {
+    @apply grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4;
+}
+.card {
+    @apply relative overflow-hidden
+        rounded-xl md:rounded-2xl
+        bg-white dark:bg-zinc-800
+        p-4 md:p-6 text-center
+        shadow-lg border border-zinc-200 dark:border-zinc-700
+        transition-all hover:scale-105 hover:shadow-xl;
+}
+.cardGlow {
+    @apply absolute top-0 right-0 w-full h-full
+        opacity-26 dark:opacity-26 rounded-full blur-3xl
+        translate-x-1/4 -translate-y-1/4
+        transition-opacity;
+}
+.cardContent {
+    @apply relative;
+}
+.cardIcon {
+    @apply mb-3 md:mb-4 text-4xl md:text-5xl;
+}
+.cardName {
+    @apply text-lg md:text-xl font-semibold text-zinc-900 dark:text-white;
+}
+.cardAction {
+    @apply text-xs md:text-sm text-zinc-500 dark:text-zinc-400 mt-2;
+}
+
+/* Disabled State Styles */
+.cardDisabled {
+    @apply bg-zinc-100 dark:bg-zinc-800/50
+        shadow-lg border-2 border-dashed border-zinc-300 dark:border-zinc-700;
+}
+.cardIconDisabled {
+    @apply mb-3 md:mb-4 text-4xl md:text-5xl grayscale;
+}
+.cardNameDisabled {
+    @apply text-lg md:text-xl font-semibold text-zinc-600 dark:text-zinc-500;
+}
+.cardActionDisabled {
+    @apply text-xs md:text-sm text-zinc-500 dark:text-zinc-600 mt-2;
+}

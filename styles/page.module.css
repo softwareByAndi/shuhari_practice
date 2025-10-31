@@ -1,0 +1,25 @@
+@import 'tailwindcss' reference;
+
+.page {
+    @apply min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-black;
+}
+.main {
+    @apply mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8;
+}
+.titleSection {
+    @apply mb-12 flex flex-col gap-4;
+}
+.title {
+    @apply text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white;
+}
+.sub_title {
+    @apply text-base md:text-lg lg:text-xl text-zinc-600 dark:text-zinc-400 max-w-3xl;
+}
+
+.title_description {
+    @apply text-base text-zinc-500 max-w-3xl;
+}
+
+.pageContent {
+    @apply flex flex-col gap-20;
+}

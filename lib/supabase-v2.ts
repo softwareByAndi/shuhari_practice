@@ -41,6 +41,20 @@ export async function getOrCreateUser(username: string) {
 
 // ============= Field & Subject Navigation =============
 
+export async function getAllFields(): Promise<Field[]> {
+  const { data, error } = await supabase
+    .from('field')
+    .select('*')
+    .order('field_id');
+
+  if (error) {
+    console.error('Error fetching fields:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
 export async function getActiveFields(): Promise<Field[]> {
   const { data, error } = await supabase
     .from('field')

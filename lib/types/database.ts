@@ -13,7 +13,7 @@ export interface Stage {
 
 export interface DifficultyProgression {
   difficulty_progression_id: number;
-  code: string; // 'standard' or 'kids_mode'
+  code: string;  // 'standard' or 'kids_mode'
   hatsu: number; // reps required for Hatsu stage
   shu: number;   // reps required for Shu stage
   kan: number;   // reps required for Kan stage
@@ -39,6 +39,8 @@ export interface Field {
   code: string; // 'math', 'chemistry', etc.
   display_name: string; // 'Mathematics'
   is_active: boolean;
+  symbol: string | null | undefined;
+  tw_color: string | null | undefined;
 }
 
 export interface Subject {

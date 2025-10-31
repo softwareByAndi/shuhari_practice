@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import stage_styles from '@/styles/stage.module.css'
 
 export default function Header() {
   const { user, signOut } = useAuth();
@@ -14,13 +15,14 @@ export default function Header() {
 
   return (
     <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm">
-      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <a href="/" className="text-xl font-bold text-zinc-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-              ShuHaRi
-            </a>
-          </div>
+          <a href="/" className="text-xl font-bold text-zinc-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-center w-fit">
+            <span className={`${stage_styles.shu}`}>守</span>
+            <span className={`${stage_styles.ha}`}>破</span>
+            <span className={`${stage_styles.ri}`}>離</span>
+            <div className="text-xs m-0 text-zinc-500">Shuhari</div>
+          </a>
           <div className="flex items-center gap-4">
             {user ? (
               <>
