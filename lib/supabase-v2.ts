@@ -85,19 +85,19 @@ export async function getActiveFields(): Promise<Field[]> {
   return data || [];
 }
 
-export async function getSubjectsForField(fieldId: number): Promise<Subject[]> {
+export async function getSubjectByCode(code: string): Promise<Subject | null> {
   const { data, error } = await supabase
     .from('subject')
     .select('*')
-    .eq('field_id', fieldId)
-    .order('subject_id');
+    .eq('code', code)
+    .single();
 
   if (error) {
-    console.error('Error fetching subjects:', error);
-    return [];
+    console.error(`Error fetching subject with code ${code}:`, error);
+    return null;
   }
 
-  return data || [];
+  return data;
 }
 
 export async function getSubjectsForFieldCode(fieldCode: string): Promise<Subject[]> {
@@ -118,77 +118,43 @@ export async function getSubjectsForFieldCode(fieldCode: string): Promise<Subjec
   return data || [];
 }
 
-// ============= Topic Management =============
-
-export async function getTopicsForSubject(
-  userId: string,
-  subjectId: number
-): Promise<TopicWithProgress[]> {
-  // Get topics with their difficulty progression
-  const { data: topics, error: topicsError } = await supabase
-    .from('topic')
+export async function getSubjectsForField(fieldId: number): Promise<Subject[]> {
+  const { data, error } = await supabase
+    .from('subject')
     .select(`
       *,
-      difficulty_progression (*)
+      field!inner(code)
     `)
-    .eq('subject_id', subjectId)
-    .order('topic_id');
+    .eq('field.field_id', fieldId)
+    .order('subject_id');
 
-  if (topicsError) {
-    console.error('Error fetching topics:', topicsError);
+  if (error) {
+    console.error('Error fetching subjects for field code:', error);
     return [];
   }
 
-  if (!topics || topics.length === 0) return [];
+  return data || [];
+}
 
-  // Get user progress for these topics
-  const topicIds = topics.map(t => t.topic_id);
-  const { data: progressData } = await supabase
-    .from('user_progress')
-    .select('*')
-    .eq('user_id', userId)
-    .in('topic_id', topicIds);
+// ============= Topic Management =============
 
-  // Get session stats for each topic
-  const { data: sessionData } = await supabase
-    .from('session')
-    .select('topic_id, total_reps, start_time')
-    .eq('user_id', userId)
-    .in('topic_id', topicIds);
-
-  // Get available difficulty levels for each topic
-  const { data: difficultyOptions } = await supabase
-    .from('topic_difficulty_option')
+export async function getTopicsForSubjectCode(subjectCode: string): Promise<Topic[]> {
+  // Get topics with their difficulty progression
+  const { data, error } = await supabase
+    .from('topic')
     .select(`
-      topic_id,
-      difficulty_level (*)
+      *,
+      subject!inner(code)
     `)
-    .in('topic_id', topicIds);
+    .eq('subject.code', subjectCode)
+    .order('topic_id');
 
-  // Combine all data
-  return topics.map(topic => {
-    const progress = progressData?.find(p => p.topic_id === topic.topic_id);
-    const sessions = sessionData?.filter(s => s.topic_id === topic.topic_id) || [];
-    const difficulties = difficultyOptions
-      ?.filter(d => d.topic_id === topic.topic_id)
-      .map(d => d.difficulty_level)
-      .filter(Boolean) || [];
+  if (error) {
+    console.error('Error fetching topics:', error);
+    return [];
+  }
 
-    const totalReps = sessions.reduce((sum, s) => sum + s.total_reps, 0);
-    const lastSession = sessions.sort((a, b) =>
-      new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
-    )[0];
-
-    return {
-      ...topic,
-      user_progress: progress,
-      current_stage: progress ? { stage_id: progress.stage_id } as Stage : undefined,
-      difficulty_options: difficulties,
-      total_reps: totalReps,
-      sessions_count: sessions.length,
-      last_practiced: lastSession?.start_time
-    } as TopicWithProgress;
-  });
+  return data || [];
 }
 
 export async function getTopicById(topicId: number): Promise<Topic | null> {

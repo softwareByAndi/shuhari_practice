@@ -11,7 +11,7 @@ interface BreadCrumbsProps {
 
 export default async function BreadCrumbs({ paths }: BreadCrumbsProps) {
   return (
-    <div>
+    <div className="flex flex-row gap-2">
       {paths.map(({ path, label }, index) => (
         <Link
           key={index}

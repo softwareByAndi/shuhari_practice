@@ -16,12 +16,11 @@ const data = {
 
 export default async function Home() {
   return (
-    <div className={styles.page}>
+    <div className="page">
       <Header />
-      <main className={styles.main}>
+      <main>
 
           <div className={styles.titleSection}>
-
             <h1 className={styles.title}>{data.header.title}</h1>
             <h2 className={styles.sub_title}>{data.header.subTitle}</h2>
             <p className={styles.title_description}>{data.header.description}</p>

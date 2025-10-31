@@ -146,3 +146,13 @@ body {
 .min-height-answer-input {
   min-height: clamp(3.5rem, 8vh, 5.5rem);
 }
+
+.page {
+  @apply flex flex-col min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-black;
+}
+main {
+  @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8 flex-grow;
+}
+footer {
+  @apply flex justify-center mt-12 py-4 border-t border-zinc-200 dark:border-zinc-700;
+}

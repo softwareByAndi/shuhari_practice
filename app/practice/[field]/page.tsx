@@ -1,9 +1,11 @@
+import { getFieldByCode } from '@/lib/supabase-v2';
+
 import styles from '@/styles/page.module.css';
+
+import { notFound } from 'next/navigation';
 import CondensedStagesToMastery from '@/components/CondensedStagesToMastery';
 import SubjectsGrid from '@/components/SubjectsGrid';
 import Header from '@/components/Header';
-import { getFieldByCode } from '@/lib/supabase-v2';
-import { notFound } from 'next/navigation';
 
 // Field-specific content configuration
 const fieldContent: Record<string, { title: string; subTitle: string; description: string }> = {
@@ -42,19 +44,16 @@ export default async function FieldPractice({ params }: { params: Promise<{ fiel
 
   // If field not found, show 404
   if (!field) {
-    notFound();
+    return notFound();
   }
 
-  // Get content for this field or use default
   const content = fieldContent[fieldCode] || fieldContent.default;
-
-  // If field exists in database, override the title with the display name
-  const displayTitle = field.display_name ? `${field.display_name} Practice` : content.title;
+  const displayTitle = field!.display_name ? `${field!.display_name} Practice` : content.title;
 
   return (
-    <div className={styles.page}>
+    <div className="page">
       <Header />
-      <main className={styles.main}>
+      <main>
 
           {/* Header */}
           <div className={styles.titleSection}>
@@ -69,7 +68,7 @@ export default async function FieldPractice({ params }: { params: Promise<{ fiel
           </div>
 
       </main>
-      <footer className={styles.footer}>
+      <footer>
         <CondensedStagesToMastery />
       </footer>
     </div>
