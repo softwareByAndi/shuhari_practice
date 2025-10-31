@@ -1,0 +1,15 @@
+@import "tailwindcss" reference;
+
+.bg-glow-blue    { @apply bg-blue-500;    }
+.bg-glow-green   { @apply bg-green-500;   }
+.bg-glow-emerald { @apply bg-emerald-500; }
+.bg-glow-indigo  { @apply bg-indigo-500;  }
+.bg-glow-gray    { @apply bg-gray-700 dark:bg-gray-200; }
+.bg-glow-pink    { @apply bg-pink-500;    }
+.bg-glow-purple  { @apply bg-purple-500;  }
+.bg-glow-amber   { @apply bg-amber-500;   }
+.bg-glow-violet  { @apply bg-violet-500;  }
+.bg-glow-red     { @apply bg-red-500;     }
+.bg-glow-orange  { @apply bg-orange-500;  }
+.bg-glow-teal    { @apply bg-teal-500;    }
+

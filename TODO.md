@@ -1,0 +1,11 @@
+- fix redirect to Login in topics page even when logged in
+- fix - don't show anonymous user banner when checking if logged in
+- fix save logic in [[/contexts/SessionProvider]]
+- fix UI in practice page
+- fix numpad input
+    - auto submit
+    - remove submit button
+    - add help button
+    - add onInput handler to capture keydown events 
+        - if number or backspace, update input
+- tweak UI in other pages

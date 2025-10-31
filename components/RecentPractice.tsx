@@ -126,9 +126,12 @@ export default function RecentPractice() {
               stageProgress = calculateProgress(topic.total_reps || 0, stageRequirement);
             }
 
-            // Build practice URL - for now defaulting to arithmetic subject
-            // In a complete implementation, we'd store the subject info with the topic
-            const practiceUrl = `/practice/math/arithmetic/${topic.code}?stage=${currentStageId}&difficulty=101`;
+            // Build practice URL using the actual field and subject codes
+            const subjectData = (topic as any).subject;
+            const fieldData = subjectData?.field;
+            const fieldCode = fieldData?.code || 'math'; // fallback to math if not found
+            const subjectCode = subjectData?.code || 'arithmetic'; // fallback to arithmetic
+            const practiceUrl = `/practice/${fieldCode}/${subjectCode}/${topic.code}?stage=${currentStageId}&difficulty=101`;
 
             return (
               <Link

@@ -1,16 +1,17 @@
-'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
 import { getSubjectsForField } from '@/lib/supabase-v2';
 import { Subject } from '@/lib/types/database';
+
 import styles from '@/styles/card.module.css';
+
 import CardsGrid from './CardsGrid';
+import { notFound } from 'next/navigation';
 
 const data = {
   default_card: {
     symbol: '📚',
-    tw_color: 'bg-blue-500'
+    tw_color: 'gray'
   },
 }
 
@@ -19,30 +20,26 @@ interface SubjectsGridProps {
   fieldCode: string;
 }
 
-export default function SubjectsGrid({ fieldId, fieldCode }: SubjectsGridProps) {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [loading, setLoading] = useState(true);
+/*
+export default async function FieldsGrid() {
 
-  useEffect(() => {
-    async function loadSubjects() {
-      const subjectList = await getSubjectsForField(fieldId);
-      setSubjects(subjectList);
-      setLoading(false);
-    }
-    loadSubjects();
-  }, [fieldId]);
+  const fields: Field[] = await getAllFields();
+  if (!fields) {
+    return notFound();
+  }
+*/
 
+export default async function SubjectsGrid({ fieldId, fieldCode }: SubjectsGridProps) {
+
+  const subjects: Subject[] = await getSubjectsForField(fieldId);
+
+  if (!fieldId || !subjects) {
+    return notFound();
+  }
 
   return (
     <div>
       <h2 className={styles.sectionTitle}>Choose a Subject</h2>
-
-      {loading ? (
-
-        <CardsGrid cards={[1,2,3,4,5,6,7,8,9,10,11,12].map(() => null)} />
-
-      ) : (
-
           <CardsGrid cards={subjects.map(s => ({
               id:           s.subject_id,
               display_name: s.display_name,
@@ -51,10 +48,8 @@ export default function SubjectsGrid({ fieldId, fieldCode }: SubjectsGridProps) 
               link:         `/practice/${fieldCode}/${s.code}`,
               icon:         SUBJECT_ICONS[s.code] || data.default_card.symbol,
               isActive:     true,
-              colorClass:   data.default_card.tw_color,
+              color:        data.default_card.tw_color,
           }))} />
-
-      )}
     </div>
   );
 }
@@ -64,7 +59,7 @@ export default function SubjectsGrid({ fieldId, fieldCode }: SubjectsGridProps) 
 // Field icon and color mapping
 
 const SUBJECT_ICONS: Record<string, string> = {
-  'arithmetic': '➕',
+  'arithmetic': '➗',
   'algebra':    '𝒙',
   'geometry':   '📐',
   'calculus':   '∫',

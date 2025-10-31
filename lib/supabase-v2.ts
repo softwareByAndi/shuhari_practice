@@ -55,6 +55,21 @@ export async function getAllFields(): Promise<Field[]> {
   return data || [];
 }
 
+export async function getFieldByCode(code: string): Promise<Field | null> {
+  const { data, error } = await supabase
+    .from('field')
+    .select('*')
+    .eq('code', code)
+    .single();
+
+  if (error) {
+    console.error(`Error fetching field with code ${code}:`, error);
+    return null;
+  }
+
+  return data;
+}
+
 export async function getActiveFields(): Promise<Field[]> {
   const { data, error } = await supabase
     .from('field')
@@ -79,6 +94,24 @@ export async function getSubjectsForField(fieldId: number): Promise<Subject[]> {
 
   if (error) {
     console.error('Error fetching subjects:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+export async function getSubjectsForFieldCode(fieldCode: string): Promise<Subject[]> {
+  const { data, error } = await supabase
+    .from('subject')
+    .select(`
+      *,
+      field!inner(code)
+    `)
+    .eq('field.code', fieldCode)
+    .order('subject_id');
+
+  if (error) {
+    console.error('Error fetching subjects for field code:', error);
     return [];
   }
 
@@ -450,14 +483,17 @@ export async function getRecentTopicsWithProgress(
   userId: string,
   limit: number = 10
 ): Promise<TopicWithProgress[]> {
-  // Get recent sessions
+  // Get recent sessions with field information
   const { data: recentSessions, error } = await supabase
     .from('session')
     .select(`
       *,
       topic:topic_id (
         *,
-        subject:subject_id (*)
+        subject:subject_id (
+          *,
+          field:field_id (*)
+        )
       )
     `)
     .eq('user_id', userId)

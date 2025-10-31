@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   getTopicsForSubject,
-  getSubjectsForField
+  getSubjectsForFieldCode
 } from '@/lib/supabase-v2';
 import {
   TopicWithProgress,
@@ -37,6 +37,7 @@ export default function SubjectPage() {
   const [subject, setSubject] = useState<Subject | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fieldCode = params.field as string;
   const subjectCode = params.subject as string;
 
   useEffect(() => {
@@ -47,14 +48,13 @@ export default function SubjectPage() {
 
     async function loadData() {
       try {
-        // Get subject info
-        const mathFieldId = 101;
-        const subjects = await getSubjectsForField(mathFieldId);
-        const currentSubject = subjects.find(s => s.code === subjectCode);
+        // Get subjects for this field using the field code
+        const subjects = await getSubjectsForFieldCode(fieldCode);
+        const currentSubject = subjects.find((s: Subject) => s.code === subjectCode);
 
         if (!currentSubject) {
           console.error('Subject not found:', subjectCode);
-          router.push('/practice/math');
+          router.push(`/practice/${fieldCode}`);
           return;
         }
 
@@ -71,7 +71,7 @@ export default function SubjectPage() {
     }
 
     loadData();
-  }, [user, subjectCode, router]);
+  }, [user, subjectCode, fieldCode, router]);
 
   if (loading) {
     return (
@@ -99,10 +99,10 @@ export default function SubjectPage() {
         {/* Header */}
         <div className={styles.headerWrapper}>
           <Link
-            href="/practice/math"
+            href={`/practice/${fieldCode}`}
             className={styles.backLink}
           >
-            ← Back to Mathematics
+            ← Back to Subjects
           </Link>
           <h1 className={styles.pageTitle}>
             {subject.display_name}
@@ -136,7 +136,7 @@ export default function SubjectPage() {
               return (
                 <Link
                   key={topic.topic_id}
-                  href={`/practice/math/${subjectCode}/${topic.code}?stage=${currentStageId}&difficulty=101`}
+                  href={`/practice/${fieldCode}/${subjectCode}/${topic.code}?stage=${currentStageId}&difficulty=101`}
                   className={styles.topicCard}
                 >
                   <div className={styles.topicHeader}>

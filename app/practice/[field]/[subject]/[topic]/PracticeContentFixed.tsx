@@ -33,6 +33,7 @@ export default function PracticeContentFixed() {
     getAccuracy,
   } = useSession();
 
+  const fieldCode = params.field as string;
   const subject = params.subject as string;
   const topicCode = params.topic as string;
 
@@ -219,13 +220,13 @@ export default function PracticeContentFixed() {
             </div>
             <div className="pt-4 space-y-2">
               <Link
-                href={`/practice/math/${subject}/${topicCode}`}
+                href={`/practice/${fieldCode}/${subject}/${topicCode}`}
                 className="block w-full bg-blue-600 text-white py-3 rounded-lg text-center font-semibold hover:bg-blue-700 transition-colors"
               >
                 Practice Again
               </Link>
               <Link
-                href="/practice/math"
+                href={`/practice/${fieldCode}`}
                 className="block w-full bg-gray-200 text-gray-700 py-3 rounded-lg text-center font-semibold hover:bg-gray-300 transition-colors"
               >
                 Back to Topics

@@ -1,5 +1,6 @@
 
 import styles from '@/styles/card.module.css';
+import colors from '@/styles/colors.module.css';
 
 interface CardsGridProps {
   cards: (null | {
@@ -10,9 +11,10 @@ interface CardsGridProps {
     link: string | null;
     icon: string;
     isActive: boolean;
-    colorClass: string | null;
+    color: string | null;
   })[];
 }
+
 
 export default function CardsGrid({ cards }: CardsGridProps) {
 
@@ -33,7 +35,7 @@ export default function CardsGrid({ cards }: CardsGridProps) {
               href={card.link ?? undefined}
               className={styles.card}
             >
-              <div className={`${styles.cardGlow} ${card.colorClass}`}></div>
+              <div className={`${styles.cardGlow} ${colors['bg-glow-' + card.color]}`}></div>
               <div className={styles.cardContent}>
                 <div className={styles.cardIcon}>{card.icon}</div>
                 <h3 className={styles.cardName}>{card.display_name}</h3>
