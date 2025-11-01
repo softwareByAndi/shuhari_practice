@@ -1,0 +1,37 @@
+[
+  {
+    "stage_id": 1,
+    "code": "hatsu",
+    "display_name": "初 - Hatsu (Begin)"
+  },
+  {
+    "stage_id": 2,
+    "code": "shu",
+    "display_name": "守 - Shu (Obey)"
+  },
+  {
+    "stage_id": 3,
+    "code": "kan",
+    "display_name": "鑑 - Kan (Mirror)"
+  },
+  {
+    "stage_id": 4,
+    "code": "ha",
+    "display_name": "破 - Ha (Break)"
+  },
+  {
+    "stage_id": 5,
+    "code": "toi",
+    "display_name": "問 - Toi (Question)"
+  },
+  {
+    "stage_id": 6,
+    "code": "ri",
+    "display_name": "離 - Ri (Leave)"
+  },
+  {
+    "stage_id": 7,
+    "code": "ku",
+    "display_name": "空 - Ku (Void)"
+  }
+]

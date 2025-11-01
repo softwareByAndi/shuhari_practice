@@ -1,0 +1,65 @@
+[
+  {
+    "topic_id": 1,
+    "code": "add",
+    "subject_id": 101001,
+    "difficulty_progression_id": 1,
+    "display_name": "Addition"
+  },
+  {
+    "topic_id": 2,
+    "code": "sub",
+    "subject_id": 101001,
+    "difficulty_progression_id": 1,
+    "display_name": "Subtraction"
+  },
+  {
+    "topic_id": 3,
+    "code": "mul",
+    "subject_id": 101001,
+    "difficulty_progression_id": 1,
+    "display_name": "Multiplication"
+  },
+  {
+    "topic_id": 4,
+    "code": "div",
+    "subject_id": 101001,
+    "difficulty_progression_id": 1,
+    "display_name": "Division"
+  },
+  {
+    "topic_id": 5,
+    "code": "mod",
+    "subject_id": 101001,
+    "difficulty_progression_id": 1,
+    "display_name": "Modulus"
+  },
+  {
+    "topic_id": 6,
+    "code": "exp",
+    "subject_id": 101001,
+    "difficulty_progression_id": 1,
+    "display_name": "Exponents"
+  },
+  {
+    "topic_id": 7,
+    "code": "root",
+    "subject_id": 101001,
+    "difficulty_progression_id": 1,
+    "display_name": "Square Roots"
+  },
+  {
+    "topic_id": 8,
+    "code": "add_w_negatives",
+    "subject_id": 101001,
+    "difficulty_progression_id": 1,
+    "display_name": "Addition with Negatives"
+  },
+  {
+    "topic_id": 9,
+    "code": "subtract_w_negatives",
+    "subject_id": 101001,
+    "difficulty_progression_id": 1,
+    "display_name": "Subtraction with Negatives"
+  }
+]

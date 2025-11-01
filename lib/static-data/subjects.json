@@ -1,0 +1,44 @@
+[
+  {
+    "subject_id": 101001,
+    "code": "arithmetic",
+    "field_id": 101,
+    "display_name": "Arithmetic",
+    "is_active": true
+  },
+  {
+    "subject_id": 101002,
+    "code": "algebra",
+    "field_id": 101,
+    "display_name": "Algebra",
+    "is_active": false
+  },
+  {
+    "subject_id": 101003,
+    "code": "geometry",
+    "field_id": 101,
+    "display_name": "Geometry",
+    "is_active": false
+  },
+  {
+    "subject_id": 101004,
+    "code": "trig",
+    "field_id": 101,
+    "display_name": "Trigonometry",
+    "is_active": false
+  },
+  {
+    "subject_id": 101005,
+    "code": "lin_algebra",
+    "field_id": 101,
+    "display_name": "Linear Algebra",
+    "is_active": false
+  },
+  {
+    "subject_id": 101006,
+    "code": "calculus",
+    "field_id": 101,
+    "display_name": "Calculus",
+    "is_active": false
+  }
+]

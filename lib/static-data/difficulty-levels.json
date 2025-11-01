@@ -1,0 +1,42 @@
+[
+  {
+    "difficulty_level_id": 101,
+    "code": "1d",
+    "display_name": "Seedling",
+    "character": "種",
+    "pronunciation": "tane",
+    "description": "Just planted, beginning to grow"
+  },
+  {
+    "difficulty_level_id": 102,
+    "code": "2d",
+    "display_name": "Sapling",
+    "character": "若木",
+    "pronunciation": "wakagi",
+    "description": "Young tree finding its strength"
+  },
+  {
+    "difficulty_level_id": 103,
+    "code": "3d",
+    "display_name": "Bamboo",
+    "character": "竹",
+    "pronunciation": "take",
+    "description": "Flexible yet strong, rapid growth"
+  },
+  {
+    "difficulty_level_id": 104,
+    "code": "4d",
+    "display_name": "Cedar",
+    "character": "杉",
+    "pronunciation": "sugi",
+    "description": "Steady, established presence"
+  },
+  {
+    "difficulty_level_id": 105,
+    "code": "5d",
+    "display_name": "Ancient Oak",
+    "character": "老木",
+    "pronunciation": "rouboku",
+    "description": "Deep roots, mastery"
+  }
+]

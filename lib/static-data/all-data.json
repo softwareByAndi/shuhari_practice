@@ -1,0 +1,537 @@
+{
+  "fields": [
+    {
+      "field_id": 101,
+      "code": "math",
+      "display_name": "Mathematics",
+      "is_active": true,
+      "symbol": "🔢",
+      "tw_color": "blue"
+    },
+    {
+      "field_id": 121,
+      "code": "chemistry",
+      "display_name": "Chemistry",
+      "is_active": true,
+      "symbol": "⚗️",
+      "tw_color": "green"
+    },
+    {
+      "field_id": 122,
+      "code": "biology",
+      "display_name": "Biology",
+      "is_active": true,
+      "symbol": "🧬",
+      "tw_color": "emerald"
+    },
+    {
+      "field_id": 123,
+      "code": "physics",
+      "display_name": "Physics",
+      "is_active": true,
+      "symbol": "⚛️",
+      "tw_color": "indigo"
+    },
+    {
+      "field_id": 131,
+      "code": "engineering",
+      "display_name": "Engineering",
+      "is_active": true,
+      "symbol": "⚙️",
+      "tw_color": "gray"
+    },
+    {
+      "field_id": 201,
+      "code": "language",
+      "display_name": "Language",
+      "is_active": true,
+      "symbol": "📝",
+      "tw_color": "pink"
+    },
+    {
+      "field_id": 202,
+      "code": "programming",
+      "display_name": "Programming",
+      "is_active": true,
+      "symbol": "💻",
+      "tw_color": "purple"
+    },
+    {
+      "field_id": 301,
+      "code": "history",
+      "display_name": "History",
+      "is_active": true,
+      "symbol": "📜",
+      "tw_color": "amber"
+    },
+    {
+      "field_id": 302,
+      "code": "philosophy",
+      "display_name": "Philosophy",
+      "is_active": true,
+      "symbol": "🤔",
+      "tw_color": "violet"
+    },
+    {
+      "field_id": 303,
+      "code": "law",
+      "display_name": "Law",
+      "is_active": true,
+      "symbol": "⚖️",
+      "tw_color": "red"
+    },
+    {
+      "field_id": 304,
+      "code": "psychology",
+      "display_name": "Psychology",
+      "is_active": true,
+      "symbol": "🧠",
+      "tw_color": "orange"
+    },
+    {
+      "field_id": 401,
+      "code": "economics",
+      "display_name": "Economics",
+      "is_active": true,
+      "symbol": "📈",
+      "tw_color": "teal"
+    }
+  ],
+  "subjects": [
+    {
+      "subject_id": 101001,
+      "code": "arithmetic",
+      "field_id": 101,
+      "display_name": "Arithmetic",
+      "is_active": true
+    },
+    {
+      "subject_id": 101002,
+      "code": "algebra",
+      "field_id": 101,
+      "display_name": "Algebra",
+      "is_active": false
+    },
+    {
+      "subject_id": 101003,
+      "code": "geometry",
+      "field_id": 101,
+      "display_name": "Geometry",
+      "is_active": false
+    },
+    {
+      "subject_id": 101004,
+      "code": "trig",
+      "field_id": 101,
+      "display_name": "Trigonometry",
+      "is_active": false
+    },
+    {
+      "subject_id": 101005,
+      "code": "lin_algebra",
+      "field_id": 101,
+      "display_name": "Linear Algebra",
+      "is_active": false
+    },
+    {
+      "subject_id": 101006,
+      "code": "calculus",
+      "field_id": 101,
+      "display_name": "Calculus",
+      "is_active": false
+    }
+  ],
+  "topics": [
+    {
+      "topic_id": 1,
+      "code": "add",
+      "subject_id": 101001,
+      "difficulty_progression_id": 1,
+      "display_name": "Addition"
+    },
+    {
+      "topic_id": 2,
+      "code": "sub",
+      "subject_id": 101001,
+      "difficulty_progression_id": 1,
+      "display_name": "Subtraction"
+    },
+    {
+      "topic_id": 3,
+      "code": "mul",
+      "subject_id": 101001,
+      "difficulty_progression_id": 1,
+      "display_name": "Multiplication"
+    },
+    {
+      "topic_id": 4,
+      "code": "div",
+      "subject_id": 101001,
+      "difficulty_progression_id": 1,
+      "display_name": "Division"
+    },
+    {
+      "topic_id": 5,
+      "code": "mod",
+      "subject_id": 101001,
+      "difficulty_progression_id": 1,
+      "display_name": "Modulus"
+    },
+    {
+      "topic_id": 6,
+      "code": "exp",
+      "subject_id": 101001,
+      "difficulty_progression_id": 1,
+      "display_name": "Exponents"
+    },
+    {
+      "topic_id": 7,
+      "code": "root",
+      "subject_id": 101001,
+      "difficulty_progression_id": 1,
+      "display_name": "Square Roots"
+    },
+    {
+      "topic_id": 8,
+      "code": "add_w_negatives",
+      "subject_id": 101001,
+      "difficulty_progression_id": 1,
+      "display_name": "Addition with Negatives"
+    },
+    {
+      "topic_id": 9,
+      "code": "subtract_w_negatives",
+      "subject_id": 101001,
+      "difficulty_progression_id": 1,
+      "display_name": "Subtraction with Negatives"
+    }
+  ],
+  "stages": [
+    {
+      "stage_id": 1,
+      "code": "hatsu",
+      "display_name": "初 - Hatsu (Begin)"
+    },
+    {
+      "stage_id": 2,
+      "code": "shu",
+      "display_name": "守 - Shu (Obey)"
+    },
+    {
+      "stage_id": 3,
+      "code": "kan",
+      "display_name": "鑑 - Kan (Mirror)"
+    },
+    {
+      "stage_id": 4,
+      "code": "ha",
+      "display_name": "破 - Ha (Break)"
+    },
+    {
+      "stage_id": 5,
+      "code": "toi",
+      "display_name": "問 - Toi (Question)"
+    },
+    {
+      "stage_id": 6,
+      "code": "ri",
+      "display_name": "離 - Ri (Leave)"
+    },
+    {
+      "stage_id": 7,
+      "code": "ku",
+      "display_name": "空 - Ku (Void)"
+    }
+  ],
+  "difficultyLevels": [
+    {
+      "difficulty_level_id": 101,
+      "code": "1d",
+      "display_name": "Seedling",
+      "character": "種",
+      "pronunciation": "tane",
+      "description": "Just planted, beginning to grow"
+    },
+    {
+      "difficulty_level_id": 102,
+      "code": "2d",
+      "display_name": "Sapling",
+      "character": "若木",
+      "pronunciation": "wakagi",
+      "description": "Young tree finding its strength"
+    },
+    {
+      "difficulty_level_id": 103,
+      "code": "3d",
+      "display_name": "Bamboo",
+      "character": "竹",
+      "pronunciation": "take",
+      "description": "Flexible yet strong, rapid growth"
+    },
+    {
+      "difficulty_level_id": 104,
+      "code": "4d",
+      "display_name": "Cedar",
+      "character": "杉",
+      "pronunciation": "sugi",
+      "description": "Steady, established presence"
+    },
+    {
+      "difficulty_level_id": 105,
+      "code": "5d",
+      "display_name": "Ancient Oak",
+      "character": "老木",
+      "pronunciation": "rouboku",
+      "description": "Deep roots, mastery"
+    }
+  ],
+  "difficultyProgressions": [
+    {
+      "difficulty_progression_id": 1,
+      "code": "standard",
+      "hatsu": 1000,
+      "shu": 5000,
+      "kan": 10000,
+      "ha": 50000,
+      "toi": 250000,
+      "ri": 5000000
+    },
+    {
+      "difficulty_progression_id": 2,
+      "code": "kids_mode",
+      "hatsu": 10,
+      "shu": 100,
+      "kan": 500,
+      "ha": 2000,
+      "toi": 5000,
+      "ri": 20000
+    }
+  ],
+  "topicDifficultyOptions": [
+    {
+      "topic_difficulty_option_id": 1,
+      "topic_id": 1,
+      "difficulty_level_id": 101
+    },
+    {
+      "topic_difficulty_option_id": 2,
+      "topic_id": 1,
+      "difficulty_level_id": 102
+    },
+    {
+      "topic_difficulty_option_id": 3,
+      "topic_id": 1,
+      "difficulty_level_id": 103
+    },
+    {
+      "topic_difficulty_option_id": 4,
+      "topic_id": 1,
+      "difficulty_level_id": 104
+    },
+    {
+      "topic_difficulty_option_id": 5,
+      "topic_id": 1,
+      "difficulty_level_id": 105
+    },
+    {
+      "topic_difficulty_option_id": 6,
+      "topic_id": 2,
+      "difficulty_level_id": 101
+    },
+    {
+      "topic_difficulty_option_id": 7,
+      "topic_id": 2,
+      "difficulty_level_id": 102
+    },
+    {
+      "topic_difficulty_option_id": 8,
+      "topic_id": 2,
+      "difficulty_level_id": 103
+    },
+    {
+      "topic_difficulty_option_id": 9,
+      "topic_id": 2,
+      "difficulty_level_id": 104
+    },
+    {
+      "topic_difficulty_option_id": 10,
+      "topic_id": 2,
+      "difficulty_level_id": 105
+    },
+    {
+      "topic_difficulty_option_id": 11,
+      "topic_id": 3,
+      "difficulty_level_id": 101
+    },
+    {
+      "topic_difficulty_option_id": 12,
+      "topic_id": 3,
+      "difficulty_level_id": 102
+    },
+    {
+      "topic_difficulty_option_id": 13,
+      "topic_id": 3,
+      "difficulty_level_id": 103
+    },
+    {
+      "topic_difficulty_option_id": 14,
+      "topic_id": 3,
+      "difficulty_level_id": 104
+    },
+    {
+      "topic_difficulty_option_id": 15,
+      "topic_id": 3,
+      "difficulty_level_id": 105
+    },
+    {
+      "topic_difficulty_option_id": 16,
+      "topic_id": 4,
+      "difficulty_level_id": 101
+    },
+    {
+      "topic_difficulty_option_id": 17,
+      "topic_id": 4,
+      "difficulty_level_id": 102
+    },
+    {
+      "topic_difficulty_option_id": 18,
+      "topic_id": 4,
+      "difficulty_level_id": 103
+    },
+    {
+      "topic_difficulty_option_id": 19,
+      "topic_id": 4,
+      "difficulty_level_id": 104
+    },
+    {
+      "topic_difficulty_option_id": 20,
+      "topic_id": 4,
+      "difficulty_level_id": 105
+    },
+    {
+      "topic_difficulty_option_id": 21,
+      "topic_id": 5,
+      "difficulty_level_id": 101
+    },
+    {
+      "topic_difficulty_option_id": 22,
+      "topic_id": 5,
+      "difficulty_level_id": 102
+    },
+    {
+      "topic_difficulty_option_id": 23,
+      "topic_id": 5,
+      "difficulty_level_id": 103
+    },
+    {
+      "topic_difficulty_option_id": 24,
+      "topic_id": 5,
+      "difficulty_level_id": 104
+    },
+    {
+      "topic_difficulty_option_id": 25,
+      "topic_id": 5,
+      "difficulty_level_id": 105
+    },
+    {
+      "topic_difficulty_option_id": 26,
+      "topic_id": 6,
+      "difficulty_level_id": 101
+    },
+    {
+      "topic_difficulty_option_id": 27,
+      "topic_id": 6,
+      "difficulty_level_id": 102
+    },
+    {
+      "topic_difficulty_option_id": 28,
+      "topic_id": 6,
+      "difficulty_level_id": 103
+    },
+    {
+      "topic_difficulty_option_id": 29,
+      "topic_id": 6,
+      "difficulty_level_id": 104
+    },
+    {
+      "topic_difficulty_option_id": 30,
+      "topic_id": 6,
+      "difficulty_level_id": 105
+    },
+    {
+      "topic_difficulty_option_id": 31,
+      "topic_id": 7,
+      "difficulty_level_id": 101
+    },
+    {
+      "topic_difficulty_option_id": 32,
+      "topic_id": 7,
+      "difficulty_level_id": 102
+    },
+    {
+      "topic_difficulty_option_id": 33,
+      "topic_id": 7,
+      "difficulty_level_id": 103
+    },
+    {
+      "topic_difficulty_option_id": 34,
+      "topic_id": 7,
+      "difficulty_level_id": 104
+    },
+    {
+      "topic_difficulty_option_id": 35,
+      "topic_id": 7,
+      "difficulty_level_id": 105
+    },
+    {
+      "topic_difficulty_option_id": 36,
+      "topic_id": 8,
+      "difficulty_level_id": 101
+    },
+    {
+      "topic_difficulty_option_id": 37,
+      "topic_id": 8,
+      "difficulty_level_id": 102
+    },
+    {
+      "topic_difficulty_option_id": 38,
+      "topic_id": 8,
+      "difficulty_level_id": 103
+    },
+    {
+      "topic_difficulty_option_id": 39,
+      "topic_id": 8,
+      "difficulty_level_id": 104
+    },
+    {
+      "topic_difficulty_option_id": 40,
+      "topic_id": 8,
+      "difficulty_level_id": 105
+    },
+    {
+      "topic_difficulty_option_id": 41,
+      "topic_id": 9,
+      "difficulty_level_id": 101
+    },
+    {
+      "topic_difficulty_option_id": 42,
+      "topic_id": 9,
+      "difficulty_level_id": 102
+    },
+    {
+      "topic_difficulty_option_id": 43,
+      "topic_id": 9,
+      "difficulty_level_id": 103
+    },
+    {
+      "topic_difficulty_option_id": 44,
+      "topic_id": 9,
+      "difficulty_level_id": 104
+    },
+    {
+      "topic_difficulty_option_id": 45,
+      "topic_id": 9,
+      "difficulty_level_id": 105
+    }
+  ]
+}

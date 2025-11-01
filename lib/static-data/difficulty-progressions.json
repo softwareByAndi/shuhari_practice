@@ -1,0 +1,22 @@
+[
+  {
+    "difficulty_progression_id": 1,
+    "code": "standard",
+    "hatsu": 1000,
+    "shu": 5000,
+    "kan": 10000,
+    "ha": 50000,
+    "toi": 250000,
+    "ri": 5000000
+  },
+  {
+    "difficulty_progression_id": 2,
+    "code": "kids_mode",
+    "hatsu": 10,
+    "shu": 100,
+    "kan": 500,
+    "ha": 2000,
+    "toi": 5000,
+    "ri": 20000
+  }
+]

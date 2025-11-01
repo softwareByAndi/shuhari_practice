@@ -4,11 +4,16 @@ import type {
   UserProgress, Session, TopicWithProgress, SessionWithDetails,
   StageCode
 } from './types/database';
+import * as localDataProvider from './local-data-provider';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Configuration to switch between local and remote data
+// Set to true to use local cached data for static tables (fields, subjects, topics, etc.)
+const USE_LOCAL_STATIC_DATA = true;
 
 // ============= User Management (kept from original) =============
 
@@ -42,6 +47,10 @@ export async function getOrCreateUser(username: string) {
 // ============= Field & Subject Navigation =============
 
 export async function getAllFields(): Promise<Field[]> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getAllFields();
+  }
+
   const { data, error } = await supabase
     .from('field')
     .select('*')
@@ -56,6 +65,10 @@ export async function getAllFields(): Promise<Field[]> {
 }
 
 export async function getFieldByCode(code: string): Promise<Field | null> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getFieldByCode(code);
+  }
+
   const { data, error } = await supabase
     .from('field')
     .select('*')
@@ -71,6 +84,10 @@ export async function getFieldByCode(code: string): Promise<Field | null> {
 }
 
 export async function getActiveFields(): Promise<Field[]> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getActiveFields();
+  }
+
   const { data, error } = await supabase
     .from('field')
     .select('*')
@@ -86,6 +103,10 @@ export async function getActiveFields(): Promise<Field[]> {
 }
 
 export async function getSubjectByCode(code: string): Promise<Subject | null> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getSubjectByCode(code);
+  }
+
   const { data, error } = await supabase
     .from('subject')
     .select('*')
@@ -101,6 +122,10 @@ export async function getSubjectByCode(code: string): Promise<Subject | null> {
 }
 
 export async function getSubjectsForFieldCode(fieldCode: string): Promise<Subject[]> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getSubjectsForFieldCode(fieldCode);
+  }
+
   const { data, error } = await supabase
     .from('subject')
     .select(`
@@ -119,6 +144,10 @@ export async function getSubjectsForFieldCode(fieldCode: string): Promise<Subjec
 }
 
 export async function getSubjectsForField(fieldId: number): Promise<Subject[]> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getSubjectsForField(fieldId);
+  }
+
   const { data, error } = await supabase
     .from('subject')
     .select(`
@@ -139,6 +168,10 @@ export async function getSubjectsForField(fieldId: number): Promise<Subject[]> {
 // ============= Topic Management =============
 
 export async function getTopicsForSubjectCode(subjectCode: string): Promise<Topic[]> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getTopicsForSubjectCode(subjectCode);
+  }
+
   // Get topics with their difficulty progression
   const { data, error } = await supabase
     .from('topic')
@@ -158,6 +191,10 @@ export async function getTopicsForSubjectCode(subjectCode: string): Promise<Topi
 }
 
 export async function getTopicById(topicId: number): Promise<Topic | null> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getTopicById(topicId);
+  }
+
   const { data, error } = await supabase
     .from('topic')
     .select('*')
@@ -173,6 +210,10 @@ export async function getTopicById(topicId: number): Promise<Topic | null> {
 }
 
 export async function getTopicByCode(code: string): Promise<Topic | null> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getTopicByCode(code);
+  }
+
   const { data, error } = await supabase
     .from('topic')
     .select('*')
@@ -320,6 +361,10 @@ export async function getStageRequirements(
   topicId: number,
   stageCode: StageCode
 ): Promise<number> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getStageRequirements(topicId, stageCode);
+  }
+
   // Get the topic's difficulty progression
   const { data: topic, error } = await supabase
     .from('topic')
@@ -360,6 +405,10 @@ export async function getStageRequirements(
 }
 
 export async function getStageById(stageId: number): Promise<Stage | null> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getStageById(stageId);
+  }
+
   const { data, error } = await supabase
     .from('stage')
     .select('*')
@@ -514,6 +563,10 @@ export async function getRecentTopicsWithProgress(
 // ============= Difficulty Levels =============
 
 export async function getDifficultyLevels(): Promise<DifficultyLevel[]> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getDifficultyLevels();
+  }
+
   const { data, error } = await supabase
     .from('difficulty_level')
     .select('*')
@@ -528,6 +581,10 @@ export async function getDifficultyLevels(): Promise<DifficultyLevel[]> {
 }
 
 export async function getDifficultyLevelsForTopic(topicId: number): Promise<DifficultyLevel[]> {
+  if (USE_LOCAL_STATIC_DATA) {
+    return localDataProvider.getDifficultyLevelsForTopic(topicId);
+  }
+
   const { data, error } = await supabase
     .from('topic_difficulty_option')
     .select(`

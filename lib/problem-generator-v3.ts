@@ -110,20 +110,24 @@ export function getComplexitySettings(
       range.num1.max = range.num1.min + _p;
     }
     else {
+        console.log('Adjusting ranges for two variables');
         let root = Math.floor(Math.sqrt(_p));
         root = root < 1 ? 1 : root;
 
-        const diff = {
-          num1: (root > range.num1.max ? root - range.num1.min : 0),
-          num2: (root > range.num2.max ? root - range.num2.min : 0),
+        const out_of_range = {
+          /* a positive difference means  */
+          num1: ((range.num1.max - range.num1.min) - root) > 0,
+          num2: ((range.num2.max - range.num2.min) - root) > 0,
         };
 
-        if (diff.num1 > 0 && diff.num2 > 0)
+        console.log('root: ', root, 'out_of_range: ', out_of_range);
+
+        if (out_of_range.num1 && out_of_range.num2)
         {
             range.num1.max = range.num1.min + root;
             range.num2.max = range.num2.min + root;
         }
-        else if (diff.num1 > 0 && diff.num2 < 0)
+        else if (out_of_range.num1)
         {
             const db = range.num2.max - range.num2.min;
             /*
@@ -134,7 +138,7 @@ export function getComplexitySettings(
             const adjust = da < 1 ? 1 : da;
             range.num1.max = range.num1.min + adjust;
         }
-        else if (diff.num1 < 0 && diff.num2 > 0)
+        else if (out_of_range.num2)
         {
             const db = range.num1.max - range.num1.min;
             /*
