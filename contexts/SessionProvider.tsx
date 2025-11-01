@@ -75,27 +75,6 @@ export function SessionProvider({ children }: SessionProviderProps) {
     try {
       const userId = user?.id || null;
 
-      // // Create session in database if user is logged in
-      // if (userId) {
-      //   const { data, error } = await supabase
-      //     .from('session')
-      //     .insert({
-      //       user_id: userId,
-      //       topic_id: topicId,
-      //       total_reps: 0,
-      //       accuracy: 0,
-      //       average_response_time: 0,
-      //       median_response_time: 0,
-      //       started_at: new Date().toISOString(),
-      //     })
-      //     .select()
-      //     .single();
-
-      //   if (!error && data) {
-      //     sessionId = data.id;
-      //   }
-      // }
-
       // Initialize session state
       const newSession: SessionData = {
         sessionId: null,

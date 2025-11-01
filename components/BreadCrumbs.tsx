@@ -16,7 +16,7 @@ export default async function BreadCrumbs({ paths }: BreadCrumbsProps) {
         <Link
           key={index}
           href={path}
-          className="mb-4 inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline"
+          className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline"
         >
           {label}
         </Link>

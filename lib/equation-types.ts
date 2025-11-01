@@ -4,10 +4,16 @@ export type EquationType =
   | 'mul'
   | 'div'
   | 'mod'
+  | 'pow_2'
   | 'exp'
   | 'root'
   | 'add_w_negatives'
   | 'subtract_w_negatives';
+
+interface FilterOptions {
+  dec_in_answer?: boolean;
+  neg_in_answer?: boolean;
+}
 
 export interface EquationConfig {
   id: EquationType;
@@ -23,7 +29,7 @@ export interface EquationConfig {
    * Format how the equation should be displayed
    * (e.g., for negatives, show proper signs; for roots, show √ notation)
    */
-  displayEquation?: (num1: number, num2: number) => string;
+  displayEquation: (num1: number, num2: number) => string;
   /**
    * Validate that the problem is valid for the operation
    * (e.g., for division, num2 should not be 0)
@@ -33,7 +39,7 @@ export interface EquationConfig {
    * Optional filter to only include problems that meet certain criteria
    * (e.g., for division, only include problems with whole number results)
    */
-  filterProblem?: (num1: number, num2: number) => boolean;
+  filterProblem?: (num1: number, num2: number, options: FilterOptions) => boolean;
 }
 
 export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
@@ -54,8 +60,7 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     operator: '-',
     solve: (num1: number, num2: number) => num1 - num2,
     displayEquation: (num1: number, num2: number) => `${num1} - ${num2}`,
-    // Only include problems where num1 >= num2 (no negative results)
-    filterProblem: (num1: number, num2: number) => num1 >= num2,
+    filterProblem: (num1: number, num2: number, options: FilterOptions) => (options.neg_in_answer ? true : num1 >= num2),
   },
   mul: {
     id: 'mul',
@@ -74,10 +79,11 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     operator: '÷',
     solve: (num1: number, num2: number) => Math.floor(num1 / num2),
     displayEquation: (num1: number, num2: number) => `${num1} ÷ ${num2}`,
-    // Num2 cannot be 0
     isValidProblem: (_num1: number, num2: number) => num2 !== 0,
-    // Only include problems with whole number results
-    filterProblem: (num1: number, num2: number) => num2 !== 0 && num1 % num2 === 0,
+    filterProblem: (num1: number, num2: number, options: FilterOptions) => (
+      num2 !== 0 && 
+      (options.dec_in_answer ? true : num1 % num2 === 0)
+    ),
   },
   mod: {
     id: 'mod',
@@ -87,8 +93,20 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     operator: '%',
     solve: (num1: number, num2: number) => num1 % num2,
     displayEquation: (num1: number, num2: number) => `${num1} % ${num2}`,
-    // Num2 cannot be 0
     isValidProblem: (_num1: number, num2: number) => num2 !== 0,
+  },
+  pow_2: {
+    id: 'pow_2',
+    title: 'Powers of 2',
+    description: 'useful for binary and computer science',
+    emoji: '🔢',
+    operator: '^',
+    solve: (_base: number, exponent: number) => Math.pow(2, exponent),
+    displayEquation: (base: number, exponent: number) => `$2^${exponent}`,
+    isValidProblem: (num1: number, _num2: number) => num1 === 2,
+    filterProblem: (base: number, exp: number) => {
+      return exp <= 16
+    },
   },
   exp: {
     id: 'exp',
@@ -98,12 +116,8 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     operator: '^',
     solve: (base: number, exponent: number) => Math.pow(base, exponent),
     displayEquation: (base: number, exponent: number) => `${base}^${exponent}`,
-    // Keep exponents reasonable (2-5) and bases small for mental math
-    filterProblem: (base: number, exponent: number) => {
-      // For 1-digit: bases 2-10, exponents 2-5
-      // For 2-digit: bases 2-12, exponents 2-4
-      // For 3-digit: bases 2-15, exponents 2-3
-      return exponent >= 2 && exponent <= 5 && base >= 2;
+    filterProblem: (base: number, exp: number) => {
+      return exp <= 5
     },
   },
   root: {
@@ -112,14 +126,9 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     description: 'Practice finding square roots of perfect squares',
     emoji: '√',
     operator: '√',
-    // For square roots, num2 is ignored, num1 is the perfect square
-    solve: (num1: number, _num2: number) => Math.sqrt(num1),
-    displayEquation: (num1: number, _num2: number) => `√${num1}`,
-    // Only perfect squares
-    filterProblem: (num1: number, _num2: number) => {
-      const sqrt = Math.sqrt(num1);
-      return Number.isInteger(sqrt);
-    },
+    /*pass in the answer (root) as num1*/
+    solve: (num1: number, _num2: number) => num1,
+    displayEquation: (num1: number, _num2: number) => `√${num1 * num1}`,
   },
   add_w_negatives: {
     id: 'add_w_negatives',
@@ -129,13 +138,10 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     operator: '+',
     solve: (num1: number, num2: number) => num1 + num2,
     displayEquation: (num1: number, num2: number) => {
-      // For addition, show the operation properly with parentheses for clarity
-      if (num2 < 0) {
+      if (num2 < 0) 
         return `${num1} + (${num2})`;
-      }
       return `${num1} + ${num2}`;
     },
-    // Allow negative numbers
   },
   subtract_w_negatives: {
     id: 'subtract_w_negatives',
@@ -145,13 +151,10 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     operator: '-',
     solve: (num1: number, num2: number) => num1 - num2,
     displayEquation: (num1: number, num2: number) => {
-      // For subtraction, show the operation properly with parentheses for clarity
-      if (num2 < 0) {
+      if (num2 < 0) 
         return `${num1} - (${num2})`;
-      }
       return `${num1} - ${num2}`;
     },
-    // Allow negative numbers and results
   },
 };
 

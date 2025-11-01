@@ -125,11 +125,11 @@ export default function PracticeContentFixed() {
 
   const handleSubmit = async () => {
     if (!session || isSubmitting || !answer.trim()) {
-      console.log('ignoring submit');
+      // console.log('ignoring submit');
       return;
     }
 
-    console.log('submitting answer:', answer);
+    // console.log('submitting answer:', answer);
 
     setIsSubmitting(true);
     const currentProblem = session.problems[session.currentProblemIndex];

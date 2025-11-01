@@ -167,7 +167,7 @@ function generateStandardProblems(
       }
 
       // Apply filters
-      if (config.filterProblem && !config.filterProblem(i, j)) {
+      if (config.filterProblem && !config.filterProblem(i, j, {})) {
         continue;
       }
 

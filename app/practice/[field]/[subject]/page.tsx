@@ -4,6 +4,7 @@ import {
   getSubjectByCode,
   getTopicsForSubjectCode
 } from '@/lib/supabase-v2';
+import { TOPIC_ICONS } from '@/lib/topic-icons';
 
 import styles from '@/styles/page.module.css';
 
@@ -12,19 +13,6 @@ import BreadCrumbs from '@/components/BreadCrumbs';
 import CardsGrid from '@/components/CardsGrid';
 import CondensedStagesToMastery from '@/components/CondensedStagesToMastery';
 import Header from '@/components/Header';
-
-// Topic icons mapping
-const TOPIC_ICONS: Record<string, string> = {
-  'add': '➕',
-  'sub': '➖',
-  'mul': '✖️',
-  'div': '➗',
-  'mod': '%',
-  'exp': '^',
-  'root': '√',
-  'add_w_negatives': '±',
-  'subtract_w_negatives': '∓',
-};
 
 interface SubjectPageProps {
   params: Promise<{
@@ -46,9 +34,6 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
     getFieldByCode(fieldCode)
   ])
 
-  console.log('TOPICS:', topics);
-  console.log('SUBJECT:', subject);
-
   if (!subject) {
     return notFound();
   }
@@ -60,15 +45,11 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
 
   return (
     <div className="page">
-      <Header />
+      <Header params={params} />
       <main>
 
           {/* Header */}
           <div className={styles.titleSection}>
-            <BreadCrumbs paths={[
-              { label: 'Home', path: `/` },
-              { label: field?.display_name || 'Field', path: `/practice/${fieldCode}` }
-            ]} />
             <h1 className={styles.title}>{content.title}</h1>
             <p className={styles.sub_title}>{content.subTitle}</p>
           </div>

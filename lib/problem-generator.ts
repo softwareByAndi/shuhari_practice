@@ -34,7 +34,7 @@ export function generateAllProblems(
       }
 
       // Apply any filters (e.g., only whole number division results)
-      if (config.filterProblem && !config.filterProblem(i, j)) {
+      if (config.filterProblem && !config.filterProblem(i, j, {})) {
         continue;
       }
 
