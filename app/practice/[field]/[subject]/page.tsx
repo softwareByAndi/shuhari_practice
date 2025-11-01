@@ -48,7 +48,7 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
       <Header params={params} />
       <main>
           {/* Header */}
-          <div className="titleSection">
+          <div className="titleSection mb-12">
             <h1 className="title">{content.title}</h1>
             <p className="sub_title">{content.subTitle}</p>
           </div>

@@ -132,61 +132,59 @@ export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnsw
     hasNegatives: complexitySettings?.allowNegatives.inAnswer,
   };
 
+  if (!currentProblem || !equationConfig || !complexitySettings) {
+    return (<div>Loading Problem Set...</div>);
+  }
+
   return (
     <div className="flex flex-col gap-6 h-full m-auto w-full pb-2 sm:pb-0">
-      {(!currentProblem || !equationConfig || !complexitySettings) ? (
-        <div>Loading problem...</div>
-      ) : (
-        <>
-          {/* input section */}
-          <div className="flex flex-col border p-4 rounded-lg shadow-md w-full h-full flex-grow max-w-[40vh] max-h-[250vw] mx-auto">
-            {/* problem display */}
-            {problemSet && problemSet.length > 0 && currentProblemIndex < problemSet.length ? (
-              <div className="text-center text-2xl md:text-4xl font-bold mb-4">
-                {currentProblem.display}
-              </div>
-            ) : (
-              <div className="text-center text-2xl md:text-4xl font-bold text-rose-500 mb-4">
-                No problem available
-              </div>
-            )}
-            {/* answer input */}
-            <div className="text-center text-3xl md:text-4xl mb-4 border p-2 rounded h-16">
-              {showAnswerFeedback ? currentProblem?.answer : answer || (<span className="text-zinc-500">?</span>) }
-            </div>
-
-            <div className="flex-grow h-full">
-              <Numpad
-                onNumberClick={numpad.onNumberClick}
-                onAction={numpad.onAction}
-                onSymbolClick={numpad.onNumberClick}
-                symbols={{
-                  // negative: complexitySettings.allowNegatives.inAnswer,
-                  // decimal: complexitySettings.allowDecimals.inAnswer
-                  negative: true,
-                  decimal: true
-                }}
-                submitDisabled={!answer || !Number(answer) || isSubmitting}
-              />
-            </div>
+      {/* input section */}
+      <div className="flex flex-col border p-4 rounded-lg shadow-md w-full h-full flex-grow max-w-[40vh] max-h-[250vw] mx-auto">
+        {/* problem display */}
+        {problemSet && problemSet.length > 0 && currentProblemIndex < problemSet.length ? (
+          <div className="text-center text-2xl md:text-4xl font-bold mb-4">
+            {currentProblem.display}
           </div>
+        ) : (
+          <div className="text-center text-2xl md:text-4xl font-bold text-rose-500 mb-4">
+            No problem available
+          </div>
+        )}
+        {/* answer input */}
+        <div className="text-center text-3xl md:text-4xl mb-4 border p-2 rounded h-16">
+          {showAnswerFeedback ? currentProblem?.answer : answer || (<span className="text-zinc-500">?</span>)}
+        </div>
 
-          {/* <div className="flex-grow" /> */}
+        <div className="flex-grow h-full">
+          <Numpad
+            onNumberClick={numpad.onNumberClick}
+            onAction={numpad.onAction}
+            onSymbolClick={numpad.onNumberClick}
+            symbols={{
+              // negative: complexitySettings.allowNegatives.inAnswer,
+              // decimal: complexitySettings.allowDecimals.inAnswer
+              negative: true,
+              decimal: true
+            }}
+            submitDisabled={!answer || !Number(answer) || isSubmitting}
+          />
+        </div>
+      </div>
 
-          {/* <SessionStats
+      {/* <div className="flex-grow" /> */}
+
+      {/* <SessionStats
             reps={reps}
             accuracy={0}
             avgResponseTime={0}
             medianResponseTime={0}
           /> */}
-          <ProgressBar
-            currentReps={reps}
-            targetReps={targetReps}
-            currentStage={'Hatsu'}
-            nextStage={'Shu'}
-          />
-        </>
-      )}
+      <ProgressBar
+        currentReps={reps}
+        targetReps={targetReps}
+        currentStage={'Hatsu'}
+        nextStage={'Shu'}
+      />
     </div>
   );
 }

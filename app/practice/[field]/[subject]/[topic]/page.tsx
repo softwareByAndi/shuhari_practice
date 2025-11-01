@@ -57,9 +57,9 @@ export default async function PracticePage({ params }: SubjectPageProps) {
       <Header params={params} />
       <main className="mx-auto">
         <section className="titleSection mb-4">
-          <div className="flex items-center gap-4 justify-center">
-            <div className="text-xl sm:text-2xl md:text-4xl">{content.icon}</div>
-            <h1 className="text-lg xs:text-4xl xs:text-blue-500 sm:text-2xl md:text-4xl font-semi-bold sm:text-rose-500 md:font-bold">{content.title}</h1>
+          <div className="flex items-center justify-center gap-4">
+            <div className="text-xl xs:text-2xl sm:text-3xl md:text-4xl">{content.icon}</div>
+            <h1 className="text-lg xs:text-2xl sm:text-3xl md:text-4xl font-bold">{content.title}</h1>
           </div>
         </section>
 

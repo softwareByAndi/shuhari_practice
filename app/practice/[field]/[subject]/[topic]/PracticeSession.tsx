@@ -66,9 +66,6 @@ export default function PracticePage({ topic, subject, field }: SubjectPageProps
     }, [])
 
     // causing hook order issues because Arithmetic has hooks too
-    if (!isInitialized) {
-        return <div>Loading session...</div>;
-    }
 
     const params = {
         topicCode: topic.code,

@@ -316,17 +316,6 @@ export function SessionProvider({ children }: SessionProviderProps) {
   };
 
 
-
-
-  // Show loading state while auth is initializing
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading authentication...</div>
-      </div>
-    );
-  }
-
   return (
     <SessionContext.Provider value={value}>
 
