@@ -148,11 +148,37 @@ body {
 }
 
 .page {
-  @apply flex flex-col min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-black;
+  @apply flex flex-col bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-black;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height - adjusts for mobile browser UI */
+  min-height: 100vh;
+  min-height: 100dvh;
 }
+
 main {
-  @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8 flex-grow;
+  @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8 flex-1;
 }
+
 footer {
   @apply flex justify-center mt-12 py-4 border-t border-zinc-200 dark:border-zinc-700;
+}
+
+.titleSection {
+  @apply mb-12 flex flex-col gap-4;
+}
+
+.title {
+  @apply text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white;
+}
+
+.sub_title {
+  @apply text-base md:text-lg lg:text-xl text-zinc-600 dark:text-zinc-400 max-w-3xl;
+}
+
+.title_description {
+  @apply text-base text-zinc-500 max-w-3xl;
+}
+
+.pageContent {
+  @apply flex flex-col gap-20 flex-grow;
 }

@@ -47,15 +47,14 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
     <div className="page">
       <Header params={params} />
       <main>
-
           {/* Header */}
-          <div className={styles.titleSection}>
-            <h1 className={styles.title}>{content.title}</h1>
-            <p className={styles.sub_title}>{content.subTitle}</p>
+          <div className="titleSection">
+            <h1 className="title">{content.title}</h1>
+            <p className="sub_title">{content.subTitle}</p>
           </div>
 
           {/* Topics Cards Grid */}
-          <div className={styles.pageContent}>
+          <div className="pageContent">
             <CardsGrid cards={topics.map(topic => ({
                 id:           topic.topic_id,
                 display_name: topic.display_name.split(' ')[0],

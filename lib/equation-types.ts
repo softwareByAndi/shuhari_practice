@@ -49,7 +49,7 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     description: 'Practice adding numbers',
     emoji: '➕',
     operator: '+',
-    solve: (num1: number, num2: number) => num1 + num2,
+    solve: (num1: number, num2: number) => Number((num1 + num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => `${num1} + ${num2}`,
   },
   sub: {
@@ -58,7 +58,7 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     description: 'Practice subtracting numbers',
     emoji: '➖',
     operator: '-',
-    solve: (num1: number, num2: number) => num1 - num2,
+    solve: (num1: number, num2: number) => Number((num1 - num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => `${num1} - ${num2}`,
     filterProblem: (num1: number, num2: number, options: FilterOptions) => (options.neg_in_answer ? true : num1 >= num2),
   },
@@ -68,7 +68,7 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     description: 'Practice multiplying numbers',
     emoji: '✖️',
     operator: '×',
-    solve: (num1: number, num2: number) => num1 * num2,
+    solve: (num1: number, num2: number) => Number((num1 * num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => `${num1} × ${num2}`,
   },
   div: {
@@ -77,7 +77,7 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     description: 'Practice dividing numbers',
     emoji: '➗',
     operator: '÷',
-    solve: (num1: number, num2: number) => Math.floor(num1 / num2),
+    solve: (num1: number, num2: number) => Number((num1 / num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => `${num1} ÷ ${num2}`,
     isValidProblem: (_num1: number, num2: number) => num2 !== 0,
     filterProblem: (num1: number, num2: number, options: FilterOptions) => (
@@ -91,7 +91,7 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     description: 'Practice finding remainders',
     emoji: '📐',
     operator: '%',
-    solve: (num1: number, num2: number) => num1 % num2,
+    solve: (num1: number, num2: number) => Number((num1 % num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => `${num1} % ${num2}`,
     isValidProblem: (_num1: number, num2: number) => num2 !== 0,
   },
@@ -101,7 +101,7 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     description: 'useful for binary and computer science',
     emoji: '🔢',
     operator: '^',
-    solve: (_base: number, exponent: number) => Math.pow(2, exponent),
+    solve: (_base: number, exponent: number) => Number(Math.pow(2, exponent).toFixed(3)),
     displayEquation: (base: number, exponent: number) => `$2^${exponent}`,
     isValidProblem: (num1: number, _num2: number) => num1 === 2,
     filterProblem: (base: number, exp: number) => {
@@ -114,7 +114,7 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     description: 'Practice powers and exponentiation',
     emoji: '🔢',
     operator: '^',
-    solve: (base: number, exponent: number) => Math.pow(base, exponent),
+    solve: (base: number, exponent: number) => Number(Math.pow(base, exponent).toFixed(3)),
     displayEquation: (base: number, exponent: number) => `${base}^${exponent}`,
     filterProblem: (base: number, exp: number) => {
       return exp <= 5
@@ -136,7 +136,7 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     description: 'Practice adding positive and negative numbers',
     emoji: '➕➖',
     operator: '+',
-    solve: (num1: number, num2: number) => num1 + num2,
+    solve: (num1: number, num2: number) => Number((num1 + num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => {
       if (num2 < 0) 
         return `${num1} + (${num2})`;
@@ -149,7 +149,7 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
     description: 'Practice subtracting positive and negative numbers',
     emoji: '➖➕',
     operator: '-',
-    solve: (num1: number, num2: number) => num1 - num2,
+    solve: (num1: number, num2: number) => Number((num1 - num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => {
       if (num2 < 0) 
         return `${num1} - (${num2})`;

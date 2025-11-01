@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return <AuthContext.Provider value={value}>
-    {!user && <AnonymousBanner />}
+    {/* {!user && <AnonymousBanner />} */}
     {children}
   </AuthContext.Provider>;
 }

@@ -10,7 +10,7 @@ import styles from '@/styles/page.module.css';
 import { SessionProvider } from '@/contexts/SessionProvider';
 
 import { notFound } from 'next/navigation';
-import PracticeMath from './v5';
+import Arithmetic from './Arithmetic';
 import CondensedStagesToMastery from '@/components/CondensedStagesToMastery';
 import Header from '@/components/Header';
 import BreadCrumbs from '@/components/BreadCrumbs';
@@ -63,15 +63,16 @@ export default async function PracticePage({ params }: SubjectPageProps) {
     <div className="page">
       <Header params={params} />
       <main className="!max-w-xl mx-auto">
-        <div className={styles.titleSection}>
-          <div className="flex items-center gap-4">
+        <section className="titleSection">
+          <div className="flex items-center gap-4 justify-center">
             <div className="text-3xl md:text-4xl">{content.icon}</div>
-            <h1 className={styles.sub_title}>{content.title}</h1>
+            <h1 className="title">{content.title}</h1>
           </div>
-        </div>
-        <div className={styles.pageContent}>
-          <PracticeMath topicCode={topicCode} />
-        </div>
+        </section>
+        
+        <section className="pageContent">
+          <Arithmetic topicCode={topicCode} />
+        </section>
       </main>
       <footer>
         <CondensedStagesToMastery />

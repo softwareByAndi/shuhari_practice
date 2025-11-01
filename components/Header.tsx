@@ -30,9 +30,11 @@ export default async function Header({ params }: headerPageProps) {
   ].filter(item => item.label && item.path)
 
   return (
-    <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm">
-      <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between ">
+    <section className="border-b border-zinc-200 dark:border-zinc-800 
+                bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm
+                flex items-center justify-between
+                px-4 py-2 sm:px-6 lg:px-8"
+    >
           <div className="flex items-center gap-8">
             <a href="/" className="text-xl font-bold text-zinc-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-center w-fit">
               <span className={`${stage_styles.shu}`}>守</span>
@@ -41,16 +43,10 @@ export default async function Header({ params }: headerPageProps) {
               <div className="text-xs m-0 text-zinc-500">Shuhari</div>
             </a>
             
-            <div className="flex gap-2 items-center">
-              <BreadCrumbs paths={nav} />
-              <div className="text-sm text-zinc-500">{topicCode || subjectCode || fieldCode}</div>
-            </div>
+            <BreadCrumbs paths={nav} />
           </div>
 
           <User />
-
-        </div>
-      </div>
-    </div>
+    </section>
   );
 }
