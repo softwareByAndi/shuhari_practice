@@ -350,10 +350,10 @@ export function SessionProvider({ children }: SessionProviderProps) {
 
       {children}
 
-      <div className="fixed bottom-2 left-2 pl-14 py-2 bg-white dark:bg-zinc-900 z-99">
-        <h3 className="mb-2 text-xs font-bold">
+      {/* <details className="fixed bottom-2 left-2 pl-14 py-2 bg-white dark:bg-zinc-900 z-99 w-full">
+        <summary className="mb-2 text-xs font-bold">
           Session Details:
-        </h3>
+        </summary>
         <div className="w-full grid grid-cols-3 gap-2">
           {Object.entries(session || {}).map(([key, value]) => (
             <div key={key} style={{ fontSize: '10px' }}>
@@ -368,7 +368,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
             </div>
           ))}
         </div>
-      </div>
+      </details> */}
 
     </SessionContext.Provider>
   );
