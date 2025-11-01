@@ -133,16 +133,16 @@ export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnsw
   };
 
   if (!currentProblem || !equationConfig || !complexitySettings) {
-    return (<div>Loading Problem Set...</div>);
+    return (<div className="text-center">Loading Problem Set...</div>);
   }
 
   return (
-    <div className="flex flex-col gap-6 h-full m-auto w-full pb-2 sm:pb-0">
+    <div className="flex flex-col gap-6 h-full m-auto w-full">
       {/* input section */}
-      <div className="flex flex-col border p-4 rounded-lg shadow-md w-full h-full flex-grow max-w-[40vh] max-h-[250vw] mx-auto">
+      <div className="flex flex-col border p-4 rounded-lg shadow-md w-full h-full flex-grow max-w-[40vh] max-h-[300vw] mx-auto">
         {/* problem display */}
         {problemSet && problemSet.length > 0 && currentProblemIndex < problemSet.length ? (
-          <div className="text-center text-2xl md:text-4xl font-bold mb-4">
+          <div className="text-center text-3xl xs:text-5xl font-bold mb-4">
             {currentProblem.display}
           </div>
         ) : (

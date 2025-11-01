@@ -6,6 +6,8 @@ import BreadCrumbs from './BreadCrumbs';
 import User from './User';
 
 interface headerPageProps {
+  sectionTitle?: string;
+  sectionIcon?: string;
   params?: Promise<{
     field?: string;
     subject?: string;
@@ -15,7 +17,7 @@ interface headerPageProps {
 
 /* TODO - clean up breadcrumbs and show display names instead of codes...*/
 
-export default async function Header({ params }: headerPageProps) {
+export default async function Header({ sectionTitle, sectionIcon, params }: headerPageProps) {
   // Handle optional params
   const { field, subject, topic } = params ? await params : { field: undefined, subject: undefined, topic: undefined };
   // console.log('_data in Header:', { field, subject, topic });
@@ -43,9 +45,15 @@ export default async function Header({ params }: headerPageProps) {
               <div className="text-xs m-0 text-zinc-500">Shuhari</div>
             </a>
             
-            <BreadCrumbs paths={nav} />
+            <div className="hidden md:block">
+              <BreadCrumbs paths={nav} />
+            </div>
           </div>
 
+          <div className="flex items-center justify-center gap-2 sm:gap-4">
+            <div className="text-3xl">{sectionIcon}</div>
+            <h1 className="text-xl sm:text-2xl font-bold">{sectionTitle}</h1>
+          </div>
           <User />
     </section>
   );

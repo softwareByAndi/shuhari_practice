@@ -54,16 +54,16 @@ export default async function PracticePage({ params }: SubjectPageProps) {
 
   return (
     <div className="page">
-      <Header params={params} />
+      <Header params={params} sectionIcon={content.icon} sectionTitle={content.title} />
       <main className="mx-auto">
-        <section className="titleSection mb-4">
+        {/* <section className="titleSection mb-4">
           <div className="flex items-center justify-center gap-4">
             <div className="text-xl xs:text-2xl sm:text-3xl md:text-4xl">{content.icon}</div>
             <h1 className="text-lg xs:text-2xl sm:text-3xl md:text-4xl font-bold">{content.title}</h1>
           </div>
-        </section>
+        </section> */}
 
-        <section className="pageContent pb-2 w-full">
+        <section className="pageContent  w-full">
           <SessionProvider >
             <PracticeSession 
               topic={topic} 
