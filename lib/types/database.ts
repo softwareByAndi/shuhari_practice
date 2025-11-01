@@ -124,7 +124,7 @@ export const STAGE_ORDER: StageCode[] = ['hatsu', 'shu', 'kan', 'ha', 'toi', 'ri
 
 export const STAGE_DISPLAY_NAMES: Record<number, string> = {
   1: '初 - Hatsu (Begin)',
-  2: '守 - Shu (Obey)',
+  2: '守 - Shu (Follow)',
   3: '鑑 - Kan (Mirror)',
   4: '破 - Ha (Break)',
   5: '問 - Toi (Question)',
@@ -157,6 +157,17 @@ export const MODULE_TO_TOPIC_CODE: Record<string, string> = {
 // Helper function to get stage name
 export function getStageName(stageId: number): string {
   return STAGE_DISPLAY_NAMES[stageId] || 'Unknown';
+}
+
+export function getStageByCode(stageCode: StageCode): Stage | null {
+  const stageIndex = STAGE_ORDER.indexOf(stageCode);
+  if (stageIndex === -1) return null;
+  const stageId = stageIndex + 1; // stage_id is 1-based
+  return {
+    stage_id: stageId,
+    code: stageCode,
+    display_name: STAGE_DISPLAY_NAMES[stageId]
+  };
 }
 
 // Helper function to get difficulty name

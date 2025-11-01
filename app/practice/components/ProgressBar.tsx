@@ -2,12 +2,24 @@
 
 import React from 'react';
 
+import { getStageByCode, StageCode } from '@/lib/types/database';
+import colors from '@/styles/stage.module.css';
+
 interface ProgressBarProps {
   currentReps: number;
   targetReps: number;
-  currentStage: string;
-  nextStage?: string;
+  currentStage: {
+    stage_id: number;
+    code: string;
+    display_name: string;
+  };
+  nextStage?: {
+    stage_id: number;
+    code: string;
+    display_name: string;
+  } | null;
 }
+
 
 export function ProgressBar({
   currentReps,
@@ -16,15 +28,17 @@ export function ProgressBar({
   nextStage
 }: ProgressBarProps) {
   const progress = Math.min((currentReps / targetReps) * 100, 100);
-
+  console.log('ProgressBar Inputs:', { currentReps, targetReps, currentStage, nextStage });
   return (
     <div className="mb-4">
-      <div className="flex justify-between text-xs mb-1">
-        <span className="capitalize">{currentStage}</span>
-        {nextStage && (
-          <span>
-            {currentReps} / {targetReps} to {nextStage}
-          </span>
+      <div className="flex justify-between mb-1">
+        <span className={`capitalize ${colors[currentStage?.code || 'default_stage']} font-bold`}>{currentStage?.display_name}</span>
+        {currentStage?.stage_id && (
+          <div className="flex gap-2">
+            <div>{currentReps} / {targetReps}</div> 
+            <div>to</div>
+            <div className={`${colors[nextStage?.code || 'default_stage']} font-bold `}>{nextStage?.display_name}</div>
+          </div>
         )}
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">

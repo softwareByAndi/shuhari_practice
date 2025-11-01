@@ -37,6 +37,10 @@ export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnsw
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAnswerFeedback, setShowAnswerFeedback] = useState<boolean>(false);
 
+  // TODO : fetch user session
+
+
+
   useEffect(() => {
 
     // Initialize problem set
@@ -133,13 +137,13 @@ export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnsw
   };
 
   if (!currentProblem || !equationConfig || !complexitySettings) {
-    return (<div className="text-center">Loading Problem Set...</div>);
+    return (<div className="text-center h-full flex-grow flex justify-center items-center text-3xl md:text-5xl text-zinc-500">Loading Problem Set...</div>);
   }
 
   return (
-    <div className="flex flex-col gap-6 h-full m-auto w-full">
+    <div className="flex flex-col gap-4 h-full m-auto w-full">
       {/* input section */}
-      <div className="flex flex-col border p-4 rounded-lg shadow-md w-full h-full flex-grow max-w-[40vh] max-h-[300vw] mx-auto">
+      <div className="flex flex-col border p-4 sm:p-6 md:p-8 lg:p-12 rounded-lg shadow-md w-full h-full flex-grow max-w-[40vh] max-h-[300vw] mx-auto">
         {/* problem display */}
         {problemSet && problemSet.length > 0 && currentProblemIndex < problemSet.length ? (
           <div className="text-center text-3xl xs:text-5xl font-bold mb-4">
@@ -151,7 +155,7 @@ export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnsw
           </div>
         )}
         {/* answer input */}
-        <div className="text-center text-3xl md:text-4xl mb-4 border p-2 rounded h-16">
+        <div className="text-center text-3xl md:text-4xl mb-4 border p-2 rounded-full h-16 mx-12">
           {showAnswerFeedback ? currentProblem?.answer : answer || (<span className="text-zinc-500">?</span>)}
         </div>
 
@@ -179,12 +183,6 @@ export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnsw
             avgResponseTime={0}
             medianResponseTime={0}
           /> */}
-      <ProgressBar
-        currentReps={reps}
-        targetReps={targetReps}
-        currentStage={'Hatsu'}
-        nextStage={'Shu'}
-      />
     </div>
   );
 }

@@ -10,3 +10,6 @@
 .ri {
   @apply text-indigo-600 dark:text-indigo-400;
 }
+.default_stage {
+  /*placeholder*/
+}

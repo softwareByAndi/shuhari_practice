@@ -9,7 +9,7 @@ import styles from '@/styles/page.module.css';
 const data = {
   header: {
     title: "Shuhari Learning",
-    subTitle: "Master any subject through the ancient martial arts principle of learning",
+    subTitle: "Master any subject through the ancient martial arts principle of foundational embodiment",
     description: "Shuhari uses repetition to build automaticity. This frees your mind from the basics so you can focus on the deeper principles behind the rules. Eventually, you internalize these principles and transcend conscious rule-following entirely; responding fluidly from embodied understanding.",
   }
 }

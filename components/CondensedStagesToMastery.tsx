@@ -35,7 +35,7 @@ const STAGES = [
   {
     code: 'shu',
     symbol: '守',
-    display_name: 'Shu - Obey',
+    display_name: 'Shu - Follow',
     description: 'Following patterns. Building automaticity through repetition.',
     color: colors.shu,
   },

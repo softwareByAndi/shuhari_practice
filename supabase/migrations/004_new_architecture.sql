@@ -7,7 +7,7 @@ CREATE TABLE stage (
 );
 INSERT INTO stage (stage_id, code, display_name) VALUES 
     (1, 'hatsu', '初 - Hatsu (Begin)'),
-    (2, 'shu',   '守 - Shu (Obey)'),
+    (2, 'shu',   '守 - Shu (Follow)'),
     (3, 'kan',   '鑑 - Kan (Mirror)'),
     (4, 'ha',    '破 - Ha (Break)'),
     (5, 'toi',   '問 - Toi (Question)'),

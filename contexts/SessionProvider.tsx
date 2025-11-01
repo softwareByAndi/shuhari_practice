@@ -7,6 +7,7 @@ import { Problem as BaseProblem } from '@/lib/problem-generator';
 import { saveSessionToLocalStorage } from '@/lib/local-session-storage';
 import { USE_LOCAL_AUTH } from '@/lib/config';
 import { isNil } from 'lodash';
+import { ProgressBar } from '@/app/practice/components/ProgressBar';
 
 // Extended Problem type with display and answer
 export interface Problem extends BaseProblem {
@@ -74,12 +75,99 @@ interface SessionProviderProps {
   children: React.ReactNode;
 }
 
+interface TopicSummaryStage {
+  stage_id: 1 | 2 | 3 | 4 | 5 | 6 | 7,
+  code: 'hatsu' | 'shu' | 'kan' | 'ha' | 'toi' | 'ri' | 'ku',
+  symbol: string,
+  display_name: string,
+  reps_in_stage: number
+}
+interface TopicSummary {
+    topic: {
+      topic_id: number;
+      code: string;
+      display_name: string;
+    };
+    subject: {
+      subject_id: number;
+      code: string;
+      display_name: string;
+    };
+    field: {
+      field_id: number;
+      code: string;
+      display_name: string;
+    };
+    stats: {
+      totalReps: number;
+      sessionsCount: number;
+      lastPracticed: string;
+    }
+    currentStage: TopicSummaryStage;
+    nextStage:    TopicSummaryStage | null;
+    targetStage:  TopicSummaryStage | null;
+  }
+  
 export function SessionProvider({ children }: SessionProviderProps) {
   const { user, loading: authLoading } = useAuth();
   const [session, setSession] = useState<SessionData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [topicSummary, setTopicSummary] = useState<TopicSummary>({
+    // placeholder values
+    topic: {
+      topic_id: 0,
+      code: 'placeholder',
+      display_name: 'Placeholder Topic'
+    },
+    subject: {
+      subject_id: 0,
+      code: 'placeholder',
+      display_name: 'Placeholder Subject'
+    },
+    field: {
+      field_id: 0,
+      code: 'placeholder',
+      display_name: 'Placeholder Field' 
+    },
+    stats: {
+      totalReps: 0,
+      sessionsCount: 0,
+      lastPracticed: new Date().toISOString(),
+    },
+    currentStage: {
+      stage_id: 1,
+      code: 'hatsu',
+      symbol: '初',
+      display_name: '初 - Hatsu (Begin)',
+      reps_in_stage: 1000
+    },
+    nextStage: {
+      stage_id: 2,
+      code: 'shu',
+      symbol: '守',
+      display_name: '守 - Shu (Follow)',
+      reps_in_stage: 5000
+    },
+    targetStage: {
+      stage_id: 4,
+      code: 'ha',
+      symbol: '破',
+      display_name: '破 - Ha (Break)',
+      reps_in_stage: 50000
+    }
+  });
+
+  /*
+  TODO : 
+  - store a topic summary for the user in localStorage
+    - unique by topicId + userId
+  - pull user topic summary from localStorage.
+  - populate progress bar (at the bottom of this page)
+  - on update session, also update topic summary
+  */
 
   // Initialize session
   const initializeSession = useCallback(async (
@@ -358,6 +446,14 @@ export function SessionProvider({ children }: SessionProviderProps) {
           ))}
         </div>
       </details> */}
+
+
+      <ProgressBar
+        currentReps={topicSummary.stats.totalReps}
+        targetReps={topicSummary.currentStage.reps_in_stage ?? 100_000_000}
+        currentStage={topicSummary.currentStage}
+        nextStage={topicSummary.nextStage ?? null}
+      />
 
     </SessionContext.Provider>
   );

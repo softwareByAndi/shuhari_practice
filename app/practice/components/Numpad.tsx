@@ -35,7 +35,7 @@ export function Numpad({
     <button
       key={label}
       onClick={onClick}
-      className={`flex-grow col-span-2 rounded-lg transition-all
+      className={`flex-grow col-span-2 rounded-xl md:rounded-2xl transition-all
         text-xl xxs:text-2xl xs:text-3xl sm:text-4xl font-semibold md:font-bold
         ${className} dark:text-zinc-800`}
       type="button"
@@ -49,7 +49,7 @@ export function Numpad({
 
   return (
     // <div className="flex-grow h-full absolute inset-0 ">
-    <div className="flex-grow grid grid-cols-6 gap-1 xxs:gap-2 xs:gap-3 h-full w-full">
+    <div className="flex-grow grid grid-cols-6 gap-1 xxs:gap-2 xs:gap-3 md:gap-4 h-full w-full">
       {renderButton('Clear', () => onAction('CLEAR'), 'bg-red-200 hover:bg-red-300 col-span-3')}
       
       {symbols?.negative && onSymbolClick ? (
