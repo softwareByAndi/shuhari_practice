@@ -5,15 +5,16 @@ import type {
   StageCode
 } from './types/database';
 import * as localDataProvider from './local-data-provider';
+import { USE_LOCAL_STATIC_DATA } from './config';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Configuration to switch between local and remote data
-// Set to true to use local cached data for static tables (fields, subjects, topics, etc.)
-const USE_LOCAL_STATIC_DATA = true;
+const DEBUG_LOG = (msg: string) => {
+  console.log('[supabase-v2]', msg);
+};
 
 // ============= User Management (kept from original) =============
 
@@ -48,6 +49,7 @@ export async function getOrCreateUser(username: string) {
 
 export async function getAllFields(): Promise<Field[]> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getAllFields from cached local data provider');
     return localDataProvider.getAllFields();
   }
 
@@ -66,6 +68,7 @@ export async function getAllFields(): Promise<Field[]> {
 
 export async function getFieldByCode(code: string): Promise<Field | null> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getFieldByCode from cached local data provider');
     return localDataProvider.getFieldByCode(code);
   }
 
@@ -85,6 +88,7 @@ export async function getFieldByCode(code: string): Promise<Field | null> {
 
 export async function getActiveFields(): Promise<Field[]> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getActiveFields from cached local data provider');
     return localDataProvider.getActiveFields();
   }
 
@@ -104,6 +108,7 @@ export async function getActiveFields(): Promise<Field[]> {
 
 export async function getSubjectByCode(code: string): Promise<Subject | null> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getSubjectByCode from cached local data provider');
     return localDataProvider.getSubjectByCode(code);
   }
 
@@ -123,6 +128,7 @@ export async function getSubjectByCode(code: string): Promise<Subject | null> {
 
 export async function getSubjectsForFieldCode(fieldCode: string): Promise<Subject[]> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getSubjectsForFieldCode from cached local data provider');
     return localDataProvider.getSubjectsForFieldCode(fieldCode);
   }
 
@@ -145,6 +151,7 @@ export async function getSubjectsForFieldCode(fieldCode: string): Promise<Subjec
 
 export async function getSubjectsForField(fieldId: number): Promise<Subject[]> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getSubjectsForField from cached local data provider');
     return localDataProvider.getSubjectsForField(fieldId);
   }
 
@@ -169,6 +176,7 @@ export async function getSubjectsForField(fieldId: number): Promise<Subject[]> {
 
 export async function getTopicsForSubjectCode(subjectCode: string): Promise<Topic[]> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getTopicsForSubjectCode from cached local data provider');
     return localDataProvider.getTopicsForSubjectCode(subjectCode);
   }
 
@@ -192,6 +200,7 @@ export async function getTopicsForSubjectCode(subjectCode: string): Promise<Topi
 
 export async function getTopicById(topicId: number): Promise<Topic | null> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getTopicById from cached local data provider');
     return localDataProvider.getTopicById(topicId);
   }
 
@@ -211,6 +220,7 @@ export async function getTopicById(topicId: number): Promise<Topic | null> {
 
 export async function getTopicByCode(code: string): Promise<Topic | null> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getTopicByCode from cached local data provider');
     return localDataProvider.getTopicByCode(code);
   }
 
@@ -362,6 +372,7 @@ export async function getStageRequirements(
   stageCode: StageCode
 ): Promise<number> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getStageRequirements from cached local data provider');
     return localDataProvider.getStageRequirements(topicId, stageCode);
   }
 
@@ -406,6 +417,7 @@ export async function getStageRequirements(
 
 export async function getStageById(stageId: number): Promise<Stage | null> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getStageById from cached local data provider');
     return localDataProvider.getStageById(stageId);
   }
 
@@ -564,6 +576,7 @@ export async function getRecentTopicsWithProgress(
 
 export async function getDifficultyLevels(): Promise<DifficultyLevel[]> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getDifficultyLevels from cached local data provider');
     return localDataProvider.getDifficultyLevels();
   }
 
@@ -582,6 +595,7 @@ export async function getDifficultyLevels(): Promise<DifficultyLevel[]> {
 
 export async function getDifficultyLevelsForTopic(topicId: number): Promise<DifficultyLevel[]> {
   if (USE_LOCAL_STATIC_DATA) {
+    DEBUG_LOG('Fetching getDifficultyLevelsForTopic from cached local data provider');
     return localDataProvider.getDifficultyLevelsForTopic(topicId);
   }
 
