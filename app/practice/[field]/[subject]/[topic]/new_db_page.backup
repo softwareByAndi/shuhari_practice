@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  getUserProgress,
+  getUserProgress
   createSession,
   updateSession,
   checkAndAdvanceStage,
@@ -18,6 +18,8 @@ import { generateProblems, Problem, getComplexityLabel } from '@/lib/problem-gen
 import { getEquationConfig, EquationConfig } from '@/lib/equation-types';
 import { STAGE_DISPLAY_NAMES, StageCode } from '@/lib/types/database';
 import styles from './page.module.css';
+
+
 
 // Mapping from topic codes to equation types
 const TOPIC_TO_EQUATION: Record<string, string> = {

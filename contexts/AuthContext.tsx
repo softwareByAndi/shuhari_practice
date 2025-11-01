@@ -44,9 +44,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       return () => subscription.unsubscribe();
-    } else {
+    } 
+    else {
       // Supabase auth implementation
-      supabase.auth.getSession().then(({ data: { session } }) => {
+      supabase!.auth.getSession().then(({ data: { session } }) => {
         setUser(session?.user ?? null);
         setLoading(false);
       });
@@ -54,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Listen for changes on auth state (sign in, sign out, etc.)
       const {
         data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
+      } = supabase!.auth.onAuthStateChange((_event, session) => {
         setUser(session?.user ?? null);
         setLoading(false);
       });
@@ -69,8 +70,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         DEBUG_LOG('signUp: Using local auth provider');
         const { error } = await localAuth.signUp(email, password);
         return { error };
-      } else {
-        const { error } = await supabase.auth.signUp({
+      } 
+      else {
+        const { error } = await supabase!.auth.signUp({
           email,
           password,
         });
@@ -87,8 +89,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         DEBUG_LOG('signIn: Using local auth provider');
         const { error } = await localAuth.signInWithPassword(email, password);
         return { error };
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
+      } 
+      else {
+        const { error } = await supabase!.auth.signInWithPassword({
           email,
           password,
         });
@@ -103,8 +106,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (USE_LOCAL_AUTH) {
       DEBUG_LOG('signOut: Using local auth provider');
       await localAuth.signOut();
-    } else {
-      await supabase.auth.signOut();
+    } 
+    else {
+      await supabase!.auth.signOut();
     }
   };
 

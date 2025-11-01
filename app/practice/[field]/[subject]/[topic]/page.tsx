@@ -3,26 +3,18 @@ import {
   getSubjectByCode, 
   getTopicByCode 
 } from '@/lib/supabase-v2';
-import { TOPIC_ICONS } from '@/lib/topic-icons';
+import { 
+  TOPIC_ICONS
+} from '@/lib/topic-icons';
 
-import styles from '@/styles/page.module.css';
-
-import { SessionProvider } from '@/contexts/SessionProvider';
+import {
+  SessionProvider
+} from '@/contexts/SessionProvider';
 
 import { notFound } from 'next/navigation';
-import Arithmetic from './Arithmetic';
+import PracticeSession from './PracticeSession';
 import CondensedStagesToMastery from '@/components/CondensedStagesToMastery';
 import Header from '@/components/Header';
-import BreadCrumbs from '@/components/BreadCrumbs';
-
-
-function _temp_save_old_code() {
-  // return (
-  //   <SessionProvider>
-  //     <PracticeContentFixed />
-  //   </SessionProvider>
-  // );
-}
 
 
 interface SubjectPageProps {
@@ -34,9 +26,9 @@ interface SubjectPageProps {
 }
 
 export default async function PracticePage({ params }: SubjectPageProps) {
-  const { 
-    field: fieldCode, 
-    subject: subjectCode, 
+  const {
+    field: fieldCode,
+    subject: subjectCode,
     topic: topicCode
   } = await params;
 
@@ -49,6 +41,7 @@ export default async function PracticePage({ params }: SubjectPageProps) {
     getSubjectByCode(subjectCode),
     getFieldByCode(fieldCode)
   ])
+
 
   if (!topic || !subject || !field) {
     return notFound();
@@ -69,9 +62,15 @@ export default async function PracticePage({ params }: SubjectPageProps) {
             <h1 className="title">{content.title}</h1>
           </div>
         </section>
-        
+
         <section className="pageContent">
-          <Arithmetic topicCode={topicCode} />
+          <SessionProvider >
+            <PracticeSession 
+              topic={topic} 
+              subject={subject} 
+              field={field} 
+            />
+          </SessionProvider>
         </section>
       </main>
       <footer>

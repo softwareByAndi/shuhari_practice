@@ -2,7 +2,9 @@
 
 
 export type ACTION = 'CLEAR'
-  | 'CHECK_ANSWER';
+  | 'CHECK_ANSWER'
+  | 'NEGATE';
+;
 
 interface NumpadProps {
   onNumberClick: (num: string) => void;
@@ -25,6 +27,7 @@ export function Numpad({
 }: NumpadProps) {
   const renderButton = (label: string, onClick: () => void, className = '') => (
     <button
+      key={label}
       onClick={onClick}
       className={`p-4 text-2xl font-semibold rounded-lg transition-all
         ${className} hover:scale-105 active:scale-95 dark:text-zinc-800`}
@@ -60,7 +63,7 @@ export function Numpad({
       <div></div>
 
       {symbols?.negative && onSymbolClick ? (
-        renderButton('(neg)', () => onSymbolClick('-'), 'bg-yellow-200 hover:bg-yellow-300')
+        renderButton('(neg)', () => onAction('NEGATE'), 'bg-yellow-200 hover:bg-yellow-300')
       ) : (<div></div>)}
 
 

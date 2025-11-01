@@ -1,0 +1,128 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { useSession } from '@/contexts/SessionProvider';
+import {
+    ComplexitySettings,
+    generateProblems,
+    getComplexitySettings,
+    Problem
+} from '@/lib/problem-generator-v3';
+import {
+    EquationConfig,
+    getEquationConfig
+} from '@/lib/equation-types';
+import Arithmetic from './Arithmetic';
+
+interface PracticeSessionProps {
+    topicCode: string;
+    sessionMetadata: {
+        topicId: number;
+        topicCode: string;
+        topicDisplayName: string;
+        subjectCode: string;
+        fieldCode: string;
+    };
+}
+
+export default function PracticeSession({ topicCode, sessionMetadata }: PracticeSessionProps) {
+    const {
+        session,
+        initializeSession,
+        recordAnswer,
+        nextProblem: sessionNextProblem,
+        getAccuracy,
+        getProgress
+    } = useSession();
+
+    const [problemSet, setProblemSet] = useState<Problem[]>([]);
+    const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
+    const [isInitialized, setIsInitialized] = useState(false);
+    const problemStartTime = useRef<number>(Date.now());
+
+    useEffect(() => {
+        // Initialize problem set and session
+        const config = getEquationConfig(topicCode);
+        if (!config) {
+            console.error('Invalid topic code:', topicCode);
+            return;
+        }
+
+        const complexity = getComplexitySettings(
+            topicCode, 1, 1, 4
+        );
+
+        const problems = generateProblems({
+            topicCode,
+            equationConfig: config,
+            complexity,
+        });
+
+        setProblemSet(problems);
+
+        // Initialize session with problems and metadata
+        const sessionProblems = problems.map(p => ({
+            ...p,
+            display: p.display || '',
+            answer: p.answer || 0
+        }));
+
+        initializeSession(
+            sessionMetadata.topicId,
+            sessionProblems,
+            {
+                topicCode: sessionMetadata.topicCode,
+                topicDisplayName: sessionMetadata.topicDisplayName,
+                subjectCode: sessionMetadata.subjectCode,
+                fieldCode: sessionMetadata.fieldCode
+            }
+        ).then(() => {
+            setIsInitialized(true);
+            problemStartTime.current = Date.now();
+        });
+
+        console.log('Generated Problem Count:', problems?.length);
+    }, [topicCode, sessionMetadata]);
+
+    const handleAnswerSubmit = (isCorrect: boolean) => {
+        const responseTime = Date.now() - problemStartTime.current;
+        recordAnswer(isCorrect, responseTime);
+
+        if (isCorrect) {
+            sessionNextProblem();
+            setCurrentProblemIndex(prev => prev + 1);
+            problemStartTime.current = Date.now();
+        }
+    };
+
+    const currentProblem = problemSet[currentProblemIndex] || null;
+
+    if (!isInitialized || !currentProblem) {
+        return <div>Loading...</div>;
+    }
+
+    // Determine which practice component to use based on topic
+    // For now, we only have Arithmetic, but this can be expanded
+    const practiceComponent = (
+        <Arithmetic
+            topicCode={topicCode}
+            currentProblem={currentProblem}
+            problemSet={problemSet}
+            currentProblemIndex={currentProblemIndex}
+            onAnswerSubmit={handleAnswerSubmit}
+            onNextProblem={(index: number) => {
+                setCurrentProblemIndex(index);
+                problemStartTime.current = Date.now();
+            }}
+            stats={{
+                totalProblems: session?.stats.totalProblems || 0,
+                correctAnswers: session?.stats.correctAnswers || 0,
+                accuracy: getAccuracy(),
+                averageTime: session?.stats.averageTime || 0,
+                medianTime: session?.stats.medianTime || 0,
+            }}
+        />
+    );
+
+    return practiceComponent;
+}

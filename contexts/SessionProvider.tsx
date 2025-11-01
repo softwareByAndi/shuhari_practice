@@ -4,6 +4,9 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { supabase } from '@/lib/supabase-v2';
 import { useAuth } from '@/contexts/AuthContext';
 import { Problem as BaseProblem } from '@/lib/problem-generator';
+import { saveSessionToLocalStorage } from '@/lib/local-session-storage';
+import { USE_LOCAL_AUTH } from '@/lib/config';
+import { isNil } from 'lodash';
 
 // Extended Problem type with display and answer
 export interface Problem extends BaseProblem {
@@ -21,14 +24,18 @@ export interface SessionStats {
 }
 
 export interface SessionData {
+  localSessionKey: string;
   sessionId: string | null;
   topicId: number;
   userId: string | null;
-  problems: Problem[];
-  currentProblemIndex: number;
   stats: SessionStats;
   startTime: Date;
   lastSaveTime: Date | null;
+  // Additional metadata for localStorage
+  topicCode?: string;
+  topicDisplayName?: string;
+  subjectCode?: string;
+  fieldCode?: string;
 }
 
 interface SessionContextType {
@@ -37,14 +44,20 @@ interface SessionContextType {
   isLoading: boolean;
 
   // Session actions
-  initializeSession: (topicId: number, problems: Problem[]) => Promise<void>;
+  initializeSession: (
+    topicId: number,
+    metadata?: {
+      topicCode: string;
+      topicDisplayName: string;
+      subjectCode: string;
+      fieldCode: string;
+    }
+  ) => Promise<void>;
   recordAnswer: (isCorrect: boolean, responseTime: number) => void;
-  nextProblem: () => void;
   resetSession: () => void;
 
   // Stats helpers
   getAccuracy: () => number;
-  getProgress: () => number;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -69,7 +82,15 @@ export function SessionProvider({ children }: SessionProviderProps) {
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize session
-  const initializeSession = useCallback(async (topicId: number, problems: Problem[]) => {
+  const initializeSession = useCallback(async (
+    topicId: number,
+    metadata?: {
+      topicCode: string;
+      topicDisplayName: string;
+      subjectCode: string;
+      fieldCode: string;
+    }
+  ) => {
     setIsLoading(true);
     console.log('Initializing session for topic:', topicId, 'User:', user?.id || 'anonymous');
     try {
@@ -77,11 +98,10 @@ export function SessionProvider({ children }: SessionProviderProps) {
 
       // Initialize session state
       const newSession: SessionData = {
+        localSessionKey: `local_${Date.now()}`,
         sessionId: null,
         topicId,
         userId,
-        problems,
-        currentProblemIndex: 0,
         stats: {
           totalProblems: 0,
           correctAnswers: 0,
@@ -91,6 +111,11 @@ export function SessionProvider({ children }: SessionProviderProps) {
         },
         startTime: new Date(),
         lastSaveTime: null,
+        // Add metadata for localStorage
+        topicCode: metadata?.topicCode,
+        topicDisplayName: metadata?.topicDisplayName,
+        subjectCode: metadata?.subjectCode,
+        fieldCode: metadata?.fieldCode,
       };
 
       setSession(newSession);
@@ -101,7 +126,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
     }
   }, [user]);
 
-  // // Update session
+  // // Update session ( Not Used Anywhere )
   // const updateSession = useCallback((updates: Partial<SessionData>) => {
   //   setSession(prev => {
   //     if (!prev) return null;
@@ -140,17 +165,6 @@ export function SessionProvider({ children }: SessionProviderProps) {
 
 
 
-  // Move to next problem
-  const nextProblem = useCallback(() => {
-    setSession(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        currentProblemIndex: Math.min(prev.currentProblemIndex + 1, prev.problems.length - 1),
-      };
-    });
-  }, []);
-
   // Reset session
   const resetSession = useCallback(() => {
     setSession(null);
@@ -161,43 +175,73 @@ export function SessionProvider({ children }: SessionProviderProps) {
   }, []);
 
 
-
   // Stats helpers
   const getAccuracy = useCallback(() => {
     if (!session || session.stats.totalProblems === 0) return 0;
     return Math.round((session.stats.correctAnswers / session.stats.totalProblems) * 100);
   }, [session]);
 
-  const getProgress = useCallback(() => {
-    if (!session) return 0;
-    return Math.round(((session.currentProblemIndex + 1) / session.problems.length) * 100);
-  }, [session]);
-
 
   // Stats helpers
   const getSessionId = useCallback(() => {
     if (!session) return 'NULL';
-    return session.sessionId;
+    return session.sessionId ?? session.localSessionKey;
   }, [session]);
 
 
-  // Auto-save session to database (debounced)
+  // Auto-save session to localStorage (and optionally to database)
   useEffect(() => {
-    console.log('Session changed, scheduling auto-save... ', session);
-    if (!session || !session.userId) return;
+    if (!session) return;
     if (session.stats.totalProblems === 0) return;
 
-    console.log('Preparing to auto-save session:', session.sessionId);
+    console.log('Preparing to auto-save session');
 
     // Clear existing timeout
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
+    // Always save to localStorage
+    if (session.topicCode && session.topicDisplayName && session.subjectCode && session.fieldCode) {
+      session.lastSaveTime = new Date();
+      saveSessionToLocalStorage(
+        session.localSessionKey,
+        session,
+        session.topicCode,
+        session.topicDisplayName,
+        session.subjectCode,
+        session.fieldCode
+      );
+      console.log('Session saved to localStorage');
+    }
+    else {
+      console.warn('Missing metadata for localStorage save:', {
+        topicCode: session.topicCode,
+        topicDisplayName: session.topicDisplayName,
+        subjectCode: session.subjectCode,
+        fieldCode: session.fieldCode
+      });
+    }
+
     // Set new timeout for save
+    if (USE_LOCAL_AUTH || !session.userId) {
+      return; // Skip DB save if using local auth or user is anonymous
+    }
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    console.log('Scheduling debounced save to DB... ', session);
+
     saveTimeoutRef.current = setTimeout(async () => {
       setSaveStatus('saving');
-      console.log('Auto-saving session:', session.sessionId);
+      console.log('Auto-saving session');
+      if (!session.userId) {
+        setSaveStatus('idle');
+        console.error('User not logged in, cannot save session to database');
+        return; // Do not save to DB if user is not logged in
+      }
+      // Save to database if user is logged in
       try {
         const new_data = {
           lastSaveTime: null as Date | null,
@@ -210,10 +254,12 @@ export function SessionProvider({ children }: SessionProviderProps) {
             median_response_time: session.stats.medianTime,
             updated_at: new Date().toISOString(),
         };
-        if (!session.sessionId === null) {
+
+        if (!session.sessionId) {
+          /*create new session*/
           console.log('Creating new session record in DB');
           // Create session in database if user is logged in
-          const { data, error } = await supabase
+          const { data, error } = await supabase!
             .from('session')
             .insert({
               user_id: session.userId,
@@ -225,13 +271,14 @@ export function SessionProvider({ children }: SessionProviderProps) {
             .single();
 
           if (error) throw error;
-          
+        
           if (data) {
             new_data.sessionId = data.id;
             console.log('New session created with ID:', data.id);
           }
         } else {
-          const { error } = await supabase
+          /*update existing session*/
+          const { error } = await supabase!
             .from('session')
             .update(to_update)
             .eq('id', session.sessionId);
@@ -264,10 +311,8 @@ export function SessionProvider({ children }: SessionProviderProps) {
     isLoading,
     initializeSession,
     recordAnswer,
-    nextProblem,
     resetSession,
     getAccuracy,
-    getProgress,
   };
 
 
@@ -282,13 +327,8 @@ export function SessionProvider({ children }: SessionProviderProps) {
     );
   }
 
-  // Optionally handle the case when user is not signed in
-  // You can show an anonymous mode or redirect to login
-  // For now, we'll allow anonymous practice (userId will be null)
-
   return (
     <SessionContext.Provider value={value}>
-            <div className="text-blue-300">hello world {getSessionId()} | {session?.userId} | {session?.topicId} </div>
 
       {/* Save Status Indicator */}
       {user && saveStatus !== 'idle' && (
@@ -309,6 +349,27 @@ export function SessionProvider({ children }: SessionProviderProps) {
       )}
 
       {children}
+
+      <div className="fixed bottom-2 left-2 pl-14 py-2 bg-white dark:bg-zinc-900 z-99">
+        <h3 className="mb-2 text-xs font-bold">
+          Session Details:
+        </h3>
+        <div className="w-full grid grid-cols-3 gap-2">
+          {Object.entries(session || {}).map(([key, value]) => (
+            <div key={key} style={{ fontSize: '10px' }}>
+              {typeof value === 'object' && !isNil(value) && !Array.isArray(value) ? (
+                <details>
+                  <summary><strong>{key}:</strong></summary>
+                  <pre>{JSON.stringify(value, null, 2)}</pre>
+                </details>
+              ) : (
+                <span><strong>{key}:</strong> {JSON.stringify(value)}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
     </SessionContext.Provider>
   );
 }

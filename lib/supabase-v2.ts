@@ -5,45 +5,21 @@ import type {
   StageCode
 } from './types/database';
 import * as localDataProvider from './local-data-provider';
-import { USE_LOCAL_STATIC_DATA } from './config';
+import { USE_LOCAL_STATIC_DATA, USE_LOCAL_AUTH } from './config';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = USE_LOCAL_STATIC_DATA ? null : process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = USE_LOCAL_STATIC_DATA ? null : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = USE_LOCAL_STATIC_DATA ? null : createClient(supabaseUrl!, supabaseAnonKey!);
+
+if (!USE_LOCAL_STATIC_DATA && !supabase) {
+  throw new Error('Supabase client could not be initialized');
+}
 
 const DEBUG_LOG = (msg: string) => {
   console.log('[supabase-v2]', msg);
 };
 
-// ============= User Management (kept from original) =============
-
-export async function getOrCreateUser(username: string) {
-  // Check if user exists
-  const { data: existingUser } = await supabase
-    .from('users')
-    .select('*')
-    .eq('username', username)
-    .single();
-
-  if (existingUser) {
-    return existingUser;
-  }
-
-  // Create new user
-  const { data: newUser, error } = await supabase
-    .from('users')
-    .insert({ username })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating user:', error);
-    return null;
-  }
-
-  return newUser;
-}
 
 // ============= Field & Subject Navigation =============
 
@@ -53,7 +29,7 @@ export async function getAllFields(): Promise<Field[]> {
     return localDataProvider.getAllFields();
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('field')
     .select('*')
     .order('field_id');
@@ -72,7 +48,7 @@ export async function getFieldByCode(code: string): Promise<Field | null> {
     return localDataProvider.getFieldByCode(code);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('field')
     .select('*')
     .eq('code', code)
@@ -92,7 +68,7 @@ export async function getActiveFields(): Promise<Field[]> {
     return localDataProvider.getActiveFields();
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('field')
     .select('*')
     .eq('is_active', true)
@@ -112,7 +88,7 @@ export async function getSubjectByCode(code: string): Promise<Subject | null> {
     return localDataProvider.getSubjectByCode(code);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('subject')
     .select('*')
     .eq('code', code)
@@ -132,7 +108,7 @@ export async function getSubjectsForFieldCode(fieldCode: string): Promise<Subjec
     return localDataProvider.getSubjectsForFieldCode(fieldCode);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('subject')
     .select(`
       *,
@@ -155,7 +131,7 @@ export async function getSubjectsForField(fieldId: number): Promise<Subject[]> {
     return localDataProvider.getSubjectsForField(fieldId);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('subject')
     .select(`
       *,
@@ -181,7 +157,7 @@ export async function getTopicsForSubjectCode(subjectCode: string): Promise<Topi
   }
 
   // Get topics with their difficulty progression
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('topic')
     .select(`
       *,
@@ -204,7 +180,7 @@ export async function getTopicById(topicId: number): Promise<Topic | null> {
     return localDataProvider.getTopicById(topicId);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('topic')
     .select('*')
     .eq('topic_id', topicId)
@@ -224,7 +200,7 @@ export async function getTopicByCode(code: string): Promise<Topic | null> {
     return localDataProvider.getTopicByCode(code);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('topic')
     .select('*')
     .eq('code', code)
@@ -244,7 +220,11 @@ export async function getUserProgress(
   userId: string,
   topicId: number
 ): Promise<UserProgress | null> {
-  const { data, error } = await supabase
+  if (USE_LOCAL_AUTH) {
+    DEBUG_LOG(`[localStorage]getUserProgress: userId=${userId}, topicId=${topicId}`);
+
+  }
+  const { data, error } = await supabase!
     .from('user_progress')
     .select('*')
     .eq('user_id', userId)
@@ -265,7 +245,7 @@ export async function createOrUpdateUserProgress(
   topicId: number,
   stageId: number
 ): Promise<void> {
-  const { error } = await supabase
+  const { error } = await supabase!
     .from('user_progress')
     .upsert({
       user_id: userId,
@@ -284,7 +264,7 @@ export async function getTotalRepsForTopic(
   userId: string,
   topicId: number
 ): Promise<number> {
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('session')
     .select('total_reps')
     .eq('user_id', userId)
@@ -307,7 +287,7 @@ export async function createSession(
 ): Promise<Session | null> {
   const now = new Date().toISOString();
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('session')
     .insert({
       user_id: userId,
@@ -339,7 +319,7 @@ export async function updateSession(
   immediate: boolean = false
 ): Promise<void> {
   const performUpdate = async () => {
-    const { error } = await supabase
+    const { error } = await supabase!
       .from('session')
       .update({
         ...updates,
@@ -377,7 +357,7 @@ export async function getStageRequirements(
   }
 
   // Get the topic's difficulty progression
-  const { data: topic, error } = await supabase
+  const { data: topic, error } = await supabase!
     .from('topic')
     .select(`
       *,
@@ -421,7 +401,7 @@ export async function getStageById(stageId: number): Promise<Stage | null> {
     return localDataProvider.getStageById(stageId);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('stage')
     .select('*')
     .eq('stage_id', stageId)
@@ -468,7 +448,7 @@ export async function getSessionStats(
   topicId: number,
   stageId?: number
 ) {
-  let query = supabase
+  let query = supabase!
     .from('session')
     .select('*')
     .eq('user_id', userId)
@@ -511,7 +491,7 @@ export async function getRecentTopicsWithProgress(
   limit: number = 10
 ): Promise<TopicWithProgress[]> {
   // Get recent sessions with field information
-  const { data: recentSessions, error } = await supabase
+  const { data: recentSessions, error } = await supabase!
     .from('session')
     .select(`
       *,
@@ -580,7 +560,7 @@ export async function getDifficultyLevels(): Promise<DifficultyLevel[]> {
     return localDataProvider.getDifficultyLevels();
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('difficulty_level')
     .select('*')
     .order('difficulty_level_id');
@@ -599,7 +579,7 @@ export async function getDifficultyLevelsForTopic(topicId: number): Promise<Diff
     return localDataProvider.getDifficultyLevelsForTopic(topicId);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('topic_difficulty_option')
     .select(`
       difficulty_level (*)

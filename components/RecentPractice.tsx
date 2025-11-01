@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { getRecentTopicsWithProgress } from '@/lib/supabase-v2';
+import { getLocalRecentTopics, LocalRecentTopic } from '@/lib/local-session-storage';
 import { TopicWithProgress, STAGE_DISPLAY_NAMES, calculateProgress } from '@/lib/types/database';
 
 const data = {
@@ -47,24 +48,67 @@ function formatRelativeDate(dateString: string | Date): string {
 
 export default function RecentPractice() {
   const { user, loading } = useAuth();
-  const [recentTopics, setRecentTopics] = useState<TopicWithProgress[]>([]);
+  const [recentTopics, setRecentTopics] = useState<(TopicWithProgress | LocalRecentTopic)[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadRecentPractice() {
       console.log('Loading recent practice for user:', user?.id);
-      if (user?.id) {
-        try {
-          const topics = await getRecentTopicsWithProgress(user.id, 5);
-          console.log('Recent topics loaded:', topics);
-          setRecentTopics(topics);
-        } catch (error) {
-          console.error('Error loading recent practice:', error);
+
+      // First, try to load from localStorage (works for all users)
+      try {
+        const localTopics = getLocalRecentTopics();
+        console.log('Local topics loaded:', localTopics);
+
+        if (localTopics.length > 0) {
+          setRecentTopics(localTopics);
+          setIsLoading(false);
+
+          // If user is signed in, also try to get cloud data to merge
+          if (user?.id) {
+            try {
+              const cloudTopics = await getRecentTopicsWithProgress(user.id, 5);
+              console.log('Cloud topics loaded:', cloudTopics);
+
+              // Merge local and cloud topics (prefer local for now)
+              const mergedTopics = mergeTopics(localTopics, cloudTopics);
+              setRecentTopics(mergedTopics);
+            } catch (error) {
+              console.error('Error loading cloud practice data:', error);
+              // Keep using local data
+            }
+          }
+        } else if (user?.id) {
+          // No local data, but user is signed in - try cloud
+          try {
+            const topics = await getRecentTopicsWithProgress(user.id, 5);
+            console.log('Recent topics loaded from cloud:', topics);
+            setRecentTopics(topics);
+          } catch (error) {
+            console.error('Error loading recent practice:', error);
+            setRecentTopics([]);
+          }
+        } else {
+          // No local data and no user
           setRecentTopics([]);
         }
-      } else {
-        setRecentTopics([]);
+      } catch (error) {
+        console.error('Error loading local practice data:', error);
+
+        // Fall back to cloud if user is signed in
+        if (user?.id) {
+          try {
+            const topics = await getRecentTopicsWithProgress(user.id, 5);
+            setRecentTopics(topics);
+          } catch (error) {
+            console.error('Error loading recent practice:', error);
+            setRecentTopics([]);
+          }
+        } else {
+          setRecentTopics([]);
+        }
       }
+
       setIsLoading(false);
     }
 
@@ -72,6 +116,16 @@ export default function RecentPractice() {
       loadRecentPractice();
     }
   }, [user, loading]);
+
+  // Helper function to merge local and cloud topics
+  function mergeTopics(
+    localTopics: LocalRecentTopic[],
+    cloudTopics: TopicWithProgress[]
+  ): (LocalRecentTopic | TopicWithProgress)[] {
+    // For now, just prefer local data and take first 5
+    // In the future, you might want to merge by topicId and take the most recent
+    return localTopics.slice(0, 5);
+  }
 
   return (
     <div className={styles.recentSection}>
@@ -110,32 +164,65 @@ export default function RecentPractice() {
 
         <div className="space-y-4">
           {recentTopics.map((topic) => {
-            const currentStageId = topic.user_progress?.stage_id || 1;
+            // Type guards to handle both LocalRecentTopic and TopicWithProgress
+            const isLocalTopic = (t: any): t is LocalRecentTopic => 'topicCode' in t;
+            const isCloudTopic = (t: any): t is TopicWithProgress => 'topic_id' in t && 'code' in t;
+
+            // Extract common fields
+            const topicId = isLocalTopic(topic) ? topic.topicId : topic.topic_id;
+            const topicCode = isLocalTopic(topic) ? topic.topicCode : topic.code;
+            const displayName = isLocalTopic(topic) ? topic.displayName : topic.display_name;
+            const totalReps = isLocalTopic(topic) ? topic.totalReps : (topic.total_reps || 0);
+            const sessionsCount = isLocalTopic(topic) ? topic.sessionsCount : (topic.sessions_count || 0);
+            const lastPracticed = isLocalTopic(topic) ? topic.lastPracticed : topic.last_practiced;
+
+            // Stage handling
+            const currentStageId = isLocalTopic(topic)
+              ? topic.stageId
+              : (topic.user_progress?.stage_id || 1);
             const stageName = STAGE_DISPLAY_NAMES[currentStageId];
-            const icon = TOPIC_ICONS[topic.code] || '📚';
+            const icon = TOPIC_ICONS[topicCode] || '📚';
 
             // Get progress for current stage
-            const progression = topic.difficulty_progression;
             let stageProgress = 0;
             let stageRequirement = 1000;
 
-            if (progression && currentStageId <= 6) {
-              const stageFields = ['hatsu', 'shu', 'kan', 'ha', 'toi', 'ri'] as const;
-              const currentField = stageFields[currentStageId - 1];
-              stageRequirement = (progression as any)[currentField] || 1000;
-              stageProgress = calculateProgress(topic.total_reps || 0, stageRequirement);
+            if (isCloudTopic(topic)) {
+              const progression = topic.difficulty_progression;
+              if (progression && currentStageId <= 6) {
+                const stageFields = ['hatsu', 'shu', 'kan', 'ha', 'toi', 'ri'] as const;
+                const currentField = stageFields[currentStageId - 1];
+                stageRequirement = (progression as any)[currentField] || 1000;
+                stageProgress = calculateProgress(totalReps, stageRequirement);
+              }
+            } else {
+              // For local topics, use simple thresholds
+              const stageThresholds = [100, 300, 600, 1000, 1500, 2000];
+              if (currentStageId <= 6) {
+                stageRequirement = stageThresholds[currentStageId - 1] || 1000;
+                stageProgress = calculateProgress(totalReps, stageRequirement);
+              }
             }
 
-            // Build practice URL using the actual field and subject codes
-            const subjectData = (topic as any).subject;
-            const fieldData = subjectData?.field;
-            const fieldCode = fieldData?.code || 'math'; // fallback to math if not found
-            const subjectCode = subjectData?.code || 'arithmetic'; // fallback to arithmetic
-            const practiceUrl = `/practice/${fieldCode}/${subjectCode}/${topic.code}?stage=${currentStageId}&difficulty=101`;
+            // Build practice URL
+            let fieldCode: string;
+            let subjectCode: string;
+
+            if (isLocalTopic(topic)) {
+              fieldCode = topic.fieldCode;
+              subjectCode = topic.subjectCode;
+            } else {
+              const subjectData = (topic as any).subject;
+              const fieldData = subjectData?.field;
+              fieldCode = fieldData?.code || 'math';
+              subjectCode = subjectData?.code || 'arithmetic';
+            }
+
+            const practiceUrl = `/practice/${fieldCode}/${subjectCode}/${topicCode}?stage=${currentStageId}&difficulty=101`;
 
             return (
               <Link
-                key={topic.topic_id}
+                key={topicId}
                 href={practiceUrl}
                 className="block rounded-xl bg-white dark:bg-zinc-800 p-4 md:p-6 shadow-md border border-zinc-200 dark:border-zinc-700 hover:shadow-lg hover:scale-[1.01] transition-all"
               >
@@ -143,7 +230,7 @@ export default function RecentPractice() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-2xl">{icon}</span>
                     <h3 className="font-semibold text-zinc-900 dark:text-white md:text-lg">
-                      {topic.display_name}
+                      {displayName}
                     </h3>
 
                     {/* Stage badge */}
@@ -155,17 +242,17 @@ export default function RecentPractice() {
                     <div className="flex-grow"/>
 
                     <div className="text-right text-xs">
-                      <span className="font-medium">{topic.total_reps || 0}</span>
+                      <span className="font-medium">{totalReps}</span>
                       <div className="text-zinc-400 dark:text-zinc-500">total reps</div>
                     </div>
                   </div>
 
                   <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center justify-between gap-2">
                     <div className="text-xs text-zinc-500 dark:text-zinc-500">
-                      {topic.last_practiced ? formatRelativeDate(topic.last_practiced) : 'Never practiced'}
+                      {lastPracticed ? formatRelativeDate(lastPracticed) : 'Never practiced'}
                     </div>
                     <div className="text-xs text-zinc-500 dark:text-zinc-500">
-                      {topic.sessions_count || 0} sessions
+                      {sessionsCount} sessions
                     </div>
                   </div>
                 </div>
@@ -179,7 +266,7 @@ export default function RecentPractice() {
                     />
                   </div>
                   <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 text-right">
-                    {topic.total_reps || 0} / {stageRequirement} to next stage
+                    {totalReps} / {stageRequirement} to next stage
                   </div>
                 </div>
               </Link>

@@ -4,7 +4,7 @@ import {
     EquationConfig,
     getEquationConfig
 } from '@/lib/equation-types';
-import { 
+import {
     ComplexitySettings,
     generateProblems, 
     getComplexitySettings,
@@ -17,20 +17,20 @@ import { notFound } from 'next/navigation';
 import { SessionStats } from '@/app/practice/components/SessionStats';
 import { ACTION, Numpad } from '@/app/practice/components/Numpad';
 import { ProgressBar } from '@/app/practice/components/ProgressBar';
-import next from 'next';
 
-interface PracticeProps {
+interface ArithmeticProps {
     topicCode: string;
+    onCorrectAnswer?: () => void;
+    onIncorrectAnswer?: () => void;
 }
 
-export default function Practice({ topicCode }: PracticeProps) {
-
+export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnswer }: ArithmeticProps) {
     const [targetReps, setTargetReps] = useState(1000);
     const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
     const [currentProblem, setCurrentProblem] = useState<Problem|null>(null);
     const [problemSet, setProblemSet] = useState<Problem[]>([])
     const [answer, setAnswer] = useState<string>('');
-    const [reps, setReps] = useState(20);
+    const [reps, setReps] = useState(0);
     const [equationConfig, setEquationConfig] = useState<EquationConfig | null>(null);
     const [complexitySettings, setComplexitySettings] = useState<ComplexitySettings | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +44,7 @@ export default function Practice({ topicCode }: PracticeProps) {
             return;
         }
         const complexity = getComplexitySettings(
-            topicCode, 1, 1, 4
+            topicCode, 1, 1, 1000
         );
         const problems = generateProblems({
             topicCode,
@@ -61,9 +61,9 @@ export default function Practice({ topicCode }: PracticeProps) {
 
     useEffect(() => {
         if (
-            !!answer 
-            && !isNil(currentProblem?.answer) 
-            && Number(answer) === currentProblem?.answer 
+            !!answer
+            && !isNil(currentProblem?.answer)
+            && Number(answer) === currentProblem?.answer
             && !isSubmitting
         ) {
             handleSubmit();
@@ -83,7 +83,7 @@ export default function Practice({ topicCode }: PracticeProps) {
             setCurrentProblem(nextProblem);
             setShowAnswerFeedback(false);
         }
-    }
+    };
 
     const handleSubmit = () => {
         // Prevent duplicate submissions
@@ -102,29 +102,33 @@ export default function Practice({ topicCode }: PracticeProps) {
             nextProblem(index);
             // Reset submission flag after successful submission
             setTimeout(() => setIsSubmitting(false), 100);
+            onCorrectAnswer && onCorrectAnswer();
         } else {
             console.log('Incorrect answer. Correct was:', currentProblem.answer);
             // Reset submission flag for incorrect answers
             setIsSubmitting(false);
+            onIncorrectAnswer && onIncorrectAnswer();
         }
-    }
+    };
 
     const numpad = {
         onNumberClick: (num: string) => { setAnswer(prev => prev + num);},
-        onAction: (action: ACTION) => { 
+        onAction: (action: ACTION) => {
             if (action === 'CLEAR') {
-                setAnswer(''); 
+                setAnswer('');
                 setShowAnswerFeedback(false);
             }
             if (action === 'CHECK_ANSWER') {
                 setShowAnswerFeedback(true);
             }
+            if (action === 'NEGATE') {
+                setAnswer(prev => prev.startsWith('-') ? prev.slice(1) : '-' + prev);
+            }
         },
         onBackspace: () => { setAnswer(prev => prev.slice(0, -1)); },
         onNegative:  () => { setAnswer(prev => prev.startsWith('-') ? prev.slice(1) : '-' + prev); },
         hasNegatives: complexitySettings?.allowNegatives.inAnswer,
-    }
-
+    };
 
     if (!currentProblem || !equationConfig || !complexitySettings) {
         return <div>Loading...</div>;
@@ -136,9 +140,9 @@ export default function Practice({ topicCode }: PracticeProps) {
             <div className="border p-4 rounded-lg shadow-md w-full flex-grow">
                 {/* problem display */}
                 {problemSet && problemSet.length > 0 && currentProblemIndex < problemSet.length ? (
-                    <div className="text-center text-2xl mb-4">
-                        {currentProblem.display}
-                    </div>
+                <div className="text-center text-2xl mb-4">
+                    {currentProblem.display}
+                </div>
                 ) : (
                     <div className="text-center text-2xl mb-4">
                         No problem available
@@ -163,23 +167,22 @@ export default function Practice({ topicCode }: PracticeProps) {
                         submitDisabled = {!answer || !Number(answer) || isSubmitting}
                     />
                 </div>
-
             </div>
 
 
 
-            <SessionStats 
+            <SessionStats
                 reps={reps}
                 accuracy={0}
                 avgResponseTime={0}
                 medianResponseTime={0}
             />
-            <ProgressBar 
+            <ProgressBar
                 currentReps={reps}
                 targetReps={targetReps}
                 currentStage={'Hatsu'}
                 nextStage={'Shu'}
-            />        
+            />
         </div>
-    )
+    );
 }
