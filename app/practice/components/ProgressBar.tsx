@@ -1,8 +1,5 @@
 'use client';
 
-import React from 'react';
-
-import { getStageByCode, StageCode } from '@/lib/types/database';
 import colors from '@/styles/stage.module.css';
 
 interface ProgressBarProps {

@@ -8,7 +8,13 @@
 export interface Stage {
   stage_id: number; // 1-7
   code: string; // hatsu, shu, kan, ha, toi, ri, ku
+  symbol: string; // e.g., "初" for Hatsu
+  name: string; // e.g., "Hatsu"
+  translation: string; // e.g., "Begin"
   display_name: string; // e.g., "初 - Hatsu (Begin)"
+  description: string;
+  rep_threshold: number; // Minimum reps required to enter into this stage
+  reps_in_stage: number; // Number of reps to complete this stage
 }
 
 export interface DifficultyProgression {
@@ -115,65 +121,8 @@ export interface SessionWithDetails extends Session {
 // ============= Helper Types =============
 
 export type StageCode = 'hatsu' | 'shu' | 'kan' | 'ha' | 'toi' | 'ri' | 'ku';
-export type DifficultyCode = '1d' | '2d' | '3d' | '4d' | '5d';
 export type ProgressionCode = 'standard' | 'kids_mode';
 
-// ============= Constants =============
-
-export const STAGE_ORDER: StageCode[] = ['hatsu', 'shu', 'kan', 'ha', 'toi', 'ri', 'ku'];
-
-export const STAGE_DISPLAY_NAMES: Record<number, string> = {
-  1: '初 - Hatsu (Begin)',
-  2: '守 - Shu (Follow)',
-  3: '鑑 - Kan (Mirror)',
-  4: '破 - Ha (Break)',
-  5: '問 - Toi (Question)',
-  6: '離 - Ri (Leave)',
-  7: '空 - Ku (Void)'
-};
-
-export const DIFFICULTY_DISPLAY_NAMES: Record<number, string> = {
-  101: 'Seedling',
-  102: 'Sapling',
-  103: 'Bamboo',
-  104: 'Cedar',
-  105: 'Ancient Oak'
-};
-
-// Mapping from old module names to new topic IDs
-// This will be dynamically determined from the database, but here for reference
-export const MODULE_TO_TOPIC_CODE: Record<string, string> = {
-  'addition': 'add',
-  'subtraction': 'sub',
-  'multiplication': 'mul',
-  'division': 'div',
-  'modulus': 'mod',
-  'exponents': 'exp',
-  'square-roots': 'root',
-  'negatives-addition': 'add_w_negatives',
-  'negatives-subtraction': 'subtract_w_negatives'
-};
-
-// Helper function to get stage name
-export function getStageName(stageId: number): string {
-  return STAGE_DISPLAY_NAMES[stageId] || 'Unknown';
-}
-
-export function getStageByCode(stageCode: StageCode): Stage | null {
-  const stageIndex = STAGE_ORDER.indexOf(stageCode);
-  if (stageIndex === -1) return null;
-  const stageId = stageIndex + 1; // stage_id is 1-based
-  return {
-    stage_id: stageId,
-    code: stageCode,
-    display_name: STAGE_DISPLAY_NAMES[stageId]
-  };
-}
-
-// Helper function to get difficulty name
-export function getDifficultyName(difficultyId: number): string {
-  return DIFFICULTY_DISPLAY_NAMES[difficultyId] || 'Unknown';
-}
 
 // Helper function to calculate progress percentage
 export function calculateProgress(

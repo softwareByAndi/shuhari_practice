@@ -4,10 +4,25 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { supabase } from '@/lib/supabase-v2';
 import { useAuth } from '@/contexts/AuthContext';
 import { Problem as BaseProblem } from '@/lib/problem-generator';
-import { saveSessionToLocalStorage } from '@/lib/local-session-storage';
+import {
+  saveSessionToLocalStorage,
+  getTopicSummary,
+  saveTopicSummary,
+  updateTopicSummaryStats,
+  calculateCurrentStage,
+  incrementSessionCount,
+  type TopicSummary
+} from '@/lib/local-session-storage';
 import { USE_LOCAL_AUTH } from '@/lib/config';
 import { isNil } from 'lodash';
 import { ProgressBar } from '@/app/practice/components/ProgressBar';
+
+import {
+  topic,
+  subject,
+  field,
+  stage
+} from '@/lib/local_db_lookup';
 
 // Extended Problem type with display and answer
 export interface Problem extends BaseProblem {
@@ -32,11 +47,6 @@ export interface SessionData {
   stats: SessionStats;
   startTime: Date;
   lastSaveTime: Date | null;
-  // Additional metadata for localStorage
-  topicCode?: string;
-  topicDisplayName?: string;
-  subjectCode?: string;
-  fieldCode?: string;
 }
 
 interface SessionContextType {
@@ -45,15 +55,7 @@ interface SessionContextType {
   isLoading: boolean;
 
   // Session actions
-  initializeSession: (
-    topicId: number,
-    metadata?: {
-      topicCode: string;
-      topicDisplayName: string;
-      subjectCode: string;
-      fieldCode: string;
-    }
-  ) => Promise<void>;
+  initializeSession: (topicId: number) => Promise<void>;
   recordAnswer: (isCorrect: boolean, responseTime: number) => void;
   resetSession: () => void;
 
@@ -74,115 +76,62 @@ export function useSession() {
 interface SessionProviderProps {
   children: React.ReactNode;
 }
-
-interface TopicSummaryStage {
-  stage_id: 1 | 2 | 3 | 4 | 5 | 6 | 7,
-  code: 'hatsu' | 'shu' | 'kan' | 'ha' | 'toi' | 'ri' | 'ku',
-  symbol: string,
-  display_name: string,
-  reps_in_stage: number
-}
-interface TopicSummary {
-    topic: {
-      topic_id: number;
-      code: string;
-      display_name: string;
-    };
-    subject: {
-      subject_id: number;
-      code: string;
-      display_name: string;
-    };
-    field: {
-      field_id: number;
-      code: string;
-      display_name: string;
-    };
-    stats: {
-      totalReps: number;
-      sessionsCount: number;
-      lastPracticed: string;
-    }
-    currentStage: TopicSummaryStage;
-    nextStage:    TopicSummaryStage | null;
-    targetStage:  TopicSummaryStage | null;
-  }
   
 export function SessionProvider({ children }: SessionProviderProps) {
   const { user, loading: authLoading } = useAuth();
   const [session, setSession] = useState<SessionData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [topicSummary, setTopicSummary] = useState<TopicSummary | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const [topicSummary, setTopicSummary] = useState<TopicSummary>({
-    // placeholder values
-    topic: {
-      topic_id: 0,
-      code: 'placeholder',
-      display_name: 'Placeholder Topic'
-    },
-    subject: {
-      subject_id: 0,
-      code: 'placeholder',
-      display_name: 'Placeholder Subject'
-    },
-    field: {
-      field_id: 0,
-      code: 'placeholder',
-      display_name: 'Placeholder Field' 
-    },
-    stats: {
-      totalReps: 0,
-      sessionsCount: 0,
-      lastPracticed: new Date().toISOString(),
-    },
-    currentStage: {
-      stage_id: 1,
-      code: 'hatsu',
-      symbol: '初',
-      display_name: '初 - Hatsu (Begin)',
-      reps_in_stage: 1000
-    },
-    nextStage: {
-      stage_id: 2,
-      code: 'shu',
-      symbol: '守',
-      display_name: '守 - Shu (Follow)',
-      reps_in_stage: 5000
-    },
-    targetStage: {
-      stage_id: 4,
-      code: 'ha',
-      symbol: '破',
-      display_name: '破 - Ha (Break)',
-      reps_in_stage: 50000
-    }
-  });
-
-  /*
-  TODO : 
-  - store a topic summary for the user in localStorage
-    - unique by topicId + userId
-  - pull user topic summary from localStorage.
-  - populate progress bar (at the bottom of this page)
-  - on update session, also update topic summary
-  */
 
   // Initialize session
   const initializeSession = useCallback(async (
-    topicId: number,
-    metadata?: {
-      topicCode: string;
-      topicDisplayName: string;
-      subjectCode: string;
-      fieldCode: string;
-    }
+    topicId: number
   ) => {
     setIsLoading(true);
     console.log('Initializing session for topic:', topicId, 'User:', user?.id || 'anonymous');
     try {
       const userId = user?.id || null;
+
+      // Load or create TopicSummary from localStorage
+      let summary = getTopicSummary(topicId, userId);
+
+      if (!summary && topicId) {
+        // Create new summary if it doesn't exist
+        const { currentStage, nextStage, targetStage } = calculateCurrentStage(0);
+        summary = {
+          topic: {
+            topic_id: topicId,
+            code: metadata.topicCode,
+            display_name: metadata.topicDisplayName
+          },
+          subject: {
+            subject_id: 0,
+            code: metadata.subjectCode,
+            display_name: metadata.subjectCode
+          },
+          field: {
+            field_id: 0,
+            code: metadata.fieldCode,
+            display_name: metadata.fieldCode
+          },
+          stats: {
+            totalReps: 0,
+            sessionsCount: 0,
+            lastPracticed: new Date().toISOString()
+          },
+          currentStage,
+          nextStage,
+          targetStage
+        };
+        saveTopicSummary(topicId, userId, summary);
+      }
+
+      if (summary) {
+        setTopicSummary(summary);
+        console.log('Loaded TopicSummary from localStorage:', summary);
+      }
 
       // Initialize session state
       const newSession: SessionData = {
@@ -207,6 +156,9 @@ export function SessionProvider({ children }: SessionProviderProps) {
       };
 
       setSession(newSession);
+
+      // Increment session count only when starting a new session
+      incrementSessionCount(topicId, userId);
     } catch (error) {
       console.error('Failed to initialize session:', error);
     } finally {
@@ -239,12 +191,32 @@ export function SessionProvider({ children }: SessionProviderProps) {
       if (responseTime > 0 && responseTime < 30000) { // Less than 30 seconds
         newStats.responseTimes.push(responseTime);
         newStats.responseTimes.sort((a, b) => a - b);
-        
+
         // Recalculate average
         newStats.averageTime = Math.round(
           newStats.responseTimes.reduce((a, b) => a + b, 0) / newStats.responseTimes.length
         );
         newStats.medianTime = newStats.responseTimes[Math.floor(newStats.responseTimes.length / 2)];
+      }
+
+      // Update TopicSummary with the new answer
+      if (prev.topicCode && prev.topicDisplayName && prev.subjectCode && prev.fieldCode) {
+        const updatedSummary = updateTopicSummaryStats(
+          prev.topicId,
+          prev.userId,
+          {
+            topicCode: prev.topicCode,
+            topicDisplayName: prev.topicDisplayName,
+            subjectCode: prev.subjectCode,
+            fieldCode: prev.fieldCode
+          },
+          isCorrect,
+          responseTime
+        );
+
+        // Update the topicSummary state
+        setTopicSummary(updatedSummary);
+        console.log('Updated TopicSummary:', updatedSummary);
       }
 
       return { ...prev, stats: newStats };
@@ -448,12 +420,14 @@ export function SessionProvider({ children }: SessionProviderProps) {
       </details> */}
 
 
-      <ProgressBar
-        currentReps={topicSummary.stats.totalReps}
-        targetReps={topicSummary.currentStage.reps_in_stage ?? 100_000_000}
-        currentStage={topicSummary.currentStage}
-        nextStage={topicSummary.nextStage ?? null}
-      />
+      {topicSummary && (
+        <ProgressBar
+          currentReps={topicSummary.stats.totalReps}
+          targetReps={topicSummary.currentStage.reps_in_stage ?? 100_000_000}
+          currentStage={topicSummary.currentStage}
+          nextStage={topicSummary.nextStage ?? null}
+        />
+      )}
 
     </SessionContext.Provider>
   );

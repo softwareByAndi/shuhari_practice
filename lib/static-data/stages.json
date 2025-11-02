@@ -2,36 +2,78 @@
   {
     "stage_id": 1,
     "code": "hatsu",
-    "display_name": "初 - Hatsu (Begin)"
+    "symbol": "初",
+    "name": "Hatsu",
+    "translation": "Begin",
+    "display_name": "初 - Hatsu (Begin)",
+    "description": "First exposure. Building familiarity with basic concepts.",
+    "rep_threshold": 0,
+    "reps_in_stage": 1000
   },
   {
     "stage_id": 2,
     "code": "shu",
-    "display_name": "守 - Shu (Follow)"
+    "symbol": "守",
+    "name": "Shu",
+    "translation": "Follow",
+    "display_name": "守 - Shu (Follow)",
+    "description": "Following patterns. Building automaticity through repetition.",
+    "rep_threshold": 1000,
+    "reps_in_stage": 5000
   },
   {
     "stage_id": 3,
     "code": "kan",
-    "display_name": "鑑 - Kan (Mirror)"
+    "symbol": "鑑",
+    "name": "Kan",
+    "translation": "Mirror",
+    "display_name": "鑑 - Kan (Mirror)",
+    "description": "Reflecting patterns. Recognizing structures and relationships.",
+    "rep_threshold": 6000,
+    "reps_in_stage": 10000
   },
   {
     "stage_id": 4,
     "code": "ha",
-    "display_name": "破 - Ha (Break)"
+    "symbol": "破",
+    "name": "Ha",
+    "translation": "Break",
+    "display_name": "破 - Ha (Break)",
+    "description": "Questioning patterns. Exploring variations and edge cases.",
+    "rep_threshold": 16000,
+    "reps_in_stage": 50000
   },
   {
     "stage_id": 5,
     "code": "toi",
-    "display_name": "問 - Toi (Question)"
+    "symbol": "問",
+    "name": "Toi",
+    "translation": "Question",
+    "display_name": "問 - Toi (Question)",
+    "description": "Deep inquiry. Understanding the why behind the how.",
+    "rep_threshold": 66000,
+    "reps_in_stage": 250000
   },
   {
     "stage_id": 6,
     "code": "ri",
-    "display_name": "離 - Ri (Leave)"
+    "symbol": "離",
+    "name": "Ri",
+    "translation": "Leave",
+    "display_name": "離 - Ri (Leave)",
+    "description": "Transcending rules. Creating innovative solutions.",
+    "rep_threshold": 316000,
+    "reps_in_stage": 5000000
   },
   {
     "stage_id": 7,
     "code": "ku",
-    "display_name": "空 - Ku (Void)"
+    "symbol": "空",
+    "name": "Ku",
+    "translation": "Void",
+    "display_name": "空 - Ku (Void)",
+    "description": "Effortless mastery. Teaching and inspiring others.",
+    "rep_threshold": 5316000,
+    "reps_in_stage": 10000000
   }
 ]

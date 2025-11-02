@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { getRecentTopicsWithProgress } from '@/lib/supabase-v2';
 import { getLocalRecentTopics, LocalRecentTopic } from '@/lib/local-session-storage';
-import { TopicWithProgress, STAGE_DISPLAY_NAMES, calculateProgress } from '@/lib/types/database';
+import { TopicWithProgress, calculateProgress } from '@/lib/types/database';
+import { stage } from '@/lib/local_db_lookup';
 
 const data = {
   title: "Recent Practice",
@@ -180,7 +181,7 @@ export default function RecentPractice() {
             const currentStageId = isLocalTopic(topic)
               ? topic.stageId
               : (topic.user_progress?.stage_id || 1);
-            const stageName = STAGE_DISPLAY_NAMES[currentStageId];
+            const stageName = stage.by_id[currentStageId].display_name;
             const icon = TOPIC_ICONS[topicCode] || '📚';
 
             // Get progress for current stage

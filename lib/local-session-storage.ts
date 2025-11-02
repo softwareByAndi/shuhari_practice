@@ -1,9 +1,11 @@
-import { SessionData, Problem } from '@/contexts/SessionProvider';
-import { TopicWithProgress } from '@/lib/types/database';
+import { SessionData } from '@/contexts/SessionProvider';
+import { topic, stage } from '@/lib/local_db_lookup';
+
 
 // Local storage keys
 const SESSIONS_KEY = 'shuhari_sessions';
 const RECENT_TOPICS_KEY = 'shuhari_recent_topics';
+const TOPIC_SUMMARIES_KEY = 'shuhari_topic_summaries';
 const DEBUG_LOG = (msg: string) => {
   console.log('[local-session-storage]', msg);
 }
@@ -41,6 +43,14 @@ export interface LocalRecentTopic {
   stageId: number;
   accuracy?: number;
   avgResponseTime?: number;
+}
+
+// Complete topic summary including current progress and stage
+export interface TopicSummary {
+  topic_id: number;
+  totalReps: number;
+  sessionsCount: number;
+  lastPracticed: string;
 }
 
 // Save a session to localStorage
@@ -224,41 +234,125 @@ export function clearLocalSessions(): void {
   localStorage.removeItem(RECENT_TOPICS_KEY);
 }
 
+// Save or update TopicSummary in localStorage
+export function saveTopicSummary(
+  topicId: number,
+  userId: string | null,
+  summary: TopicSummary
+): void {
+  try {
+    const key = `${TOPIC_SUMMARIES_KEY}_${userId || 'anonymous'}_${topicId}`;
+    DEBUG_LOG(`saveTopicSummary: key=${key}`);
+    localStorage.setItem(key, JSON.stringify(summary));
+  } catch (error) {
+    console.error('Error saving topic summary to localStorage:', error);
+  }
+}
+
+// Get TopicSummary from localStorage
+export function getTopicSummary(
+  topicId: number,
+  userId: string | null
+): TopicSummary | null {
+  try {
+    const key = `${TOPIC_SUMMARIES_KEY}_${userId || 'anonymous'}_${topicId}`;
+    DEBUG_LOG(`getTopicSummary: key=${key}`);
+
+    const summaryJson = localStorage.getItem(key);
+    if (!summaryJson) return null;
+
+    return JSON.parse(summaryJson);
+  } catch (error) {
+    console.error('Error getting topic summary from localStorage:', error);
+    return null;
+  }
+}
+
+// Optimized function to update only the changing fields
+export function updateTopicSummaryStats(
+  topicId: number,
+  userId: string | null,
+  answeredCorrectly: boolean,
+  responseTime: number
+): TopicSummary {
+  try {
+    let summary = getTopicSummary(topicId, userId);
+
+    // Create new summary if it doesn't exist
+    if (!summary) {
+      summary = {
+        topic_id: topicId,
+        totalReps: 1, // Starting with 1 since we're recording an answer
+        sessionsCount: 0, // Will be incremented in initializeSession
+        lastPracticed: new Date().toISOString()
+      };
+      saveTopicSummary(topicId, userId, summary);
+      return summary;
+    }
+
+    // Update only the changing fields
+    const oldReps = summary.totalReps;
+    const newReps = oldReps + 1;
+
+    // Always update these fields
+    summary.totalReps = newReps;
+    summary.lastPracticed = new Date().toISOString();
+
+    // Save updated summary
+    saveTopicSummary(topicId, userId, summary);
+
+    return summary;
+  } catch (error) {
+    console.error('Error updating topic summary stats:', error);
+    throw error;
+  }
+}
+
+// Separate function to increment session count (called only from initializeSession)
+export function incrementSessionCount(
+  topicId: number,
+  userId: string | null
+): void {
+  try {
+    const summary = getTopicSummary(topicId, userId);
+    if (summary) {
+      summary.sessionsCount += 1;
+      saveTopicSummary(topicId, userId, summary);
+    }
+  } catch (error) {
+    console.error('Error incrementing session count:', error);
+  }
+}
+
 // Get topic progress from local storage (for calculating stage progression)
 export function getLocalTopicProgress(topicId: number): {
   totalReps: number;
-  currentStage: number;
+  stageId: number;
   accuracy: number;
   avgResponseTime: number;
 } {
   DEBUG_LOG(`getLocalTopicProgress: topicId=${topicId}`);
-  const recentTopics = getLocalRecentTopics();
-  const topic = recentTopics.find(t => t.topicId === topicId);
+  const recentSummaries = getLocalRecentTopics();
+  const topicSummary = recentSummaries.find(t => t.topicId === topicId);
 
-  if (!topic) {
+  if (!topicSummary) {
     return {
       totalReps: 0,
-      currentStage: 1,
+      stageId: 1,
       accuracy: 0,
       avgResponseTime: 0
     };
   }
 
-  // Calculate stage based on total reps
-  let currentStage = 1;
-  const stageThresholds = [0, 100, 300, 600, 1000, 1500, 2000]; // Example thresholds
-
-  for (let i = stageThresholds.length - 1; i >= 0; i--) {
-    if (topic.totalReps >= stageThresholds[i]) {
-      currentStage = Math.min(i + 1, 7); // Max stage is 7
-      break;
-    }
-  }
-
+  const stageId = Math.max(
+    ...stage.list
+      .filter(s => s.rep_threshold <= topicSummary.totalReps)
+      .map(s => s.stage_id)
+  );
   return {
-    totalReps: topic.totalReps,
-    currentStage,
-    accuracy: topic.accuracy || 0,
-    avgResponseTime: topic.avgResponseTime || 0
+    totalReps: topicSummary.totalReps,
+    stageId,
+    accuracy: topicSummary.accuracy || 0,
+    avgResponseTime: topicSummary.avgResponseTime || 0
   };
 }

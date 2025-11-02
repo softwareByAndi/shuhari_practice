@@ -1,4 +1,11 @@
 
 - add onInput handler to Numpad capture keydown events and update input
 - pull session data from localStorage to populate progress bar
+    - started on this - still refactoring AI garbage
+        - local-session-storage.ts
+        - local_db_lookup.ts
+        - ProgressBar.tsx
+        - SessionProvider.tsx
+    - added some new data to Stage in stages.json, so other files may be affected
+    - also set up lookup tables in local_db_lookup.ts - a lot of files will probably need to be updated to use this instead of querying the DB
 - pre-generate problem sets and organize into difficulty levels
