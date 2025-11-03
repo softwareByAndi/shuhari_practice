@@ -1,5 +1,6 @@
 'use client';
 
+import colors from '@/styles/stage.module.css';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -142,7 +143,7 @@ export default function RecentPractice() {
 
 
                         {/* Stage badge */}
-                        <div className="inline-flex items-center gap-1 px-4 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xl font-semibold rounded-full border border-purple-300 dark:border-purple-500">
+                        <div className={`inline-flex items-center gap-1 px-4 py-1 text-xl font-semibold rounded-full border ${colors[topicSummary.currentStage.stage_id]}`}>
                           <span>{topicSummary.currentStage.symbol}</span>
                           <span className="hidden sm:inline">Stage {topicSummary.currentStage.stage_id}</span>
                         </div>

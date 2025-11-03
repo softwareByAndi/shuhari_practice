@@ -2,13 +2,13 @@
 
 /* Layout & Container Styles */
 .shu {
-  @apply text-blue-600 dark:text-blue-400;
+  @apply text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600;
 }
 .ha {
-  @apply text-purple-600 dark:text-purple-400;
+  @apply text-purple-600 dark:text-purple-400 border-purple-300 dark:border-purple-600;
 }
 .ri {
-  @apply text-indigo-600 dark:text-indigo-400;
+  @apply text-indigo-600 dark:text-indigo-400 border-indigo-300 dark:border-indigo-600;
 }
 .default_stage {
   /*placeholder*/

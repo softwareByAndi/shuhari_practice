@@ -2,7 +2,7 @@
   {
     "topic_id": 1,
     "code": "add",
-    "symbol": "➕",
+    "symbol": "∑",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
     "display_name": "Addition",
@@ -13,7 +13,7 @@
   {
     "topic_id": 2,
     "code": "sub",
-    "symbol": "➖",
+    "symbol": "Δ",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
     "display_name": "Subtraction",
@@ -24,7 +24,7 @@
   {
     "topic_id": 3,
     "code": "mul",
-    "symbol": "✖️",
+    "symbol": "∏",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
     "display_name": "Multiplication",
@@ -35,7 +35,7 @@
   {
     "topic_id": 4,
     "code": "div",
-    "symbol": "➗",
+    "symbol": "∶",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
     "display_name": "Division",
@@ -46,7 +46,7 @@
   {
     "topic_id": 5,
     "code": "mod",
-    "symbol": "%",
+    "symbol": "⟲",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
     "display_name": "Modulus",
@@ -57,7 +57,7 @@
   {
     "topic_id": 6,
     "code": "exp",
-    "symbol": "^",
+    "symbol": "𝒙ⁿ",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
     "display_name": "Exponents",
