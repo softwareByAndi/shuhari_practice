@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { Problem as BaseProblem } from '@/lib/problem-generator-v3';
 import {
   getTopicSummary,
+  updateTopicSummary,
+  getLocalSession,
   saveSessionToLocalStorage,
   type ActiveSession,
   type LocalTopicSummary
@@ -19,8 +21,7 @@ import {
 } from '@/lib/local_db_lookup';
 
 import {
-  Stage,
-  Topic
+  Stage
 } from '@/lib/types/database';
 
 
@@ -83,6 +84,10 @@ export function SessionProvider({ children }: SessionProviderProps) {
       const userId = user?.id || null;
 
       let summary = getTopicSummary(topicId, userId);
+      let prevSession = getLocalSession();
+      if (prevSession && prevSession.topicId === topicId) {
+        summary = updateTopicSummary(prevSession, true);
+      }
 
       const totalReps = summary?.totalReps || 0;
       const currentStage = calculateStageByReps(totalReps);
@@ -172,7 +177,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
 
     saveTimeoutRef.current = setTimeout(() => {
       try {
-        setSaveStatus('saving');
+        // setSaveStatus('saving');
         saveSessionToLocalStorage(session);
         setSaveStatus('saved');
         // Reset status after 2 seconds to give time for user to notice
