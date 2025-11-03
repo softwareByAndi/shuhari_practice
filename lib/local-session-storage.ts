@@ -158,7 +158,7 @@ export function getItemsFromLocalStorageWithPrefix(prefix: string): string[] {
 
 
 export function getAllTopicSummariesForUser(userId: string | null): LocalTopicSummary[] {
-    const prefix = `${LS_TOPIC_SUMMARY_KEY}`; // _${userId || 'anonymous'}_`;
+    const prefix = `${LS_TOPIC_SUMMARY_KEY}_${userId || 'anonymous'}_`;
     const topicJsonArray = getItemsFromLocalStorageWithPrefix(prefix)
 
     const summaries: LocalTopicSummary[] = [];
