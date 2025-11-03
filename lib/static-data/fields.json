@@ -12,7 +12,7 @@
     "field_id": 121,
     "code": "chemistry",
     "display_name": "Chemistry",
-    "is_active": true,
+    "is_active": false,
     "symbol": "⚗️",
     "tw_color": "green",
     "description": "TODO!"
@@ -21,7 +21,7 @@
     "field_id": 122,
     "code": "biology",
     "display_name": "Biology",
-    "is_active": true,
+    "is_active": false,
     "symbol": "🧬",
     "tw_color": "emerald",
     "description": "TODO!"
@@ -30,7 +30,7 @@
     "field_id": 123,
     "code": "physics",
     "display_name": "Physics",
-    "is_active": true,
+    "is_active": false,
     "symbol": "⚛️",
     "tw_color": "indigo",
     "description": "TODO!"
@@ -39,7 +39,7 @@
     "field_id": 131,
     "code": "engineering",
     "display_name": "Engineering",
-    "is_active": true,
+    "is_active": false,
     "symbol": "⚙️",
     "tw_color": "gray",
     "description": "TODO!"
@@ -48,7 +48,7 @@
     "field_id": 201,
     "code": "language",
     "display_name": "Language",
-    "is_active": true,
+    "is_active": false,
     "symbol": "📝",
     "tw_color": "pink",
     "description": "TODO!"
@@ -57,7 +57,7 @@
     "field_id": 202,
     "code": "programming",
     "display_name": "Programming",
-    "is_active": true,
+    "is_active": false,
     "symbol": "💻",
     "tw_color": "purple",
     "description": "TODO!"
@@ -66,7 +66,7 @@
     "field_id": 301,
     "code": "history",
     "display_name": "History",
-    "is_active": true,
+    "is_active": false,
     "symbol": "📜",
     "tw_color": "amber",
     "description": "TODO!"
@@ -75,7 +75,7 @@
     "field_id": 302,
     "code": "philosophy",
     "display_name": "Philosophy",
-    "is_active": true,
+    "is_active": false,
     "symbol": "🤔",
     "tw_color": "violet",
     "description": "TODO!"
@@ -84,7 +84,7 @@
     "field_id": 303,
     "code": "law",
     "display_name": "Law",
-    "is_active": true,
+    "is_active": false,
     "symbol": "⚖️",
     "tw_color": "red",
     "description": "TODO!"
@@ -93,7 +93,7 @@
     "field_id": 304,
     "code": "psychology",
     "display_name": "Psychology",
-    "is_active": true,
+    "is_active": false,
     "symbol": "🧠",
     "tw_color": "orange",
     "description": "TODO!"
@@ -102,7 +102,7 @@
     "field_id": 401,
     "code": "economics",
     "display_name": "Economics",
-    "is_active": true,
+    "is_active": false,
     "symbol": "📈",
     "tw_color": "teal",
     "description": "TODO!"

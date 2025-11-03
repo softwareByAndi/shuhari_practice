@@ -52,8 +52,8 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
                 actionText:   'Start Practicing →',
                 link:         `/practice/${fieldCode}/${subjectCode}/${topic.code}`,
                 icon:         topic.symbol || '📚',
-                isActive:     true,
-                color:        null,
+                isActive:     topic.is_active,
+                color:        topic.tw_color || null,
             }))} />
           </div>
 

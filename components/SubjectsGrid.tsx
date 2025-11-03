@@ -39,8 +39,8 @@ export default async function SubjectsGrid({ fieldId, fieldCode }: SubjectsGridP
           actionText:   'Start Learning →',
           link:         `/practice/${s.field.code}/${s.code}`,
           icon:         s.symbol || data.default_card.symbol,
-          isActive:     true,
-          color:        data.default_card.tw_color,
+          isActive:     s.is_active,
+          color:        s.tw_color || null,
       }))} />
     </div>
   );

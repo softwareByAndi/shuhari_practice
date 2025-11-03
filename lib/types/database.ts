@@ -57,6 +57,7 @@ export interface Subject {
   display_name: string; // 'Arithmetic'
   symbol: string;
   is_active: boolean;
+  tw_color: string | null | undefined;
   description: string;
 }
 
@@ -68,6 +69,7 @@ export interface Topic {
   difficulty_progression_id: number | null; // defaults to 1 (standard)
   display_name: string; // 'Addition', 'Subtraction', etc.
   is_active: boolean;
+  tw_color: string | null | undefined;
   description: string;
 }
 

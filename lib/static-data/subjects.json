@@ -6,7 +6,8 @@
     "display_name": "Arithmetic",
     "symbol": "±",
     "is_active": true,
-    "description": "TODO!"
+    "description": "TODO!",
+    "tw_color": "blue"
   },
   {
     "subject_id": 101002,
@@ -15,7 +16,8 @@
     "display_name": "Algebra",
     "symbol": "𝑎𝑥",
     "is_active": false,
-    "description": "TODO!"
+    "description": "TODO!",
+    "tw_color": "green"
   },
   {
     "subject_id": 101003,
@@ -24,7 +26,8 @@
     "display_name": "Geometry",
     "symbol": "△",
     "is_active": false,
-    "description": "TODO!"
+    "description": "TODO!",
+    "tw_color": "emerald"
   },
   {
     "subject_id": 101004,
@@ -33,7 +36,8 @@
     "display_name": "Trigonometry",
     "symbol": "θ",
     "is_active": false,
-    "description": "TODO!"
+    "description": "TODO!",
+    "tw_color": "indigo"
   },
   {
     "subject_id": 101005,
@@ -42,7 +46,8 @@
     "display_name": "Linear Algebra",
     "symbol": "[𝐴]",
     "is_active": false,
-    "description": "TODO!"
+    "description": "TODO!",
+    "tw_color": "gray"
   },
   {
     "subject_id": 101006,
@@ -51,7 +56,8 @@
     "display_name": "Calculus",
     "symbol": "∫",
     "is_active": false,
-    "description": "TODO!"
+    "description": "TODO!",
+    "tw_color": "pink"
   },
   {
     "subject_id": 101007,
@@ -60,6 +66,7 @@
     "display_name": "Statistics",
     "symbol": "σ",
     "is_active": false,
-    "description": "TODO!"
+    "description": "TODO!",
+    "tw_color": "purple"
   }
 ]

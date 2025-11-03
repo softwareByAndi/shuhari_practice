@@ -7,6 +7,7 @@
     "difficulty_progression_id": 1,
     "display_name": "Addition",
     "is_active": true,
+    "tw_color": "blue",
     "description": "TODO!"
   },
   {
@@ -17,6 +18,7 @@
     "difficulty_progression_id": 1,
     "display_name": "Subtraction",
     "is_active": true,
+    "tw_color": "green",
     "description": "TODO!"
   },
   {
@@ -27,6 +29,7 @@
     "difficulty_progression_id": 1,
     "display_name": "Multiplication",
     "is_active": true,
+    "tw_color": "indigo",
     "description": "TODO!"
   },
   {
@@ -37,6 +40,7 @@
     "difficulty_progression_id": 1,
     "display_name": "Division",
     "is_active": true,
+    "tw_color": "gray",
     "description": "TODO!"
   },
   {
@@ -47,6 +51,7 @@
     "difficulty_progression_id": 1,
     "display_name": "Modulus",
     "is_active": true,
+    "tw_color": "purple",
     "description": "TODO!"
   },
   {
@@ -57,6 +62,7 @@
     "difficulty_progression_id": 1,
     "display_name": "Exponents",
     "is_active": true,
+    "tw_color": "pink",
     "description": "TODO!"
   },
   {
@@ -67,6 +73,7 @@
     "difficulty_progression_id": 1,
     "display_name": "Square Roots",
     "is_active": true,
+    "tw_color": "orange",
     "description": "TODO!"
   },
   {
@@ -77,6 +84,7 @@
     "difficulty_progression_id": 1,
     "display_name": "Addition with Negatives",
     "is_active": true,
+    "tw_color": "teal",
     "description": "TODO!"
   },
   {
@@ -87,6 +95,7 @@
     "difficulty_progression_id": 1,
     "display_name": "Subtraction with Negatives",
     "is_active": true,
+    "tw_color": "red",
     "description": "TODO!"
   }
 ]
