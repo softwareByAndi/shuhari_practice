@@ -1,11 +1,10 @@
-import styles from '@/styles/card.module.css';
 
-import { getAllFields } from '@/lib/supabase-v2';
+import styles from '@/styles/card.module.css';
+import { fieldLookup } from '@/lib/local_db_lookup';
 import { Field } from '@/lib/types/database';
 
 import { notFound } from 'next/navigation';
 import CardsGrid from './CardsGrid';
-
 
 
 const data = {
@@ -17,7 +16,7 @@ const data = {
 
 export default async function FieldsGrid() {
 
-  const fields: Field[] = await getAllFields();
+  const fields: Field[] = fieldLookup.list
   if (!fields) {
     return notFound();
   }

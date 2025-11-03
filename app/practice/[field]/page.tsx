@@ -1,4 +1,4 @@
-import { getFieldByCode } from '@/lib/supabase-v2';
+import { fieldLookup } from '@/lib/local_db_lookup';
 
 import styles from '@/styles/page.module.css';
 
@@ -38,9 +38,7 @@ const fieldContent: Record<string, { title: string; subTitle: string; descriptio
 
 export default async function FieldPractice({ params }: { params: Promise<{ field: string }> }) {
   const { field: fieldCode } = await params;
-
-  // Fetch field data server-side
-  const field = await getFieldByCode(fieldCode);
+  const field = fieldLookup.by_code[fieldCode];
 
   // If field not found, show 404
   if (!field) {
@@ -48,7 +46,7 @@ export default async function FieldPractice({ params }: { params: Promise<{ fiel
   }
 
   const content = fieldContent[fieldCode] || fieldContent.default;
-  const displayTitle = field!.display_name ? `${field!.display_name} Practice` : content.title;
+  const displayTitle = field.display_name ? `${field.display_name} Practice` : content.title;
 
   return (
     <div className="page">

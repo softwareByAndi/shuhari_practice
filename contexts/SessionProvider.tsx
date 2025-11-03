@@ -1,28 +1,28 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '@/lib/supabase-v2';
 import { useAuth } from '@/contexts/AuthContext';
-import { Problem as BaseProblem } from '@/lib/problem-generator';
+import type { Problem as BaseProblem } from '@/lib/problem-generator-v3';
 import {
-  saveSessionToLocalStorage,
   getTopicSummary,
-  saveTopicSummary,
-  updateTopicSummaryStats,
-  calculateCurrentStage,
-  incrementSessionCount,
-  type TopicSummary
+  saveSessionToLocalStorage,
+  type ActiveSession,
+  type LocalTopicSummary
 } from '@/lib/local-session-storage';
-import { USE_LOCAL_AUTH } from '@/lib/config';
-import { isNil } from 'lodash';
+
+import { median, standardDeviation } from 'simple-statistics';
 import { ProgressBar } from '@/app/practice/components/ProgressBar';
 
 import {
-  topic,
-  subject,
-  field,
-  stage
+  stageLookup,
+  calculateStageByReps
 } from '@/lib/local_db_lookup';
+
+import {
+  Stage,
+  Topic
+} from '@/lib/types/database';
+
 
 // Extended Problem type with display and answer
 export interface Problem extends BaseProblem {
@@ -30,34 +30,15 @@ export interface Problem extends BaseProblem {
   answer: number;
 }
 
-// Types
-export interface SessionStats {
-  totalProblems: number;
-  correctAnswers: number;
-  averageTime: number;
-  medianTime: number;
-  responseTimes: number[];
-}
-
-export interface SessionData {
-  localSessionKey: string;
-  sessionId: string | null;
-  topicId: number;
-  userId: string | null;
-  stats: SessionStats;
-  startTime: Date;
-  lastSaveTime: Date | null;
-}
 
 interface SessionContextType {
   // Session data
-  session: SessionData | null;
+  session: ActiveSession | null;
   isLoading: boolean;
 
   // Session actions
   initializeSession: (topicId: number) => Promise<void>;
   recordAnswer: (isCorrect: boolean, responseTime: number) => void;
-  resetSession: () => void;
 
   // Stats helpers
   getAccuracy: () => number;
@@ -76,13 +57,20 @@ export function useSession() {
 interface SessionProviderProps {
   children: React.ReactNode;
 }
+
+interface TopicProgress {
+  topicId: number;
+  totalReps: number;
+  currentStage: Stage;
+  nextStage?: Stage;
+}
   
 export function SessionProvider({ children }: SessionProviderProps) {
   const { user, loading: authLoading } = useAuth();
-  const [session, setSession] = useState<SessionData | null>(null);
+  const [session, setSession] = useState<ActiveSession | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [topicSummary, setTopicSummary] = useState<TopicSummary | null>(null);
+  const [topicProgress, setTopicProgress] = useState<TopicProgress | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize session
@@ -94,71 +82,34 @@ export function SessionProvider({ children }: SessionProviderProps) {
     try {
       const userId = user?.id || null;
 
-      // Load or create TopicSummary from localStorage
       let summary = getTopicSummary(topicId, userId);
 
-      if (!summary && topicId) {
-        // Create new summary if it doesn't exist
-        const { currentStage, nextStage, targetStage } = calculateCurrentStage(0);
-        summary = {
-          topic: {
-            topic_id: topicId,
-            code: metadata.topicCode,
-            display_name: metadata.topicDisplayName
-          },
-          subject: {
-            subject_id: 0,
-            code: metadata.subjectCode,
-            display_name: metadata.subjectCode
-          },
-          field: {
-            field_id: 0,
-            code: metadata.fieldCode,
-            display_name: metadata.fieldCode
-          },
-          stats: {
-            totalReps: 0,
-            sessionsCount: 0,
-            lastPracticed: new Date().toISOString()
-          },
-          currentStage,
-          nextStage,
-          targetStage
-        };
-        saveTopicSummary(topicId, userId, summary);
-      }
-
-      if (summary) {
-        setTopicSummary(summary);
-        console.log('Loaded TopicSummary from localStorage:', summary);
-      }
+      const totalReps = summary?.totalReps || 0;
+      const currentStage = calculateStageByReps(totalReps);
+      const nextStage = stageLookup.by_id[currentStage.stage_id + 1] || undefined;
+      setTopicProgress({
+        topicId,
+        totalReps,
+        currentStage,
+        nextStage
+      });
 
       // Initialize session state
-      const newSession: SessionData = {
-        localSessionKey: `local_${Date.now()}`,
+      const newSession: ActiveSession = {
+        localSessionKey: `local_session_${Date.now()}`,
         sessionId: null,
         topicId,
         userId,
-        stats: {
-          totalProblems: 0,
-          correctAnswers: 0,
-          averageTime: 0,
-          medianTime: 0,
-          responseTimes: [],
-        },
         startTime: new Date(),
-        lastSaveTime: null,
-        // Add metadata for localStorage
-        topicCode: metadata?.topicCode,
-        topicDisplayName: metadata?.topicDisplayName,
-        subjectCode: metadata?.subjectCode,
-        fieldCode: metadata?.fieldCode,
+        totalProblems: 0,
+        accuracy: 0,
+        medianTime: 0,
+        standardDeviationTime: 0,
+        responseTimes: []
       };
 
       setSession(newSession);
 
-      // Increment session count only when starting a new session
-      incrementSessionCount(topicId, userId);
     } catch (error) {
       console.error('Failed to initialize session:', error);
     } finally {
@@ -166,190 +117,64 @@ export function SessionProvider({ children }: SessionProviderProps) {
     }
   }, [user]);
 
-  // // Update session ( Not Used Anywhere )
-  // const updateSession = useCallback((updates: Partial<SessionData>) => {
-  //   setSession(prev => {
-  //     if (!prev) return null;
-  //     return { ...prev, ...updates };
-  //   });
-  // }, []);
+
 
   // Record answer
-  const recordAnswer = useCallback((isCorrect: boolean, responseTime: number) => {
+  const recordAnswer = useCallback((
+    isCorrect: boolean, 
+    responseTime: number
+  ) => {
     console.log('Recording answer. Correct:', isCorrect, 'Response time:', responseTime);
     setSession(prev => {
       if (!prev) return null;
-
-      const newStats = { ...prev.stats };
-      newStats.totalProblems++;
-
+      let numCorrect = (prev.accuracy ?? 1) * prev.totalProblems;
       if (isCorrect) {
-        newStats.correctAnswers++;
+        numCorrect++;
       }
+      prev.totalProblems++;
+      prev.accuracy = prev.totalProblems / numCorrect;
+      
+      prev.responseTimes.push(responseTime)
+      prev.responseTimes.sort()
 
-      // Update response times (filter outliers)
-      if (responseTime > 0 && responseTime < 30000) { // Less than 30 seconds
-        newStats.responseTimes.push(responseTime);
-        newStats.responseTimes.sort((a, b) => a - b);
-
-        // Recalculate average
-        newStats.averageTime = Math.round(
-          newStats.responseTimes.reduce((a, b) => a + b, 0) / newStats.responseTimes.length
-        );
-        newStats.medianTime = newStats.responseTimes[Math.floor(newStats.responseTimes.length / 2)];
-      }
-
-      // Update TopicSummary with the new answer
-      if (prev.topicCode && prev.topicDisplayName && prev.subjectCode && prev.fieldCode) {
-        const updatedSummary = updateTopicSummaryStats(
-          prev.topicId,
-          prev.userId,
-          {
-            topicCode: prev.topicCode,
-            topicDisplayName: prev.topicDisplayName,
-            subjectCode: prev.subjectCode,
-            fieldCode: prev.fieldCode
-          },
-          isCorrect,
-          responseTime
-        );
-
-        // Update the topicSummary state
-        setTopicSummary(updatedSummary);
-        console.log('Updated TopicSummary:', updatedSummary);
-      }
-
-      return { ...prev, stats: newStats };
+      prev.medianTime = median(prev.responseTimes);
+      prev.standardDeviationTime = standardDeviation(prev.responseTimes) || 0;
+      
+      return {...prev};
     });
-  }, []);
-
-
-
-  // Reset session
-  const resetSession = useCallback(() => {
-    setSession(null);
-    setSaveStatus('idle');
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
   }, []);
 
 
   // Stats helpers
   const getAccuracy = useCallback(() => {
-    if (!session || session.stats.totalProblems === 0) return 0;
-    return Math.round((session.stats.correctAnswers / session.stats.totalProblems) * 100);
+    return session?.accuracy ?? 0;
   }, [session]);
 
 
-  // Stats helpers
-  const getSessionId = useCallback(() => {
-    if (!session) return 'NULL';
-    return session.sessionId ?? session.localSessionKey;
-  }, [session]);
-
-
-  // Auto-save session to localStorage (and optionally to database)
+  // Auto-save session to localStorage
   useEffect(() => {
-    if (!session) return;
-    if (session.stats.totalProblems === 0) return;
-
-    console.log('Preparing to auto-save session');
+    console.log('Session changed, scheduling save...', session);
+    if (!session) {
+      console.error('No active session to save.');
+      return;
+    }
+    if (session.totalProblems === 0) {
+      console.log('No problems answered yet, skipping save.');
+      return;
+    }
 
     // Clear existing timeout
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
-    // Always save to localStorage
-    if (session.topicCode && session.topicDisplayName && session.subjectCode && session.fieldCode) {
-      session.lastSaveTime = new Date();
-      saveSessionToLocalStorage(
-        session.localSessionKey,
-        session,
-        session.topicCode,
-        session.topicDisplayName,
-        session.subjectCode,
-        session.fieldCode
-      );
-      console.log('Session saved to localStorage');
-    }
-    else {
-      console.warn('Missing metadata for localStorage save:', {
-        topicCode: session.topicCode,
-        topicDisplayName: session.topicDisplayName,
-        subjectCode: session.subjectCode,
-        fieldCode: session.fieldCode
-      });
-    }
-
-    // Set new timeout for save
-    if (USE_LOCAL_AUTH || !session.userId) {
-      return; // Skip DB save if using local auth or user is anonymous
-    }
-    if (!supabase) {
-      throw new Error('Supabase client not initialized');
-    }
-
     console.log('Scheduling debounced save to DB... ', session);
 
-    saveTimeoutRef.current = setTimeout(async () => {
-      setSaveStatus('saving');
-      console.log('Auto-saving session');
-      if (!session.userId) {
-        setSaveStatus('idle');
-        console.error('User not logged in, cannot save session to database');
-        return; // Do not save to DB if user is not logged in
-      }
-      // Save to database if user is logged in
+    saveTimeoutRef.current = setTimeout(() => {
       try {
-        const new_data = {
-          lastSaveTime: null as Date | null,
-          sessionId: session.sessionId,
-        }
-        const to_update = {
-            total_reps: session.stats.totalProblems,
-            accuracy: session.stats.correctAnswers / session.stats.totalProblems,
-            average_response_time: session.stats.averageTime,
-            median_response_time: session.stats.medianTime,
-            updated_at: new Date().toISOString(),
-        };
-
-        if (!session.sessionId) {
-          /*create new session*/
-          console.log('Creating new session record in DB');
-          // Create session in database if user is logged in
-          const { data, error } = await supabase!
-            .from('session')
-            .insert({
-              user_id: session.userId,
-              topic_id: session.topicId,
-              started_at: new Date().toISOString(),
-              ...to_update
-            })
-            .select()
-            .single();
-
-          if (error) throw error;
-        
-          if (data) {
-            new_data.sessionId = data.id;
-            console.log('New session created with ID:', data.id);
-          }
-        } else {
-          /*update existing session*/
-          const { error } = await supabase!
-            .from('session')
-            .update(to_update)
-            .eq('id', session.sessionId);
-
-          if (error) throw error;
-        }
-
+        setSaveStatus('saving');
+        saveSessionToLocalStorage(session);
         setSaveStatus('saved');
-        new_data.lastSaveTime = new Date();
-        setSession(prev => prev ? { ...prev, ...new_data } : null);
-
         // Reset status after 2 seconds to give time for user to notice
         setTimeout(() => setSaveStatus('idle'), 2000);
       } catch (error) {
@@ -371,7 +196,6 @@ export function SessionProvider({ children }: SessionProviderProps) {
     isLoading,
     initializeSession,
     recordAnswer,
-    resetSession,
     getAccuracy,
   };
 
@@ -420,12 +244,12 @@ export function SessionProvider({ children }: SessionProviderProps) {
       </details> */}
 
 
-      {topicSummary && (
+      {topicProgress && session && (
         <ProgressBar
-          currentReps={topicSummary.stats.totalReps}
-          targetReps={topicSummary.currentStage.reps_in_stage ?? 100_000_000}
-          currentStage={topicSummary.currentStage}
-          nextStage={topicSummary.nextStage ?? null}
+          currentReps={topicProgress.totalReps + session.totalProblems}
+          targetReps={topicProgress.currentStage.reps_in_stage ?? 100_000_000}
+          currentStage={topicProgress.currentStage}
+          nextStage={topicProgress.nextStage ?? null}
         />
       )}
 

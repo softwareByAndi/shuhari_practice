@@ -2,64 +2,91 @@
   {
     "topic_id": 1,
     "code": "add",
+    "symbol": "➕",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
-    "display_name": "Addition"
+    "display_name": "Addition",
+    "is_active": true,
+    "description": "TODO!"
   },
   {
     "topic_id": 2,
     "code": "sub",
+    "symbol": "➖",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
-    "display_name": "Subtraction"
+    "display_name": "Subtraction",
+    "is_active": true,
+    "description": "TODO!"
   },
   {
     "topic_id": 3,
     "code": "mul",
+    "symbol": "✖️",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
-    "display_name": "Multiplication"
+    "display_name": "Multiplication",
+    "is_active": true,
+    "description": "TODO!"
   },
   {
     "topic_id": 4,
     "code": "div",
+    "symbol": "➗",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
-    "display_name": "Division"
+    "display_name": "Division",
+    "is_active": true,
+    "description": "TODO!"
   },
   {
     "topic_id": 5,
     "code": "mod",
+    "symbol": "%",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
-    "display_name": "Modulus"
+    "display_name": "Modulus",
+    "is_active": true,
+    "description": "TODO!"
   },
   {
     "topic_id": 6,
     "code": "exp",
+    "symbol": "^",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
-    "display_name": "Exponents"
+    "display_name": "Exponents",
+    "is_active": true,
+    "description": "TODO!"
   },
   {
     "topic_id": 7,
     "code": "root",
+    "symbol": "√",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
-    "display_name": "Square Roots"
+    "display_name": "Square Roots",
+    "is_active": true,
+    "description": "TODO!"
   },
   {
     "topic_id": 8,
     "code": "add_w_negatives",
+    "symbol": "±",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
-    "display_name": "Addition with Negatives"
+    "display_name": "Addition with Negatives",
+    "is_active": true,
+    "description": "TODO!"
   },
   {
     "topic_id": 9,
     "code": "subtract_w_negatives",
+    "symbol": "∓",
     "subject_id": 101001,
     "difficulty_progression_id": 1,
-    "display_name": "Subtraction with Negatives"
+    "display_name": "Subtraction with Negatives",
+    "is_active": true,
+    "description": "TODO!"
   }
 ]

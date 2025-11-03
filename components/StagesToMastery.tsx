@@ -2,7 +2,7 @@
 
 import StageCard from './StageCard';
 import colors from '@/styles/stage.module.css'
-import { stage } from '@/lib/local_db_lookup';
+import { stageLookup } from '@/lib/local_db_lookup';
 
 export default async function StagesToMastery() {
     return (
@@ -11,22 +11,22 @@ export default async function StagesToMastery() {
               Your 7-Stage Journey to Mastery
             </h2>
             <StageCard
-                key={stage.by_code.hatsu.code}
-                symbol={stage.by_code.hatsu.symbol}
-                display_name={stage.by_code.hatsu.display_name}
-                description={stage.by_code.hatsu.description}
+                key={stageLookup.by_code.hatsu.code}
+                symbol={stageLookup.by_code.hatsu.symbol}
+                display_name={stageLookup.by_code.hatsu.display_name}
+                description={stageLookup.by_code.hatsu.description}
                 custom_css={{ symbol: colors.hatsu, title: colors.hatsu }}
             />
             <div className={styles.stageGrid}>
-            {stage.list
+            {stageLookup.list
               .filter(s => s.code != 'hatsu')
-              .map((_stage) => (
+              .map((stage) => (
                   <StageCard
-                    key={_stage.code}
-                    symbol={_stage.symbol}
-                    display_name={_stage.display_name}
-                    description={_stage.description}
-                    custom_css={{ symbol: colors[_stage.code], title: colors[_stage.code] }}
+                    key={stage.code}
+                    symbol={stage.symbol}
+                    display_name={stage.display_name}
+                    description={stage.description}
+                    custom_css={{ symbol: colors[stage.code], title: colors[stage.code] }}
                   />
               ))
             }

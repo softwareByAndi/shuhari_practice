@@ -1,10 +1,9 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase-v2';
+// import { User } from '@supabase/supabase-js';
+// import { supabase } from '@/lib/supabase-v2';
 import * as localAuth from '@/lib/local-auth-provider';
-import { AnonymousBanner } from '@/components/AnonymousBanner';
 import { USE_LOCAL_AUTH } from '@/lib/config';
 
 const DEBUG_LOG = (msg: string) => {
@@ -12,7 +11,8 @@ const DEBUG_LOG = (msg: string) => {
 }
 
 // Type that works with both Supabase User and LocalUser
-type AuthUser = User | localAuth.LocalUser | null;
+// type AuthUser = User | localAuth.LocalUser | null;
+type AuthUser = localAuth.LocalUser | null;
 
 type AuthContextType = {
   user: AuthUser;
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (USE_LOCAL_AUTH) {
+    // if (USE_LOCAL_AUTH) {
       // Local auth implementation
       DEBUG_LOG('Init AuthProvider: Using local auth provider');
       localAuth.getSession().then(({ data: { session } }) => {
@@ -44,40 +44,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       return () => subscription.unsubscribe();
-    } 
-    else {
-      // Supabase auth implementation
-      supabase!.auth.getSession().then(({ data: { session } }) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-      });
+    // } 
+    // else {
+    //   // Supabase auth implementation
+    //   supabase!.auth.getSession().then(({ data: { session } }) => {
+    //     setUser(session?.user ?? null);
+    //     setLoading(false);
+    //   });
 
-      // Listen for changes on auth state (sign in, sign out, etc.)
-      const {
-        data: { subscription },
-      } = supabase!.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-      });
+    //   // Listen for changes on auth state (sign in, sign out, etc.)
+    //   const {
+    //     data: { subscription },
+    //   } = supabase!.auth.onAuthStateChange((_event, session) => {
+    //     setUser(session?.user ?? null);
+    //     setLoading(false);
+    //   });
 
-      return () => subscription.unsubscribe();
-    }
+    //   return () => subscription.unsubscribe();
+    // }
   }, []);
 
   const signUp = async (email: string, password: string) => {
     try {
-      if (USE_LOCAL_AUTH) {
+      // if (USE_LOCAL_AUTH) {
         DEBUG_LOG('signUp: Using local auth provider');
         const { error } = await localAuth.signUp(email, password);
         return { error };
-      } 
-      else {
-        const { error } = await supabase!.auth.signUp({
-          email,
-          password,
-        });
-        return { error };
-      }
+      // } 
+      // else {
+      //   const { error } = await supabase!.auth.signUp({
+      //     email,
+      //     password,
+      //   });
+      //   return { error };
+      // }
     } catch (error) {
       return { error: error as Error };
     }
@@ -85,31 +85,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      if (USE_LOCAL_AUTH) {
+      // if (USE_LOCAL_AUTH) {
         DEBUG_LOG('signIn: Using local auth provider');
         const { error } = await localAuth.signInWithPassword(email, password);
         return { error };
-      } 
-      else {
-        const { error } = await supabase!.auth.signInWithPassword({
-          email,
-          password,
-        });
-        return { error };
-      }
+      // } 
+      // else {
+      //   const { error } = await supabase!.auth.signInWithPassword({
+      //     email,
+      //     password,
+      //   });
+      //   return { error };
+      // }
     } catch (error) {
       return { error: error as Error };
     }
   };
 
   const signOut = async () => {
-    if (USE_LOCAL_AUTH) {
+    // if (USE_LOCAL_AUTH) {
       DEBUG_LOG('signOut: Using local auth provider');
       await localAuth.signOut();
-    } 
-    else {
-      await supabase!.auth.signOut();
-    }
+    // } 
+    // else {
+    //   await supabase!.auth.signOut();
+    // }
   };
 
   const value = {

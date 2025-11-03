@@ -1,6 +1,7 @@
 
-import { getSubjectsForField } from '@/lib/supabase-v2';
-import { Subject } from '@/lib/types/database';
+
+import { subjectLookup } from '@/lib/local_db_lookup';
+import { ExtendedSubject } from '@/lib/types/database';
 
 import styles from '@/styles/card.module.css';
 
@@ -19,20 +20,12 @@ interface SubjectsGridProps {
   fieldCode: string;
 }
 
-/*
-export default async function FieldsGrid() {
-
-  const fields: Field[] = await getAllFields();
-  if (!fields) {
-    return notFound();
-  }
-*/
 
 export default async function SubjectsGrid({ fieldId, fieldCode }: SubjectsGridProps) {
 
-  const subjects: Subject[] = await getSubjectsForField(fieldId);
+  const subjects: ExtendedSubject[] = subjectLookup.list.filter(s => s.field_id === fieldId);
 
-  if (!fieldId || !subjects) {
+  if (!subjects) {
     return notFound();
   }
 
@@ -44,8 +37,8 @@ export default async function SubjectsGrid({ fieldId, fieldCode }: SubjectsGridP
           display_name: s.display_name,
           description:  null,
           actionText:   'Start Learning →',
-          link:         `/practice/${fieldCode}/${s.code}`,
-          icon:         SUBJECT_ICONS[s.code] || data.default_card.symbol,
+          link:         `/practice/${s.field.code}/${s.code}`,
+          icon:         s.symbol || data.default_card.symbol,
           isActive:     true,
           color:        data.default_card.tw_color,
       }))} />
@@ -55,12 +48,3 @@ export default async function SubjectsGrid({ fieldId, fieldCode }: SubjectsGridP
 
 
 
-// Field icon and color mapping
-
-const SUBJECT_ICONS: Record<string, string> = {
-  'arithmetic': '➗',
-  'algebra':    '𝒙',
-  'geometry':   '📐',
-  'calculus':   '∫',
-  'statistics': '📊',
-};

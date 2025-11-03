@@ -45,8 +45,9 @@ export interface Field {
   code: string; // 'math', 'chemistry', etc.
   display_name: string; // 'Mathematics'
   is_active: boolean;
-  symbol: string | null | undefined;
+  symbol: string;
   tw_color: string | null | undefined;
+  description: string;
 }
 
 export interface Subject {
@@ -54,14 +55,20 @@ export interface Subject {
   code: string; // 'arithmetic'
   field_id: number;
   display_name: string; // 'Arithmetic'
+  symbol: string;
+  is_active: boolean;
+  description: string;
 }
 
 export interface Topic {
   topic_id: number; // Auto-incrementing
   code: string; // 'add', 'sub', 'mul', etc.
+  symbol: string; // e.g., "+", "-", "×", "÷"
   subject_id: number;
   difficulty_progression_id: number | null; // defaults to 1 (standard)
   display_name: string; // 'Addition', 'Subtraction', etc.
+  is_active: boolean;
+  description: string;
 }
 
 export interface TopicDifficultyOption {
@@ -71,12 +78,6 @@ export interface TopicDifficultyOption {
 }
 
 // ============= User Data =============
-
-export interface UserProgress {
-  user_id: string; // UUID
-  topic_id: number;
-  stage_id: number;
-}
 
 export interface Session {
   id: number; // Auto-incrementing
@@ -93,42 +94,19 @@ export interface Session {
 
 // ============= Composite Types (with joins) =============
 
-export interface SubjectWithField extends Subject {
-  field?: Field;
+export interface ExtendedSubject extends Subject {
+  field: Field;
 }
 
-export interface TopicWithSubject extends Topic {
-  subject?: Subject;
+export interface ExtendedTopic extends Topic {
+  subject: Subject;
+  field: Field;
   difficulty_progression?: DifficultyProgression;
 }
 
-export interface TopicWithProgress extends Topic {
-  subject?: Subject;
-  difficulty_progression?: DifficultyProgression;
-  user_progress?: UserProgress;
-  current_stage?: Stage;
-  difficulty_options?: DifficultyLevel[];
-  total_reps?: number;
-  sessions_count?: number;
-  last_practiced?: Date | string;
-}
-
-export interface SessionWithDetails extends Session {
-  topic?: Topic;
-  stage?: Stage;
-}
 
 // ============= Helper Types =============
 
 export type StageCode = 'hatsu' | 'shu' | 'kan' | 'ha' | 'toi' | 'ri' | 'ku';
 export type ProgressionCode = 'standard' | 'kids_mode';
 
-
-// Helper function to calculate progress percentage
-export function calculateProgress(
-  currentReps: number,
-  requiredReps: number
-): number {
-  if (requiredReps === 0) return 100;
-  return Math.min(100, Math.round((currentReps / requiredReps) * 100));
-}

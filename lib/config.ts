@@ -7,7 +7,7 @@
 
 // Environment-based configuration
 const isDevelopment = process.env.NODE_ENV === 'development';
-const forceLocalMode = process.env.NEXT_PUBLIC_FORCE_LOCAL_MODE === 'true';
+const forceLocalMode = true; //process.env.NEXT_PUBLIC_FORCE_LOCAL_MODE === 'true';
 
 /**
  * USE_LOCAL_STATIC_DATA - When true, uses cached JSON files for static data

@@ -1,16 +1,16 @@
 
 import colors from '@/styles/stage.module.css';
-import { stage } from '@/lib/local_db_lookup';
+import { stageLookup } from '@/lib/local_db_lookup';
 import type { Stage } from '@/lib/types/database';
 
 export default async function StagesToMastery() {
     return (
       <div className={styles.stageSection}>
-        {stage.list
-          .map((_stage: Stage) => (
-            <div key={_stage.code} className={styles.stage}>
-              <div className={`${styles.symbol} ${colors[_stage.code]}`}>{_stage.symbol}</div>
-              <div className={styles.stageLabel}>{_stage.translation}</div>
+        {stageLookup.list
+          .map((stage: Stage) => (
+            <div key={stage.code} className={styles.stage}>
+              <div className={`${styles.symbol} ${colors[stage.code]}`}>{stage.symbol}</div>
+              <div className={styles.stageLabel}>{stage.translation}</div>
             </div>
           ))
         }

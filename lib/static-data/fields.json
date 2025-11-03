@@ -5,7 +5,8 @@
     "display_name": "Mathematics",
     "is_active": true,
     "symbol": "🔢",
-    "tw_color": "blue"
+    "tw_color": "blue",
+    "description": "TODO!"
   },
   {
     "field_id": 121,
@@ -13,7 +14,8 @@
     "display_name": "Chemistry",
     "is_active": true,
     "symbol": "⚗️",
-    "tw_color": "green"
+    "tw_color": "green",
+    "description": "TODO!"
   },
   {
     "field_id": 122,
@@ -21,7 +23,8 @@
     "display_name": "Biology",
     "is_active": true,
     "symbol": "🧬",
-    "tw_color": "emerald"
+    "tw_color": "emerald",
+    "description": "TODO!"
   },
   {
     "field_id": 123,
@@ -29,7 +32,8 @@
     "display_name": "Physics",
     "is_active": true,
     "symbol": "⚛️",
-    "tw_color": "indigo"
+    "tw_color": "indigo",
+    "description": "TODO!"
   },
   {
     "field_id": 131,
@@ -37,7 +41,8 @@
     "display_name": "Engineering",
     "is_active": true,
     "symbol": "⚙️",
-    "tw_color": "gray"
+    "tw_color": "gray",
+    "description": "TODO!"
   },
   {
     "field_id": 201,
@@ -45,7 +50,8 @@
     "display_name": "Language",
     "is_active": true,
     "symbol": "📝",
-    "tw_color": "pink"
+    "tw_color": "pink",
+    "description": "TODO!"
   },
   {
     "field_id": 202,
@@ -53,7 +59,8 @@
     "display_name": "Programming",
     "is_active": true,
     "symbol": "💻",
-    "tw_color": "purple"
+    "tw_color": "purple",
+    "description": "TODO!"
   },
   {
     "field_id": 301,
@@ -61,7 +68,8 @@
     "display_name": "History",
     "is_active": true,
     "symbol": "📜",
-    "tw_color": "amber"
+    "tw_color": "amber",
+    "description": "TODO!"
   },
   {
     "field_id": 302,
@@ -69,7 +77,8 @@
     "display_name": "Philosophy",
     "is_active": true,
     "symbol": "🤔",
-    "tw_color": "violet"
+    "tw_color": "violet",
+    "description": "TODO!"
   },
   {
     "field_id": 303,
@@ -77,7 +86,8 @@
     "display_name": "Law",
     "is_active": true,
     "symbol": "⚖️",
-    "tw_color": "red"
+    "tw_color": "red",
+    "description": "TODO!"
   },
   {
     "field_id": 304,
@@ -85,7 +95,8 @@
     "display_name": "Psychology",
     "is_active": true,
     "symbol": "🧠",
-    "tw_color": "orange"
+    "tw_color": "orange",
+    "description": "TODO!"
   },
   {
     "field_id": 401,
@@ -93,6 +104,7 @@
     "display_name": "Economics",
     "is_active": true,
     "symbol": "📈",
-    "tw_color": "teal"
+    "tw_color": "teal",
+    "description": "TODO!"
   }
 ]

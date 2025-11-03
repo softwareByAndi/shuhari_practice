@@ -12,8 +12,8 @@ import type {
   Field,
   Subject,
   Topic,
-  SubjectWithField,
-  TopicWithSubject
+  ExtendedSubject,
+  ExtendedTopic
 } from '@/lib/types/database';
 
 // Type definitions for lookup objects
@@ -30,15 +30,15 @@ interface FieldLookup {
 }
 
 interface SubjectLookup {
-  by_code: Record<string, SubjectWithField>;
-  by_id: Record<number, SubjectWithField>;
-  list: SubjectWithField[];
+  by_code: Record<string, ExtendedSubject>;
+  by_id: Record<number, ExtendedSubject>;
+  list: ExtendedSubject[];
 }
 
 interface TopicLookup {
-  by_id: Record<number, TopicWithSubject>;
-  by_code: Record<string, TopicWithSubject>;
-  list: TopicWithSubject[];
+  by_id: Record<number, ExtendedTopic>;
+  by_code: Record<string, ExtendedTopic>;
+  list: ExtendedTopic[];
 }
 
 interface StageLookup {
@@ -53,40 +53,57 @@ export const difficulty: DifficultyLookup = {
   list: _difficultyProgressions as DifficultyProgression[]
 }
 
-export const field: FieldLookup = {
+export const fieldLookup: FieldLookup = {
   by_id: Object.fromEntries(_fields.map(f => [f.field_id, f])),
   by_code: Object.fromEntries(_fields.map(f => [f.code, f])),
   list: _fields as Field[]
 }
 
 
-const _mappedSubjects: SubjectWithField[] = (_subjects as Subject[]).map(subject => ({
+const _mappedSubjects: ExtendedSubject[] = (_subjects as Subject[]).map(subject => ({
   ...subject,
-  field: field.by_id[subject.field_id] || undefined
+  field: fieldLookup.by_id[subject.field_id] || undefined
 }))
 
-export const subject: SubjectLookup = {
+export const subjectLookup: SubjectLookup = {
   by_code: Object.fromEntries(_mappedSubjects.map(s => [s.code, s])),
   by_id: Object.fromEntries(_mappedSubjects.map(s => [s.subject_id, s])),
   list: _mappedSubjects,
 }
 
-const _mappedTopics: TopicWithSubject[] = (_topics as Topic[]).map(topic => ({
-  ...topic,
-  subject: subject.by_id[topic.subject_id] || undefined,
-  difficulty_progression: topic.difficulty_progression_id
-    ? difficulty.by_id[topic.difficulty_progression_id] || undefined
-    : undefined
-}))
+const _mappedTopics: ExtendedTopic[] = (_topics as Topic[]).map(topic => {
+    const _subject = subjectLookup.by_id[topic.subject_id];
+    const _field = fieldLookup.by_id[_subject.field_id];
+    return {
+        ...topic,
+        subject: _subject, 
+        field: _field,
+        difficulty_progression: topic.difficulty_progression_id
+            ? difficulty.by_id[topic.difficulty_progression_id] || undefined
+            : difficulty.by_code.standard
+    }
+})
 
-export const topic: TopicLookup = {
+export const topicLookup: TopicLookup = {
   by_id: Object.fromEntries(_mappedTopics.map(t => [t.topic_id, t])),
   by_code: Object.fromEntries(_mappedTopics.map(t => [t.code, t])),
   list: _mappedTopics
 }
 
-export const stage: StageLookup = {
+export const stageLookup: StageLookup = {
   by_id: Object.fromEntries(_stages.map(s => [s.stage_id, s])),
   by_code: Object.fromEntries(_stages.map(s => [s.code, s])),
   list: _stages
+}
+
+
+
+export function calculateStageByReps(totalReps: number): Stage {
+  // Sort stages by min_reps ascending
+  const stageId = Math.min(
+    ...stageLookup.list
+        .filter(s => totalReps >= s.rep_threshold)
+        .map(s => s.stage_id)
+  );
+    return stageLookup.by_id[stageId] || stageLookup.by_code.hatsu;
 }

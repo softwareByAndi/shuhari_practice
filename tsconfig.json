@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "app/practice/[field]/[subject]/[topic]/PracticeSession.tsx.backup", "notes/topics-w-progression.tsx.backup"  ],
+  ],
   "exclude": ["node_modules"]
 }

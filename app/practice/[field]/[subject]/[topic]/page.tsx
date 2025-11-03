@@ -1,11 +1,8 @@
-import { 
-  getFieldByCode, 
-  getSubjectByCode, 
-  getTopicByCode 
-} from '@/lib/supabase-v2';
-import { 
-  TOPIC_ICONS
-} from '@/lib/topic-icons';
+import {
+  fieldLookup,
+  subjectLookup,
+  topicLookup
+} from '@/lib/local_db_lookup';
 
 import {
   SessionProvider
@@ -32,16 +29,9 @@ export default async function PracticePage({ params }: SubjectPageProps) {
     topic: topicCode
   } = await params;
 
-  const [
-    topic,
-    subject,
-    field
-  ] = await Promise.all([
-    getTopicByCode(topicCode),
-    getSubjectByCode(subjectCode),
-    getFieldByCode(fieldCode)
-  ])
-
+  const field = fieldLookup.by_code[fieldCode];
+  const subject = subjectLookup.by_code[subjectCode];
+  const topic = topicLookup.by_code[topicCode];
 
   if (!topic || !subject || !field) {
     return notFound();
@@ -49,22 +39,16 @@ export default async function PracticePage({ params }: SubjectPageProps) {
 
   const content = {
     title: `${topic.display_name} Practice`,
-    icon: TOPIC_ICONS[topic.code] || '📝',
+    icon: topic.symbol || '📝',
   }
 
   return (
     <div className="page">
       <Header params={params} sectionIcon={content.icon} sectionTitle={content.title} />
       <main className="mx-auto">
-        {/* <section className="titleSection mb-4">
-          <div className="flex items-center justify-center gap-4">
-            <div className="text-xl xs:text-2xl sm:text-3xl md:text-4xl">{content.icon}</div>
-            <h1 className="text-lg xs:text-2xl sm:text-3xl md:text-4xl font-bold">{content.title}</h1>
-          </div>
-        </section> */}
 
-        <section className="pageContent  w-full">
-          <SessionProvider >
+        <section className="pageContent w-full">
+          <SessionProvider>
             <PracticeSession 
               topic={topic} 
               subject={subject} 
@@ -72,6 +56,7 @@ export default async function PracticePage({ params }: SubjectPageProps) {
             />
           </SessionProvider>
         </section>
+
       </main>
       <footer>
         <CondensedStagesToMastery />
