@@ -72,18 +72,16 @@ export function SessionProvider({ children }: SessionProviderProps) {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [topicProgress, setTopicProgress] = useState<TopicProgress | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [pendingTopicId, setPendingTopicId] = useState<number | null>(null);
 
   // Initialize session
-  const initializeSession = useCallback(async (
-    topicId: number
-  ) => {
-    setIsLoading(true);
-    console.log('User: ', user);
+  const initializeSession = useCallback(async (topicId: number) => {
     if (authLoading) {
-      console.log('Auth loading, waiting before initializing session...');
+      setPendingTopicId(topicId); // Store for later
       return;
     }
 
+    setIsLoading(true);
     console.log('Initializing session for topic:', topicId, 'User:', user?.id || 'anonymous');
     try {
       const userId = user?.id || null;
@@ -127,6 +125,14 @@ export function SessionProvider({ children }: SessionProviderProps) {
     }
   }, [user, authLoading]);
 
+
+  // Auto-retry when auth completes
+  useEffect(() => {
+    if (!authLoading && pendingTopicId !== null) {
+      initializeSession(pendingTopicId);
+      setPendingTopicId(null);
+    }
+  }, [authLoading, pendingTopicId]);
 
 
   // Record answer
