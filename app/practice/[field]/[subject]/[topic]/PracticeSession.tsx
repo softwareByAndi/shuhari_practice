@@ -10,9 +10,9 @@ import {
     useEffect
 } from 'react';
 
-import { 
-  useSession
-} from '@/contexts/SessionProvider';
+import { useSession } from '@/contexts/SessionProvider';
+import { useAuth } from '@/contexts/AuthContext';
+
 
 import {
     Topic,
@@ -30,14 +30,16 @@ interface SubjectPageProps {
 }
 
 export default function PracticePage({ topic, subject, field }: SubjectPageProps) {
+    const { user, loading: authLoading } = useAuth();
     const {
         initializeSession,
         recordAnswer,
     } = useSession();
+    
 
     useEffect(() => {
         initializeSession(topic.topic_id)
-    }, [])
+    }, [user, authLoading])
 
     // returning a loading page is causing hook order issues because Arithmetic has hooks too
     

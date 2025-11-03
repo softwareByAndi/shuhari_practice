@@ -147,22 +147,23 @@ export function updateTopicSummary(
 
 
 export function getItemsFromLocalStorageWithPrefix(prefix: string): string[] {
-    return (
-      Object.keys(localStorage || {})
-        .filter(key => key.startsWith(prefix))
-        .map(key => localStorage.getItem(key) || null)
-        .filter(item => item !== null)
-    ) as string[];
+   const keys = Object.keys(localStorage);
+   console.log('prefix=', prefix);
+   console.log('found localStorage keys', keys); 
+  return keys
+    .filter(key => key.startsWith(prefix))
+    .map(key => localStorage.getItem(key) || null)
+    .filter(item => item !== null)
 }
 
 
 export function getAllTopicSummariesForUser(userId: string | null): LocalTopicSummary[] {
-    const prefix = `${LS_TOPIC_SUMMARY_KEY}_${userId || 'anonymous'}_`;
+    const prefix = `${LS_TOPIC_SUMMARY_KEY}`; // _${userId || 'anonymous'}_`;
     const topicJsonArray = getItemsFromLocalStorageWithPrefix(prefix)
 
     const summaries: LocalTopicSummary[] = [];
     
-    for (const itemJson in topicJsonArray) {
+    for (const itemJson of topicJsonArray) {
         if (itemJson) {
             try {
                 const summary: LocalTopicSummary = JSON.parse(itemJson);

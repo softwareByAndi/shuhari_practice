@@ -12,11 +12,8 @@ import {
 } from '@/lib/problem-generator-v3';
 import { shuffle, isNil, set } from 'lodash';
 
-import { useEffect, useState, useRef } from 'react';
-import { notFound } from 'next/navigation';
-import { SessionStats } from '@/app/practice/components/SessionStats';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { ACTION, Numpad } from '@/app/practice/components/Numpad';
-import { ProgressBar } from '@/app/practice/components/ProgressBar';
 
 interface ArithmeticProps {
   topicCode: string;
@@ -62,21 +59,10 @@ export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnsw
     setComplexitySettings(complexity);
     setProblemSet(problems)
     setCurrentProblem(problems[0]);
-    console.log('Generated Problem Count:', problemSet?.length);
-  }, []);
+    console.log('Generated Problem Count:', problems.length);
+  }, [topicCode]);
 
-  useEffect(() => {
-    if (
-      !!answer
-      && !isNil(currentProblem?.answer)
-      && Number(answer) === currentProblem?.answer
-      && !isSubmitting
-    ) {
-      handleSubmit();
-    }
-  }, [answer, currentProblem, isSubmitting]);
-
-  const nextProblem = (index: number) => {
+  const nextProblem = useCallback((index: number) => {
     if (problemSet && problemSet.length > 0) {
       let nextProblem = problemSet[index] ?? null;
       if (!nextProblem) {
@@ -89,9 +75,9 @@ export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnsw
       setCurrentProblem(nextProblem);
       setShowAnswerFeedback(false);
     }
-  };
+  }, [problemSet]);
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     // Prevent duplicate submissions
     if (isSubmitting || !answer || !currentProblem) {
       return;
@@ -115,26 +101,51 @@ export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnsw
       setIsSubmitting(false);
       onIncorrectAnswer && onIncorrectAnswer();
     }
-  };
+  }, [answer, currentProblem, currentProblemIndex, isSubmitting, nextProblem, onCorrectAnswer, onIncorrectAnswer]);
 
-  const numpad = {
-    onNumberClick: (num: string) => { setAnswer(prev => prev + num); },
-    onAction: (action: ACTION) => {
-      if (action === 'CLEAR') {
-        setAnswer('');
-        setShowAnswerFeedback(false);
-      }
-      if (action === 'CHECK_ANSWER') {
-        setShowAnswerFeedback(true);
-      }
-      if (action === 'NEGATE') {
-        setAnswer(prev => prev.startsWith('-') ? prev.slice(1) : '-' + prev);
-      }
-    },
-    onBackspace: () => { setAnswer(prev => prev.slice(0, -1)); },
-    onNegative: () => { setAnswer(prev => prev.startsWith('-') ? prev.slice(1) : '-' + prev); },
+  useEffect(() => {
+    if (
+      !!answer
+      && !isNil(currentProblem?.answer)
+      && Number(answer) === currentProblem?.answer
+      && !isSubmitting
+    ) {
+      handleSubmit();
+    }
+  }, [answer, currentProblem, isSubmitting, handleSubmit]);
+
+  const handleNumberClick = useCallback((num: string) => {
+    setAnswer(prev => prev + num);
+  }, []);
+
+  const handleAction = useCallback((action: ACTION) => {
+    if (action === 'CLEAR') {
+      setAnswer('');
+      setShowAnswerFeedback(false);
+    }
+    if (action === 'CHECK_ANSWER') {
+      setShowAnswerFeedback(true);
+    }
+    if (action === 'NEGATE') {
+      setAnswer(prev => prev.startsWith('-') ? prev.slice(1) : '-' + prev);
+    }
+  }, []);
+
+  const handleBackspace = useCallback(() => {
+    setAnswer(prev => prev.slice(0, -1));
+  }, []);
+
+  const handleNegative = useCallback(() => {
+    setAnswer(prev => prev.startsWith('-') ? prev.slice(1) : '-' + prev);
+  }, []);
+
+  const numpad = useMemo(() => ({
+    onNumberClick: handleNumberClick,
+    onAction: handleAction,
+    onBackspace: handleBackspace,
+    onNegative: handleNegative,
     hasNegatives: complexitySettings?.allowNegatives.inAnswer,
-  };
+  }), [handleNumberClick, handleAction, handleBackspace, handleNegative, complexitySettings?.allowNegatives.inAnswer]);
 
   if (!currentProblem || !equationConfig || !complexitySettings) {
     return (<div className="text-center h-full flex-grow flex justify-center items-center text-3xl md:text-5xl text-zinc-500">Loading Problem Set...</div>);

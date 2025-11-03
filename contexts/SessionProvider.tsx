@@ -9,7 +9,6 @@ import {
   getLocalSession,
   saveSessionToLocalStorage,
   type ActiveSession,
-  type LocalTopicSummary
 } from '@/lib/local-session-storage';
 
 import { median, standardDeviation } from 'simple-statistics';
@@ -79,6 +78,12 @@ export function SessionProvider({ children }: SessionProviderProps) {
     topicId: number
   ) => {
     setIsLoading(true);
+    console.log('User: ', user);
+    if (authLoading) {
+      console.log('Auth loading, waiting before initializing session...');
+      return;
+    }
+
     console.log('Initializing session for topic:', topicId, 'User:', user?.id || 'anonymous');
     try {
       const userId = user?.id || null;
@@ -120,7 +125,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
 
 
@@ -145,6 +150,10 @@ export function SessionProvider({ children }: SessionProviderProps) {
       prev.medianTime = median(prev.responseTimes);
       prev.standardDeviationTime = standardDeviation(prev.responseTimes) || 0;
       
+      // if (!prev.userId && !!user?.id) {
+      //   console.log('Updating session userId from anonymous to:', user.id);
+      //   prev.userId = user.id;
+      // }
       return {...prev};
     });
   }, []);
