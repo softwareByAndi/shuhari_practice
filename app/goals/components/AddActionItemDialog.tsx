@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useGoals } from '@/contexts/GoalsProvider';
+import MobileTimePicker from '@/components/MobileTimePicker';
 
 interface AddActionItemDialogProps {
   goalId: string;
@@ -11,7 +12,8 @@ interface AddActionItemDialogProps {
 export default function AddActionItemDialog({ goalId, onClose }: AddActionItemDialogProps) {
   const { addActionItem } = useGoals();
   const [title, setTitle] = useState('');
-  const [trackingType, setTrackingType] = useState<'numeric' | 'enum'>('enum');
+  const [trackingType, setTrackingType] = useState<'numeric' | 'enum' | 'time'>('numeric');
+  const [progressionRate, setProgressionRate] = useState<number>(1);
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -22,7 +24,8 @@ export default function AddActionItemDialog({ goalId, onClose }: AddActionItemDi
       return;
     }
 
-    addActionItem(goalId, title.trim(), trackingType);
+    const rate = trackingType !== 'enum' ? progressionRate : undefined;
+    addActionItem(goalId, title.trim(), trackingType, rate);
     onClose();
   };
 
@@ -68,11 +71,43 @@ export default function AddActionItemDialog({ goalId, onClose }: AddActionItemDi
               )}
             </div>
 
-            <div className="mb-6">
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Tracking Type
               </label>
               <div className="space-y-2">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="tracking-type"
+                    value="numeric"
+                    checked={trackingType === 'numeric'}
+                    onChange={() => setTrackingType('numeric')}
+                    className="mr-2"
+                  />
+                  <div>
+                    <span className="font-medium">Numeric</span>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Track with numbers (e.g., reps, count, score)
+                    </p>
+                  </div>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="tracking-type"
+                    value="time"
+                    checked={trackingType === 'time'}
+                    onChange={() => setTrackingType('time')}
+                    className="mr-2"
+                  />
+                  <div>
+                    <span className="font-medium">Time</span>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Track duration in h:mm:ss format
+                    </p>
+                  </div>
+                </label>
                 <label className="flex items-center">
                   <input
                     type="radio"
@@ -89,24 +124,46 @@ export default function AddActionItemDialog({ goalId, onClose }: AddActionItemDi
                     </p>
                   </div>
                 </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="tracking-type"
-                    value="numeric"
-                    checked={trackingType === 'numeric'}
-                    onChange={() => setTrackingType('numeric')}
-                    className="mr-2"
-                  />
-                  <div>
-                    <span className="font-medium">Numeric</span>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Track with numbers (e.g., reps, minutes, count)
-                    </p>
-                  </div>
-                </label>
               </div>
             </div>
+
+            {trackingType !== 'enum' && (
+              <div className="mb-6">
+                <label
+                  htmlFor="progression-rate"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Progression Rate {trackingType === 'time' ? '(time change per session)' : '(units)'}
+                </label>
+                {trackingType === 'time' ? (
+                  <>
+                    <MobileTimePicker
+                      value={progressionRate}
+                      onChange={setProgressionRate}
+                      mode="progression"
+                    />
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      Set how much time to add or subtract each session (mm:ss format)
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      id="progression-rate"
+                      type="number"
+                      value={progressionRate}
+                      onChange={(e) => setProgressionRate(parseFloat(e.target.value) || 0)}
+                      placeholder="Units to add each session"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      step="1"
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Use negative values for decreasing targets (e.g., -5 for reducing count)
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
 
             <div className="flex justify-end gap-2">
               <button

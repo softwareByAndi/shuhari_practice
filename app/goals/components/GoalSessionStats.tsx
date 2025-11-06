@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { GoalSessionHistory, ActionItem, ENUM_LABELS, EnumTracking } from '@/lib/types/goals';
+import { GoalSessionHistory, ActionItem, ENUM_LABELS, EnumTracking, NumericTracking, TimeTracking, formatTime } from '@/lib/types/goals';
 
 interface GoalSessionStatsProps {
   history: GoalSessionHistory;
@@ -30,13 +30,30 @@ export default function GoalSessionStats({ history, actionItems }: GoalSessionSt
     return item?.trackingType || 'numeric';
   };
 
-  const renderTrackingValue = (tracking: any, actionItemId: string) => {
+  const renderTrackingValue = (tracking: NumericTracking | TimeTracking | EnumTracking, actionItemId: string) => {
     const type = getActionItemType(actionItemId);
 
-    if (type === 'numeric') {
-      return <span className="font-medium">{tracking.value}</span>;
+    // Check if incomplete (not completed)
+    if ('completed' in tracking && !tracking.completed) {
+      return <span className="text-gray-400 dark:text-gray-500 italic">Incomplete</span>;
     }
 
+    // Check for null value
+    if ('value' in tracking && tracking.value === null) {
+      return <span className="text-gray-400 dark:text-gray-500 italic">-</span>;
+    }
+
+    if (type === 'numeric') {
+      const numericTracking = tracking as NumericTracking;
+      return <span className="font-medium">{numericTracking.value}</span>;
+    }
+
+    if (type === 'time') {
+      const timeTracking = tracking as TimeTracking;
+      return <span className="font-medium">{timeTracking.value !== null ? formatTime(timeTracking.value) : '-'}</span>;
+    }
+
+    // Enum type
     const enumTracking = tracking as EnumTracking;
     const label = ENUM_LABELS[enumTracking.value];
 

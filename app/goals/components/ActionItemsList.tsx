@@ -18,7 +18,7 @@ export default function ActionItemsList({
   activeSession
 }: ActionItemsListProps) {
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
       {actionItems.map((item) => {
         const sessionItem = activeSession?.actionItems.find(
           ai => ai.actionItemId === item.id

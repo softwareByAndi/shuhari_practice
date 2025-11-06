@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
-import { Goal, ActionItem, GoalSession, GoalSessionHistory, NumericTracking, EnumTracking, EnumTrackingValue } from '@/lib/types/goals';
+import { Goal, ActionItem, GoalSession, GoalSessionHistory, NumericTracking, TimeTracking, EnumTracking, EnumTrackingValue } from '@/lib/types/goals';
 import * as goalsStorage from '@/lib/goals-storage';
 import { generateUUID } from '@/lib/uuid';
 
@@ -15,7 +15,7 @@ interface GoalsContextType {
 
   // Action items management
   getActionItems: (goalId: string) => ActionItem[];
-  addActionItem: (goalId: string, title: string, trackingType: 'numeric' | 'enum') => void;
+  addActionItem: (goalId: string, title: string, trackingType: 'numeric' | 'enum' | 'time', progressionRate?: number) => void;
   updateActionItem: (goalId: string, actionItemId: string, updates: Partial<ActionItem>) => void;
   removeActionItem: (goalId: string, actionItemId: string) => void;
   reorderActionItems: (goalId: string, actionItemIds: string[]) => void;
@@ -23,7 +23,8 @@ interface GoalsContextType {
   // Session management
   activeSession: GoalSession | null;
   initializeSession: (goalId: string) => void;
-  updateTracking: (actionItemId: string, value: number | EnumTrackingValue) => void;
+  updateTracking: (actionItemId: string, value: number | EnumTrackingValue | null) => void;
+  updateCompletionStatus: (actionItemId: string, completed: boolean) => void;
   submitSession: () => void;
   clearSession: () => void;
 
@@ -140,7 +141,7 @@ export function GoalsProvider({ children }: { children: React.ReactNode }) {
     return goalsStorage.getActionItems(goalId, userId);
   }, [userId]);
 
-  const addActionItem = useCallback((goalId: string, title: string, trackingType: 'numeric' | 'enum') => {
+  const addActionItem = useCallback((goalId: string, title: string, trackingType: 'numeric' | 'enum' | 'time', progressionRate?: number) => {
     const items = getActionItems(goalId);
 
     const newItem: ActionItem = {
@@ -148,6 +149,7 @@ export function GoalsProvider({ children }: { children: React.ReactNode }) {
       goalId,
       title,
       trackingType,
+      progressionRate,
       order: items.length,
       createdAt: new Date().toISOString()
     };
@@ -203,17 +205,55 @@ export function GoalsProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Create new session
+    // Get last session values and action items
     const actionItems = getActionItems(goalId);
+    const lastValues = goalsStorage.getLastSessionValues(goalId, userId);
+
+    // Create new session
     const newSession: GoalSession = {
       goalId,
       userId,
-      actionItems: actionItems.map(item => ({
-        actionItemId: item.id,
-        tracking: item.trackingType === 'numeric'
-          ? { value: 0, date: new Date().toISOString() } as NumericTracking
-          : { value: 'too_lazy', date: new Date().toISOString() } as EnumTracking
-      })),
+      actionItems: actionItems.map(item => {
+        const lastTracking = lastValues.get(item.id);
+        let tracking;
+
+        if (item.trackingType === 'numeric') {
+          let initialValue = 0;
+          if (lastTracking && 'value' in lastTracking && lastTracking.completed) {
+            // Add progression rate to last value
+            initialValue = (lastTracking.value || 0) + (item.progressionRate || 1);
+          }
+          tracking = {
+            value: initialValue,
+            completed: false,
+            date: new Date().toISOString()
+          } as NumericTracking;
+        } else if (item.trackingType === 'time') {
+          let initialValue = 0;
+          if (lastTracking && 'value' in lastTracking && lastTracking.completed) {
+            // Add progression rate (in minutes, convert to milliseconds)
+            const progressionMs = (item.progressionRate || 1) * 60 * 1000;
+            initialValue = Math.max(0, (lastTracking.value || 0) + progressionMs);
+          }
+          tracking = {
+            value: initialValue,
+            completed: false,
+            date: new Date().toISOString()
+          } as TimeTracking;
+        } else {
+          // enum type
+          tracking = {
+            value: 'too_lazy',
+            completed: false,
+            date: new Date().toISOString()
+          } as EnumTracking;
+        }
+
+        return {
+          actionItemId: item.id,
+          tracking
+        };
+      }),
       sessionDate: new Date().toISOString(),
       submitted: false
     };
@@ -222,7 +262,7 @@ export function GoalsProvider({ children }: { children: React.ReactNode }) {
     goalsStorage.saveGoalSession(newSession);
   }, [userId, getActionItems]);
 
-  const updateTracking = useCallback((actionItemId: string, value: number | EnumTrackingValue) => {
+  const updateTracking = useCallback((actionItemId: string, value: number | EnumTrackingValue | null) => {
     if (!activeSession) return;
 
     setActiveSession(prev => {
@@ -231,9 +271,47 @@ export function GoalsProvider({ children }: { children: React.ReactNode }) {
       const updatedItems = prev.actionItems.map(item => {
         if (item.actionItemId !== actionItemId) return item;
 
-        const tracking = typeof value === 'number'
-          ? { value, date: new Date().toISOString() } as NumericTracking
-          : { value, date: new Date().toISOString() } as EnumTracking;
+        const existingTracking = item.tracking;
+        let tracking;
+
+        // Preserve the completed status
+        const completed = 'completed' in existingTracking ? existingTracking.completed : false;
+
+        if (typeof value === 'number' || value === null) {
+          tracking = {
+            value,
+            completed,
+            date: new Date().toISOString()
+          } as NumericTracking | TimeTracking;
+        } else {
+          tracking = {
+            value,
+            completed,
+            date: new Date().toISOString()
+          } as EnumTracking;
+        }
+
+        return { ...item, tracking };
+      });
+
+      return { ...prev, actionItems: updatedItems };
+    });
+  }, [activeSession]);
+
+  const updateCompletionStatus = useCallback((actionItemId: string, completed: boolean) => {
+    if (!activeSession) return;
+
+    setActiveSession(prev => {
+      if (!prev) return null;
+
+      const updatedItems = prev.actionItems.map(item => {
+        if (item.actionItemId !== actionItemId) return item;
+
+        const tracking = {
+          ...item.tracking,
+          completed
+          // Preserve the value regardless of completion status
+        };
 
         return { ...item, tracking };
       });
@@ -279,6 +357,7 @@ export function GoalsProvider({ children }: { children: React.ReactNode }) {
     activeSession,
     initializeSession,
     updateTracking,
+    updateCompletionStatus,
     submitSession,
     clearSession,
     getGoalHistory,

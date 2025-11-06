@@ -168,6 +168,25 @@ export function submitGoalSession(session: GoalSession): void {
 
 // ===== Utility Functions =====
 
+export function getLastSessionValues(goalId: string, userId: string | null): Map<string, any> {
+  const history = getGoalHistory(goalId, userId);
+  const lastValues = new Map<string, any>();
+
+  if (!history || history.sessions.length === 0) {
+    return lastValues;
+  }
+
+  // Get the most recent session
+  const lastSession = history.sessions[history.sessions.length - 1];
+
+  // Extract values for each action item
+  lastSession.actionItems.forEach(item => {
+    lastValues.set(item.actionItemId, item.tracking);
+  });
+
+  return lastValues;
+}
+
 export function getAllGoalHistories(userId: string | null): GoalSessionHistory[] {
   if (typeof window === 'undefined') return [];
 
