@@ -65,7 +65,7 @@ When using local authentication, these accounts are available:
 
 ## Testing Local Mode
 
-Visit `/test-local-auth` to:
+Visit `/test/local-auth` to:
 - View current configuration
 - Test authentication flow
 - Verify local mode is working
