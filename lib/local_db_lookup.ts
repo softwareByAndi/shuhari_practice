@@ -93,14 +93,13 @@ export const unitLookup: UnitLookup = {
 }
 
 const _mappedTopics: ExtendedTopic[] = (_topics as Topic[]).map(topic => {
-    // Handle both unit_id (new) and subject_id (legacy) for backwards compatibility
-    const _unit = topic.unit_id ? unitLookup.by_id[topic.unit_id] : undefined;
-    const _subject = _unit ? _unit.subject : (topic.subject_id ? subjectLookup.by_id[topic.subject_id] : undefined);
-    const _field = _unit ? _unit.field : (_subject ? (_subject as ExtendedSubject).field : undefined);
+    const _unit = unitLookup.by_id[topic.unit_id]
+    const _subject = _unit.subject
+    const _field = _unit.field
 
     return {
         ...topic,
-        unit: _unit,
+        unit: _unit as Unit,
         subject: _subject,
         field: _field,
         difficulty_progression: topic.difficulty_progression_id

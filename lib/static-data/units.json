@@ -1,42 +1,22 @@
 [
   {
     "unit_id": 10100101,
-    "code": "basic-ops",
-    "symbol": "➕➖",
+    "code": "arithmetic-fundamental-ops",
+    "symbol": "∑Δ∏∶",
     "subject_id": 101001,
-    "display_name": "Basic Operations",
+    "display_name": "Fundamental Operations",
     "is_active": true,
     "tw_color": "blue",
-    "description": "Fundamental arithmetic operations: addition and subtraction"
+    "description": "Fundamental arithmetic operations: Addition, Subtraction, Multiplication, and Division."
   },
   {
     "unit_id": 10100102,
-    "code": "mult-div",
-    "symbol": "✕÷",
-    "subject_id": 101001,
-    "display_name": "Multiplication & Division",
-    "is_active": true,
-    "tw_color": "green",
-    "description": "Advanced arithmetic operations: multiplication, division, and modulus"
-  },
-  {
-    "unit_id": 10100103,
-    "code": "powers-roots",
+    "code": "arithmetic-advanced-ops",
     "symbol": "x²√",
     "subject_id": 101001,
-    "display_name": "Powers & Roots",
+    "display_name": "Advanced Arithmetic Operations",
     "is_active": true,
     "tw_color": "purple",
-    "description": "Exponents and square roots"
-  },
-  {
-    "unit_id": 10100104,
-    "code": "with-negatives",
-    "symbol": "±",
-    "subject_id": 101001,
-    "display_name": "Operations with Negatives",
-    "is_active": true,
-    "tw_color": "red",
-    "description": "Addition and subtraction involving negative numbers"
+    "description": "Exponents, Square Roots, Modulus... take your pick!"
   }
 ]

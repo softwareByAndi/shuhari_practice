@@ -23,19 +23,16 @@ interface ArithmeticProps {
 
 export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnswer }: ArithmeticProps) {
 
-  const [targetReps, setTargetReps] = useState<number>(1000);
   const [currentProblemIndex, setCurrentProblemIndex] = useState<number>(0);
   const [currentProblem, setCurrentProblem] = useState<Problem | null>(null);
   const [problemSet, setProblemSet] = useState<Problem[]>([])
   const [answer, setAnswer] = useState<string>('');
-  const [reps, setReps] = useState<number>(0);
   const [equationConfig, setEquationConfig] = useState<EquationConfig | null>(null);
   const [complexitySettings, setComplexitySettings] = useState<ComplexitySettings | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAnswerFeedback, setShowAnswerFeedback] = useState<boolean>(false);
 
-  // TODO : fetch user session
-
+  // TODO : allow user to edit complexity settings
 
 
   useEffect(() => {
@@ -61,6 +58,7 @@ export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnsw
     setCurrentProblem(problems[0]);
     console.log('Generated Problem Count:', problems.length);
   }, [topicCode]);
+
 
   const nextProblem = useCallback((index: number) => {
     if (problemSet && problemSet.length > 0) {
@@ -89,7 +87,6 @@ export default function Arithmetic({ topicCode, onCorrectAnswer, onIncorrectAnsw
     if (!!answer && Number(answer) === currentProblem.answer) {
       const index = currentProblemIndex + 1;
       setCurrentProblemIndex(index);
-      setReps(prev => prev + 1);
       setAnswer('');
       nextProblem(index);
       // Reset submission flag after successful submission

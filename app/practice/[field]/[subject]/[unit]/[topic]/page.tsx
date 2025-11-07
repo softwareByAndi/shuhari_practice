@@ -1,9 +1,9 @@
 import {
-  fieldLookup,
-  subjectLookup,
-  unitLookup,
   topicLookup
 } from '@/lib/local_db_lookup';
+import type {
+  Topic
+} from '@/lib/types/database';
 
 import {
   SessionProvider
@@ -17,29 +17,24 @@ import Header from '@/components/Header';
 
 interface SubjectPageProps {
   params: Promise<{
-    field: string;
-    subject: string;
-    unit: string;
     topic: string;
   }>;
 }
 
 export default async function PracticePage({ params }: SubjectPageProps) {
   const {
-    field: fieldCode,
-    subject: subjectCode,
-    unit: unitCode,
     topic: topicCode
   } = await params;
 
-  const field = fieldLookup.by_code[fieldCode];
-  const subject = subjectLookup.by_code[subjectCode];
-  const unit = unitLookup.by_code[unitCode];
-  const topic = topicLookup.by_code[topicCode];
-
-  if (!topic || !unit || !subject || !field) {
+  const extTopic = topicLookup.by_code[topicCode];
+  if (!extTopic) {
     return notFound();
   }
+
+  const topic = extTopic as Topic
+  const unit = extTopic.unit;
+  const subject = extTopic.subject;
+  const field = extTopic.field;
 
   const content = {
     title: `${topic.display_name} Practice`,

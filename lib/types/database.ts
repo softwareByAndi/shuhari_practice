@@ -76,7 +76,6 @@ export interface Topic {
   topic_id: number; // Auto-incrementing
   code: string; // 'add', 'sub', 'mul', etc.
   symbol: string; // e.g., "+", "-", "×", "÷"
-  subject_id?: number; // Deprecated - kept for compatibility
   unit_id: number; // Reference to unit instead of subject
   difficulty_progression_id: number | null; // defaults to 1 (standard)
   display_name: string; // 'Addition', 'Subtraction', etc.
@@ -118,9 +117,9 @@ export interface ExtendedUnit extends Unit {
 }
 
 export interface ExtendedTopic extends Topic {
-  unit?: Unit;
-  subject?: Subject;
-  field?: Field;
+  unit: Unit;
+  subject: Subject;
+  field: Field;
   difficulty_progression?: DifficultyProgression;
 }
 
