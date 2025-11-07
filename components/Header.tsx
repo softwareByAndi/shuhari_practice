@@ -44,10 +44,15 @@ export default async function Header({ sectionTitle, sectionIcon, params }: head
               <span className={`${stage_styles.ri}`}>離</span>
               <div className="text-xs m-0 text-zinc-500">Shuhari</div>
             </a>
-            
-            <div className="hidden md:block">
-              <BreadCrumbs paths={nav} />
-            </div>
+
+            <nav className="flex items-center gap-6">
+              <a href="/goals" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                Goals
+              </a>
+              <div className="hidden md:block">
+                <BreadCrumbs paths={nav} />
+              </div>
+            </nav>
           </div>
 
           <div className="flex items-center justify-center gap-2 sm:gap-4">
