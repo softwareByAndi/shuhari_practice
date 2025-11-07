@@ -19,7 +19,7 @@ interface CardsGridProps {
 export default function CardsGrid({ cards }: CardsGridProps) {
 
   return (
-    <div className={styles._grid}>
+    <div className={styles[`_grid-${Math.min((cards?.length || 2), 4)}`]}>
       {cards.map((card, index) => {
         return !card ? (
             <div
@@ -37,9 +37,11 @@ export default function CardsGrid({ cards }: CardsGridProps) {
             >
               <div className={`${styles.cardGlow} ${colors['bg-glow-' + card.color]}`}></div>
               <div className={styles.cardContent}>
-                <div className={styles.cardIcon}>{card.icon}</div>
-                <h3 className={styles.cardName}>{card.display_name}</h3>
-                {card.description  && <p className={styles.cardDescription}>{card.description}</p>}
+                <div className="flex-grow">
+                  <div className={styles.cardIcon}>{card.icon}</div>
+                  <h3 className={styles.cardName}>{card.display_name}</h3>
+                  {card.description  && <p className={styles.cardDescription}>{card.description}</p>}
+                </div>
                 {card.actionText   && <p className={styles.cardAction}>{card.actionText}</p>}
               </div>
             </a>
@@ -50,9 +52,11 @@ export default function CardsGrid({ cards }: CardsGridProps) {
               className={`${styles.card} ${styles.cardDisabled}`}
             >
               <div className={styles.cardContent}>
-                <div className={`${styles.cardIcon} ${styles.cardIconDisabled}`}>{card.icon}</div>
-                <h3 className={`${styles.cardName} ${styles.cardNameDisabled}`}>{card.display_name}</h3>
-                {card.description  && <p className={styles.cardDescriptionDisabled}>{card.description}</p>}
+                <div className="flex-grow">
+                  <div className={`${styles.cardIcon} ${styles.cardIconDisabled}`}>{card.icon}</div>
+                  <h3 className={`${styles.cardName} ${styles.cardNameDisabled}`}>{card.display_name}</h3>
+                  {card.description  && <p className={styles.cardDescriptionDisabled}>{card.description}</p>}
+                </div>
                 {card.actionText   && <p className={`${styles.cardAction} ${styles.cardActionDisabled}`}>{card.actionText}</p>}
               </div>
             </div>
