@@ -15,6 +15,7 @@ import { useSession } from '@/contexts/SessionProvider';
 
 import {
     Topic,
+    Unit,
     Subject,
     Field
 } from '@/lib/types/database'
@@ -24,11 +25,12 @@ import Arithmetic from './Arithmetic';
 
 interface SubjectPageProps {
   topic: Topic;
+  unit: Unit;
   subject: Subject;
   field: Field;
 }
 
-export default function PracticePage({ topic, subject, field }: SubjectPageProps) {
+export default function PracticePage({ topic, unit, subject, field }: SubjectPageProps) {
     const {
         initializeSession,
         recordAnswer,

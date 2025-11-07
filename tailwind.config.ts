@@ -11,6 +11,9 @@ module.exports = {
     },
     {
       pattern: /text-(xs|sm|base|lg|xl|2xl|3xl)/,
+    },
+    {
+      pattern: /grid-cols-(2|3|4)/,
     }
   ]
 }

@@ -1,7 +1,7 @@
 
 import {
   subjectLookup,
-  topicLookup
+  unitLookup
 } from '@/lib/local_db_lookup';
 
 
@@ -21,16 +21,16 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
   const { field: fieldCode, subject: subjectCode } = await params;
 
   const subject = subjectLookup.by_code[subjectCode];
-  const topics = topicLookup.list.filter(t => t.subject_id === subject?.subject_id);
-  
+  const units = unitLookup.list.filter(u => u.subject_id === subject?.subject_id);
+
 
   if (!subject) {
     return notFound();
   }
 
   const content = {
-    title: `${subject.display_name} Topics`,
-    subTitle: 'Choose a topic to practice. Progress through 7 stages from Hatsu to Ku.',
+    title: `${subject.display_name} Units`,
+    subTitle: 'Choose a unit to explore. Progress through 7 stages from Hatsu to Ku.',
   }
 
   return (
@@ -43,17 +43,17 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
             <p className="sub_title">{content.subTitle}</p>
           </div>
 
-          {/* Topics Cards Grid */}
+          {/* Units Cards Grid */}
           <div className="pageContent">
-            <CardsGrid cards={topics.map(topic => ({
-                id:           topic.topic_id,
-                display_name: topic.display_name,
-                description:  null,
-                actionText:   'Start Practicing →',
-                link:         `/practice/${fieldCode}/${subjectCode}/${topic.code}`,
-                icon:         topic.symbol || '📚',
-                isActive:     topic.is_active,
-                color:        topic.tw_color || null,
+            <CardsGrid cards={units.map(unit => ({
+                id:           unit.unit_id,
+                display_name: unit.display_name,
+                description:  unit.description || null,
+                actionText:   'View Topics →',
+                link:         `/practice/${fieldCode}/${subjectCode}/${unit.code}`,
+                icon:         unit.symbol || '📚',
+                isActive:     unit.is_active,
+                color:        unit.tw_color || null,
             }))} />
           </div>
 

@@ -1,0 +1,22 @@
+[
+  {
+    "unit_id": 10100101,
+    "code": "arithmetic-fundamental-ops",
+    "symbol": "∑ Δ ∶ ∏",
+    "subject_id": 101001,
+    "display_name": "Fundamental Operations",
+    "is_active": true,
+    "tw_color": "blue",
+    "description": "Master the building blocks of arithmetic"
+  },
+  {
+    "unit_id": 10100102,
+    "code": "arithmetic-advanced-ops",
+    "symbol": "x² √ ⟲",
+    "subject_id": 101001,
+    "display_name": "Advanced Operations",
+    "is_active": true,
+    "tw_color": "purple",
+    "description": "Take your arithmetic skills to the next level"
+  }
+]

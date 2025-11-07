@@ -61,11 +61,22 @@ export interface Subject {
   description: string;
 }
 
+export interface Unit {
+  unit_id: number; // e.g., 10100101 for basic operations
+  code: string; // 'basic-ops', 'mult-div', etc.
+  subject_id: number;
+  display_name: string; // 'Basic Operations', 'Multiplication & Division', etc.
+  symbol: string;
+  is_active: boolean;
+  tw_color: string | null | undefined;
+  description: string;
+}
+
 export interface Topic {
   topic_id: number; // Auto-incrementing
   code: string; // 'add', 'sub', 'mul', etc.
   symbol: string; // e.g., "+", "-", "×", "÷"
-  subject_id: number;
+  unit_id: number; // Reference to unit instead of subject
   difficulty_progression_id: number | null; // defaults to 1 (standard)
   display_name: string; // 'Addition', 'Subtraction', etc.
   is_active: boolean;
@@ -100,7 +111,13 @@ export interface ExtendedSubject extends Subject {
   field: Field;
 }
 
+export interface ExtendedUnit extends Unit {
+  subject: Subject;
+  field: Field;
+}
+
 export interface ExtendedTopic extends Topic {
+  unit: Unit;
   subject: Subject;
   field: Field;
   difficulty_progression?: DifficultyProgression;

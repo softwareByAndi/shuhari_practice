@@ -18,8 +18,6 @@ interface FilterOptions {
 export interface EquationConfig {
   id: EquationType;
   title: string;
-  description: string;
-  emoji: string;
   operator: string;
   /**
    * Generate the correct answer for the equation
@@ -46,8 +44,6 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
   add: {
     id: 'add',
     title: 'Addition',
-    description: 'Practice adding numbers',
-    emoji: '➕',
     operator: '+',
     solve: (num1: number, num2: number) => Number((num1 + num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => `${num1} + ${num2}`,
@@ -55,8 +51,6 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
   sub: {
     id: 'sub',
     title: 'Subtraction',
-    description: 'Practice subtracting numbers',
-    emoji: '➖',
     operator: '-',
     solve: (num1: number, num2: number) => Number((num1 - num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => `${num1} - ${num2}`,
@@ -65,8 +59,6 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
   mul: {
     id: 'mul',
     title: 'Multiplication',
-    description: 'Practice multiplying numbers',
-    emoji: '✖️',
     operator: '×',
     solve: (num1: number, num2: number) => Number((num1 * num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => `${num1} × ${num2}`,
@@ -74,8 +66,6 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
   div: {
     id: 'div',
     title: 'Division',
-    description: 'Practice dividing numbers',
-    emoji: '➗',
     operator: '÷',
     solve: (num1: number, num2: number) => Number((num1 / num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => `${num1} ÷ ${num2}`,
@@ -88,8 +78,6 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
   mod: {
     id: 'mod',
     title: 'Modulus',
-    description: 'Practice finding remainders',
-    emoji: '📐',
     operator: '%',
     solve: (num1: number, num2: number) => Number((num1 % num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => `${num1} % ${num2}`,
@@ -98,8 +86,6 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
   pow_2: {
     id: 'pow_2',
     title: 'Powers of 2',
-    description: 'useful for binary and computer science',
-    emoji: '🔢',
     operator: '^',
     solve: (_base: number, exponent: number) => Number(Math.pow(2, exponent).toFixed(3)),
     displayEquation: (base: number, exponent: number) => `$2^${exponent}`,
@@ -111,8 +97,6 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
   exp: {
     id: 'exp',
     title: 'Exponents',
-    description: 'Practice powers and exponentiation',
-    emoji: '🔢',
     operator: '^',
     solve: (base: number, exponent: number) => Number(Math.pow(base, exponent).toFixed(3)),
     displayEquation: (base: number, exponent: number) => `${base}^${exponent}`,
@@ -123,8 +107,6 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
   root: {
     id: 'root',
     title: 'Square Roots',
-    description: 'Practice finding square roots of perfect squares',
-    emoji: '√',
     operator: '√',
     /*pass in the answer (root) as num1*/
     solve: (num1: number, _num2: number) => num1,
@@ -133,8 +115,6 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
   add_w_negatives: {
     id: 'add_w_negatives',
     title: 'Addition with Negatives',
-    description: 'Practice adding positive and negative numbers',
-    emoji: '➕➖',
     operator: '+',
     solve: (num1: number, num2: number) => Number((num1 + num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => {
@@ -146,8 +126,6 @@ export const EQUATION_CONFIGS: Record<EquationType, EquationConfig> = {
   subtract_w_negatives: {
     id: 'subtract_w_negatives',
     title: 'Subtraction with Negatives',
-    description: 'Practice subtracting positive and negative numbers',
-    emoji: '➖➕',
     operator: '-',
     solve: (num1: number, num2: number) => Number((num1 - num2).toFixed(3)),
     displayEquation: (num1: number, num2: number) => {

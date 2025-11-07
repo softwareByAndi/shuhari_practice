@@ -12,9 +12,7 @@ import {
 } from '@/lib/local-session-storage';
 import { ExtendedTopic, Stage } from '@/lib/types/database';
 import { 
-  topicLookup, 
-  subjectLookup, 
-  stageLookup, 
+  topicLookup,
   calculateStageByReps 
 } from '@/lib/local_db_lookup';
 import { orderBy } from 'lodash';
@@ -84,7 +82,8 @@ export default function RecentPractice() {
                 topic: topicData,
                 currentStage
               };
-            }),
+            })
+            .filter(topicSummary => topicSummary.topic !== undefined),
           ['mostRecentSessionDate'],
           ['desc']
         )
@@ -121,67 +120,71 @@ export default function RecentPractice() {
         (recentTopics.length === 0) ? emptyPage() :
         (
           <div className="space-y-4">
-            {recentTopics.map((topicSummary) => {
-              const url = `/practice/${topicSummary.topic.field.code}/${topicSummary.topic.subject.code}/${topicSummary.topic.code}?difficulty=TODO`
-              const targetReps = topicSummary.currentStage.rep_threshold + topicSummary.currentStage.reps_in_stage;
-              const progress = topicSummary.totalReps && targetReps
-                ? Math.min(100, Math.floor((topicSummary.totalReps / targetReps) * 100))
-                : 0;
-              
-              return (
-                <Link
-                  key={topicSummary.topicId}
-                  href={url}
-                  className="block rounded-xl bg-white dark:bg-zinc-800 px-6 pt-4 pb-6 shadow-md border border-zinc-200 dark:border-zinc-700 hover:shadow-lg hover:scale-[1.01] transition-all"
-                >
-                  <div className="flex mb-2 items-center justify-between">
-                    <div className="flex items-center gap-6">
-                        <span className="text-2xl">{topicSummary.topic.symbol}</span>
-                        <h3 className="font-semibold text-zinc-900 dark:text-white md:text-lg">
-                          {topicSummary.topic.display_name}
-                        </h3>
+            {recentTopics.map(topicSummary => {
+                // Build URL with optional field, subject, and unit
+                const fieldCode = topicSummary.topic.field.code;
+                const subjectCode = topicSummary.topic.subject.code;
+                const unitCode = topicSummary.topic.unit.code;
+                const url = `/practice/${fieldCode}/${subjectCode}/${unitCode}/${topicSummary.topic.code}?difficulty=TODO`
+                const targetReps = topicSummary.currentStage.rep_threshold + topicSummary.currentStage.reps_in_stage;
+                const progress = topicSummary.totalReps && targetReps
+                  ? Math.min(100, Math.floor((topicSummary.totalReps / targetReps) * 100))
+                  : 0;
+                
+                return (
+                  <Link
+                    key={topicSummary.topicId}
+                    href={url}
+                    className="block rounded-xl bg-white dark:bg-zinc-800 px-6 pt-4 pb-6 shadow-md border border-zinc-200 dark:border-zinc-700 hover:shadow-lg hover:scale-[1.01] transition-all"
+                  >
+                    <div className="flex mb-2 items-center justify-between">
+                      <div className="flex items-center gap-6">
+                          <span className="text-2xl">{topicSummary.topic.symbol}</span>
+                          <h3 className="font-semibold text-zinc-900 dark:text-white md:text-lg">
+                            {topicSummary.topic.display_name}
+                          </h3>
 
 
-                        {/* Stage badge */}
-                        <div className={`inline-flex items-center gap-1 px-4 py-1 text-xl font-semibold rounded-full border ${colors[topicSummary.currentStage.stage_id]}`}>
-                          <span>{topicSummary.currentStage.symbol}</span>
-                          <span className="hidden sm:inline">Stage {topicSummary.currentStage.stage_id}</span>
-                        </div>
+                          {/* Stage badge */}
+                          <div className={`inline-flex items-center gap-1 px-4 py-1 text-xl font-semibold rounded-full border ${colors[topicSummary.currentStage.stage_id]}`}>
+                            <span>{topicSummary.currentStage.symbol}</span>
+                            <span className="hidden sm:inline">Stage {topicSummary.currentStage.stage_id}</span>
+                          </div>
+                      </div>
+                      <div className="flex flex-col justify-center">
+                          <div className="text-base text-zinc-500 dark:text-zinc-400 flex gap-4 items-center justify-center">
+                              <div className="text-zinc-500 dark:text-zinc-500">
+                                {
+                                  topicSummary.mostRecentSessionDate 
+                                  ? formatRelativeDate(new Date(topicSummary.mostRecentSessionDate)) 
+                                  : 'Never practiced'
+                                }
+                              </div>
+                              <div className="text-base m-0">&bull;</div>
+                              <div className="text-zinc-500 dark:text-zinc-500">
+                                {topicSummary.sessionsCount} sessions
+                              </div>
+                          </div>
+                          <div className="mt-1 text-zinc-500 dark:text-zinc-400 text-center">
+                            {topicSummary.totalReps} / {targetReps} to next stage
+                          </div>
+                      </div>
                     </div>
-                    <div className="flex flex-col justify-center">
-                        <div className="text-base text-zinc-500 dark:text-zinc-400 flex gap-4 items-center justify-center">
-                            <div className="text-zinc-500 dark:text-zinc-500">
-                              {
-                                topicSummary.mostRecentSessionDate 
-                                ? formatRelativeDate(new Date(topicSummary.mostRecentSessionDate)) 
-                                : 'Never practiced'
-                              }
-                            </div>
-                            <div className="text-base m-0">&bull;</div>
-                            <div className="text-zinc-500 dark:text-zinc-500">
-                              {topicSummary.sessionsCount} sessions
-                            </div>
-                        </div>
-                        <div className="mt-1 text-zinc-500 dark:text-zinc-400 text-center">
-                          {topicSummary.totalReps} / {targetReps} to next stage
-                        </div>
-                    </div>
-                  </div>
 
-                  {/* Progress bar */}
-                  <div>
-                    <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300"
-                        style={{ width: `${progress}%` }}
-                      />
+                    {/* Progress bar */}
+                    <div>
+                      <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                      {/* <div className="mt-1 text-zinc-500 dark:text-zinc-400 text-right">
+                        {topicSummary.totalReps} / {targetReps} to next stage
+                      </div> */}
                     </div>
-                    {/* <div className="mt-1 text-zinc-500 dark:text-zinc-400 text-right">
-                      {topicSummary.totalReps} / {targetReps} to next stage
-                    </div> */}
-                  </div>
-                </Link>
-              );
+                  </Link>
+                );
             })}
           </div>
         )
