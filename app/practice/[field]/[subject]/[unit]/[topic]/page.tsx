@@ -1,6 +1,7 @@
 import {
   fieldLookup,
   subjectLookup,
+  unitLookup,
   topicLookup
 } from '@/lib/local_db_lookup';
 
@@ -18,6 +19,7 @@ interface SubjectPageProps {
   params: Promise<{
     field: string;
     subject: string;
+    unit: string;
     topic: string;
   }>;
 }
@@ -26,14 +28,16 @@ export default async function PracticePage({ params }: SubjectPageProps) {
   const {
     field: fieldCode,
     subject: subjectCode,
+    unit: unitCode,
     topic: topicCode
   } = await params;
 
   const field = fieldLookup.by_code[fieldCode];
   const subject = subjectLookup.by_code[subjectCode];
+  const unit = unitLookup.by_code[unitCode];
   const topic = topicLookup.by_code[topicCode];
 
-  if (!topic || !subject || !field) {
+  if (!topic || !unit || !subject || !field) {
     return notFound();
   }
 
@@ -49,10 +53,11 @@ export default async function PracticePage({ params }: SubjectPageProps) {
 
         <section className="pageContent w-full">
           <SessionProvider>
-            <PracticeSession 
-              topic={topic} 
-              subject={subject} 
-              field={field} 
+            <PracticeSession
+              topic={topic}
+              unit={unit}
+              subject={subject}
+              field={field}
             />
           </SessionProvider>
         </section>

@@ -122,7 +122,11 @@ export default function RecentPractice() {
         (
           <div className="space-y-4">
             {recentTopics.map((topicSummary) => {
-              const url = `/practice/${topicSummary.topic.field.code}/${topicSummary.topic.subject.code}/${topicSummary.topic.code}?difficulty=TODO`
+              // Build URL with optional field, subject, and unit
+              const fieldCode = topicSummary.topic.field?.code || 'math';
+              const subjectCode = topicSummary.topic.subject?.code || 'arithmetic';
+              const unitCode = topicSummary.topic.unit?.code || 'basic-ops';
+              const url = `/practice/${fieldCode}/${subjectCode}/${unitCode}/${topicSummary.topic.code}?difficulty=TODO`
               const targetReps = topicSummary.currentStage.rep_threshold + topicSummary.currentStage.reps_in_stage;
               const progress = topicSummary.totalReps && targetReps
                 ? Math.min(100, Math.floor((topicSummary.totalReps / targetReps) * 100))

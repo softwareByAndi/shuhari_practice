@@ -3,6 +3,7 @@ import { get as _Get } from 'lodash';
 import _stages   from '@/lib/static-data/stages.json';
 import _fields   from '@/lib/static-data/fields.json';
 import _subjects from '@/lib/static-data/subjects.json';
+import _units    from '@/lib/static-data/units.json';
 import _topics   from '@/lib/static-data/topics.json';
 import _difficultyProgressions from '@/lib/static-data/difficulty-progressions.json';
 
@@ -11,8 +12,10 @@ import type {
   Stage,
   Field,
   Subject,
+  Unit,
   Topic,
   ExtendedSubject,
+  ExtendedUnit,
   ExtendedTopic
 } from '@/lib/types/database';
 
@@ -33,6 +36,12 @@ interface SubjectLookup {
   by_code: Record<string, ExtendedSubject>;
   by_id: Record<number, ExtendedSubject>;
   list: ExtendedSubject[];
+}
+
+interface UnitLookup {
+  by_code: Record<string, ExtendedUnit>;
+  by_id: Record<number, ExtendedUnit>;
+  list: ExtendedUnit[];
 }
 
 interface TopicLookup {
@@ -71,12 +80,28 @@ export const subjectLookup: SubjectLookup = {
   list: _mappedSubjects,
 }
 
+const _mappedUnits: ExtendedUnit[] = (_units as Unit[]).map(unit => ({
+  ...unit,
+  subject: subjectLookup.by_id[unit.subject_id],
+  field: fieldLookup.by_id[subjectLookup.by_id[unit.subject_id].field_id]
+}))
+
+export const unitLookup: UnitLookup = {
+  by_code: Object.fromEntries(_mappedUnits.map(u => [u.code, u])),
+  by_id: Object.fromEntries(_mappedUnits.map(u => [u.unit_id, u])),
+  list: _mappedUnits,
+}
+
 const _mappedTopics: ExtendedTopic[] = (_topics as Topic[]).map(topic => {
-    const _subject = subjectLookup.by_id[topic.subject_id];
-    const _field = fieldLookup.by_id[_subject.field_id];
+    // Handle both unit_id (new) and subject_id (legacy) for backwards compatibility
+    const _unit = topic.unit_id ? unitLookup.by_id[topic.unit_id] : undefined;
+    const _subject = _unit ? _unit.subject : (topic.subject_id ? subjectLookup.by_id[topic.subject_id] : undefined);
+    const _field = _unit ? _unit.field : (_subject ? (_subject as ExtendedSubject).field : undefined);
+
     return {
         ...topic,
-        subject: _subject, 
+        unit: _unit,
+        subject: _subject,
         field: _field,
         difficulty_progression: topic.difficulty_progression_id
             ? difficulty.by_id[topic.difficulty_progression_id] || undefined
