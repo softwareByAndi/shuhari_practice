@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ActionItem, NumericTracking, TimeTracking, EnumTracking, EnumTrackingValue, ENUM_LABELS } from '@/lib/types/goals';
 import { useGoals } from '@/contexts/GoalsProvider';
 import MobileTimePicker from '@/components/MobileTimePicker';
+import Timer from './Timer';
 
 interface TrackingInputProps {
   actionItem: ActionItem;
@@ -13,6 +14,7 @@ interface TrackingInputProps {
 
 export default function TrackingInput({ actionItem, currentValue, compact = false }: TrackingInputProps) {
   const { updateTracking, updateCompletionStatus } = useGoals();
+  const [showTimer, setShowTimer] = useState(false);
 
   const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value === '' ? null : parseFloat(e.target.value);
@@ -31,6 +33,16 @@ export default function TrackingInput({ actionItem, currentValue, compact = fals
 
   const handleCompletionToggle = () => {
     updateCompletionStatus(actionItem.id, !isCompleted);
+  };
+
+  const handleTimerComplete = () => {
+    if (actionItem.trackingType === 'time') {
+      // Keep the current time value and mark as completed
+      const timeValue = currentValue && 'value' in currentValue && typeof currentValue.value === 'number' ? currentValue.value : 0;
+      updateTracking(actionItem.id, timeValue);
+      updateCompletionStatus(actionItem.id, true);
+    }
+    setShowTimer(false);
   };
 
   const isCompleted = currentValue && 'completed' in currentValue ? currentValue.completed : false;
@@ -55,12 +67,30 @@ export default function TrackingInput({ actionItem, currentValue, compact = fals
               placeholder="0"
             />
           ) : actionItem.trackingType === 'time' ? (
-            <MobileTimePicker
-              value={currentValue && 'value' in currentValue && typeof currentValue.value === 'number' ? currentValue.value : 0}
-              onChange={handleTimeChange}
-              disabled={!isCompleted}
-              mode="duration"
-            />
+            <div className="flex items-center gap-2 w-full">
+              <div className="flex-1">
+                <MobileTimePicker
+                  value={currentValue && 'value' in currentValue && typeof currentValue.value === 'number' ? currentValue.value : 0}
+                  onChange={handleTimeChange}
+                  disabled={!isCompleted}
+                  mode="duration"
+                />
+              </div>
+              <button
+                onClick={() => setShowTimer(true)}
+                disabled={!isCompleted || !(currentValue && 'value' in currentValue && currentValue.value > 0)}
+                className={`p-2 rounded-lg transition-colors ${
+                  isCompleted && currentValue && 'value' in currentValue && currentValue.value > 0
+                    ? 'text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30'
+                    : 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                }`}
+                title={!isCompleted ? "Mark as in progress first" : !(currentValue && 'value' in currentValue && currentValue.value > 0) ? "Set a time value first" : "Start timer"}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            </div>
           ) : (
             <select
               id={`enum-${actionItem.id}`}
@@ -92,20 +122,29 @@ export default function TrackingInput({ actionItem, currentValue, compact = fals
         >
           {isCompleted ? 'Completed ✓' : 'Complete'}
         </button>
+
+        {showTimer && actionItem.trackingType === 'time' && (
+          <Timer
+            initialTime={currentValue && 'value' in currentValue && typeof currentValue.value === 'number' ? currentValue.value : 0}
+            onComplete={handleTimerComplete}
+            onClose={() => setShowTimer(false)}
+          />
+        )}
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <input
-        type="checkbox"
-        id={`complete-${actionItem.id}`}
-        checked={isCompleted}
-        onChange={(e) => updateCompletionStatus(actionItem.id, e.target.checked)}
-        className="h-5 w-5 text-blue-600 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500"
-        title="Mark as completed"
-      />
+    <>
+      <div className="flex items-center gap-3">
+        <input
+          type="checkbox"
+          id={`complete-${actionItem.id}`}
+          checked={isCompleted}
+          onChange={(e) => updateCompletionStatus(actionItem.id, e.target.checked)}
+          className="h-5 w-5 text-blue-600 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500"
+          title="Mark as completed"
+        />
 
       {actionItem.trackingType === 'numeric' ? (
         <input
@@ -123,12 +162,28 @@ export default function TrackingInput({ actionItem, currentValue, compact = fals
           placeholder="0"
         />
       ) : actionItem.trackingType === 'time' ? (
-        <MobileTimePicker
-          value={currentValue && 'value' in currentValue && typeof currentValue.value === 'number' ? currentValue.value : 0}
-          onChange={handleTimeChange}
-          disabled={!isCompleted}
-          mode="duration"
-        />
+        <div className="flex items-center gap-2">
+          <MobileTimePicker
+            value={currentValue && 'value' in currentValue && typeof currentValue.value === 'number' ? currentValue.value : 0}
+            onChange={handleTimeChange}
+            disabled={!isCompleted}
+            mode="duration"
+          />
+          <button
+            onClick={() => setShowTimer(true)}
+            disabled={!isCompleted || !(currentValue && 'value' in currentValue && currentValue.value > 0)}
+            className={`p-1.5 rounded-lg transition-colors ${
+              isCompleted && currentValue && 'value' in currentValue && currentValue.value > 0
+                ? 'text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30'
+                : 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+            }`}
+            title={!isCompleted ? "Mark as in progress first" : !(currentValue && 'value' in currentValue && currentValue.value > 0) ? "Set a time value first" : "Start timer"}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+        </div>
       ) : (
         <select
           id={`enum-${actionItem.id}`}
@@ -148,6 +203,15 @@ export default function TrackingInput({ actionItem, currentValue, compact = fals
           ))}
         </select>
       )}
-    </div>
+      </div>
+
+      {showTimer && actionItem.trackingType === 'time' && (
+        <Timer
+          initialTime={currentValue && 'value' in currentValue && typeof currentValue.value === 'number' ? currentValue.value : 0}
+          onComplete={handleTimerComplete}
+          onClose={() => setShowTimer(false)}
+        />
+      )}
+    </>
   );
 }
